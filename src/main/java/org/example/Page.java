@@ -31,4 +31,11 @@ public class Page {
 
     private void deserialziePage(){}
 
+    public String toString() {
+        StringBuilder returnString = new StringBuilder();
+        for (Object tuple : tuples) {
+            returnString.append(tuple.toString());
+        }
+        return returnString.toString();
+    }
 }
