@@ -1,6 +1,6 @@
 
-/** * @author Wael Abouelsaadat */ 
-
+/** * @author Wael Abouelsaadat */
+package org.example;
 public class SQLTerm {
 
 	public String _strTableName,_strColumnName, _strOperator;
