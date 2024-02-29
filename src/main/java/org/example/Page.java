@@ -24,7 +24,7 @@ public class Page {
      * @return True if the tuple was inserted successfully, false otherwise
      */
     public boolean insertIntoPage(Tuple tuple){
-        return True;
+        return true;
     }
 
     private void serializePage(){}
