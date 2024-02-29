@@ -1,0 +1,11 @@
+Table Name,Column Name,Column Type,ClusteringKey,IndexName,IndexType
+CityShop,ID,java.lang.Integer,True,IDIndex,B+tree
+CityShop,Name,java.lang.String,False,,
+CityShop,Number,java.lang.Integer,False,NumberIndex,B+tree
+CityShop,Specialisation,java.lang.String,False,SpecIndex,B+tree
+CityShop,Address,java.lang.String,False,AddrIndex,B+tree
+CityShop2,ID,java.lang.Integer,True,IDIndex,B+tree
+CityShop2,Name,java.lang.String,False,,
+CityShop2,Number,java.lang.Integer,False,NumberIndex,B+tree
+CityShop2,Specialisation,java.lang.String,False,SpecIndex,B+tree
+CityShop2,Address,java.lang.String,False,AddrIndex,B+tree
