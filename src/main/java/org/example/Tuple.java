@@ -37,4 +37,11 @@ public class Tuple {
             throw new IndexOutOfBoundsException("Index " + index + " out of bounds for list of size " + values.size());
         }
     }
+    public String toString() {
+        StringBuilder returnString = new StringBuilder();
+        for (Object value : values) {
+            returnString.append(String.valueOf(value));
+        }
+        return returnString.toString();
+    }
 }
