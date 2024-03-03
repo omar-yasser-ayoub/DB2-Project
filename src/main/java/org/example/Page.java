@@ -1,9 +1,14 @@
 package org.example;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.util.Vector;
 
 public class Page {
 
+    static int PAGE_COUNT = 0;
     Vector<Tuple> tuples;
     Table parentTable;
     int numOfRows;
@@ -27,7 +32,22 @@ public class Page {
         return true;
     }
 
-    private void serializePage(){}
+    /**
+     * Serializes the page object to the disk
+     * @throws DBAppException
+     */
+    private void serializePage() throws DBAppException {
+        String fileName = "page" + PAGE_COUNT + ".ser";
+        try {
+            FileOutputStream fileOut = new FileOutputStream(fileName);
+            ObjectOutputStream out = new ObjectOutputStream(fileOut);
+            out.writeObject(this);
+            out.close();
+            fileOut.close();
+        } catch (IOException e) {
+            throw new DBAppException(e.getMessage());
+        }
+    }
 
     private void deserialziePage(){}
 
