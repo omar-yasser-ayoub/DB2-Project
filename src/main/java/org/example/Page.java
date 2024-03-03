@@ -1,6 +1,5 @@
 package org.example;
 
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -34,9 +33,9 @@ public class Page {
 
     /**
      * Serializes the page object to the disk
-     * @throws DBAppException
+     * @throws DBAppException If an error occurs during serialization
      */
-    private void serializePage() throws DBAppException {
+    public void serializePage() throws DBAppException {
         String fileName = "page" + PAGE_COUNT + ".ser";
         try {
             FileOutputStream fileOut = new FileOutputStream(fileName);
@@ -49,7 +48,7 @@ public class Page {
         }
     }
 
-    private void deserialziePage(){}
+    public void deserializePage(){}
 
     public String toString() {
         StringBuilder returnString = new StringBuilder();
