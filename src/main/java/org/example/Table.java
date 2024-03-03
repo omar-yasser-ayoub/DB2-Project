@@ -5,8 +5,9 @@ import com.opencsv.CSVWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Serializable;
 
-public class Table {
+public class Table implements Serializable {
     String[] fileNames;//pages
     String[] columnNames;
     Page currentPage;

@@ -1,11 +1,9 @@
 package org.example;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.util.Vector;
 
-public class Page {
+public class Page implements Serializable {
 
     static int PAGE_COUNT = 0;
     Vector<Tuple> tuples;
@@ -36,13 +34,25 @@ public class Page {
      * @throws DBAppException If an error occurs during serialization
      */
     public void serializePage() throws DBAppException {
-        String fileName = "page" + PAGE_COUNT + ".ser";
+        String directoryPath = "data/serialized_pages";
+        String fileName = "data/serialized_pages/page" + PAGE_COUNT + ".ser";
+
+        File directory = new File(directoryPath);
+        if (!directory.exists()) {
+            boolean created = directory.mkdirs();
+            if (!created) {
+                throw new DBAppException("Failed to create directory: " + directoryPath);
+            }
+        }
+
         try {
             FileOutputStream fileOut = new FileOutputStream(fileName);
-            ObjectOutputStream out = new ObjectOutputStream(fileOut);
-            out.writeObject(this);
-            out.close();
-            fileOut.close();
+            ObjectOutputStream objOut = new ObjectOutputStream(fileOut);
+            objOut.writeObject(this);
+
+            objOut.flush();
+            objOut.close();
+            PAGE_COUNT++;
         } catch (IOException e) {
             throw new DBAppException(e.getMessage());
         }
