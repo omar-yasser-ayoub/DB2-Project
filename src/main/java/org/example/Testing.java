@@ -15,6 +15,9 @@ public class Testing {
         page2.serializePage();
         System.out.println("Page 2 serialized");
 
+        System.out.println(page1.toString());
+        System.out.println(page2.toString());
+
     }
 
     private static Table createTestTable() {
