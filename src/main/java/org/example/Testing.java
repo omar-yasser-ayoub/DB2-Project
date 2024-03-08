@@ -32,7 +32,10 @@ public class Testing {
         boolean[] clusteringKey = {true, false, false, false, false};
         String[] indexName = {"IDIndex", null, "NumberIndex", "SpecIndex", "AddrIndex"};
         String[] indexType = {"B+tree", null, "B+tree", "B+tree", "B+tree"};
-        return new Table("CityShop", colNames, colTypes, clusteringKey, indexName, indexType);
+
+        Hashtable<String, Integer> hashtable = new Hashtable<>();
+
+        return DBApp.createTable("CityShop", colNames, colTypes, clusteringKey, indexName, indexType);
     }
 
     public static void main(String[] args) throws DBAppException {

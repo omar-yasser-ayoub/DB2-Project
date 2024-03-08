@@ -55,7 +55,7 @@ public class DBApp {
 							String strClusteringKeyColumn,  
 							Hashtable<String,String> htblColNameType) throws DBAppException{
 
-		Table t = new Table(strTableName, );
+		Table t = new Table(strTableName, htblColNameType,strClusteringKeyColumn,null,null);
 		throw new DBAppException("not implemented yet");
 	}
 
@@ -132,8 +132,8 @@ public class DBApp {
 			boolean[] clusteringKey = {true, false, false, false, false};
 			String[] indexName = {"IDIndex", null, "NumberIndex", "SpecIndex", "AddrIndex"};
 			String[] indexType = {"B+tree", null, "B+tree", "B+tree", "B+tree"};
-			Table test = new Table("CityShop", colNames, colTypes, clusteringKey, indexName, indexType);
-			Table test2 = new Table("CityShop2", colNames, colTypes, clusteringKey, indexName, indexType);
+			//Table test = new Table("CityShop", colNames, colTypes, clusteringKey, indexName, indexType);
+			//Table test2 = new Table("CityShop2", colNames, colTypes, clusteringKey, indexName, indexType);
 
 //			Hashtable htblColNameType = new Hashtable( );
 //			htblColNameType.put("id", "java.lang.Integer");
