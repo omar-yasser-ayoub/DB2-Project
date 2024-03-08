@@ -58,7 +58,22 @@ public class Page implements Serializable {
         }
     }
 
-    public void deserializePage(){}
+    public static Page deserializePage(String FileName) throws DBAppException{
+
+        try {
+            FileInputStream FileIn = new FileInputStream(FileName);
+            ObjectInputStream ObjIn = new ObjectInputStream(FileIn);
+            Page p = (Page) ObjIn.readObject();
+            ObjIn.close();
+            return p;
+        } catch (IOException e) {
+            throw new DBAppException(e.getMessage());
+        } catch (ClassNotFoundException e) {
+            throw new DBAppException(e.getMessage());
+        }
+
+
+    }
 
     public String toString() {
         if (tuples == null || tuples.isEmpty()) {

@@ -1,5 +1,7 @@
 package org.example;
 
+import static org.example.Page.deserializePage;
+
 public class Testing {
     public static void serializingTest() throws DBAppException {
 
@@ -15,10 +17,14 @@ public class Testing {
         page2.serializePage();
         System.out.println("Page 2 serialized");
 
-        System.out.println(page1.toString());
-        System.out.println(page2.toString());
-
     }
+    private static void deserializingTest() throws DBAppException {
+        Page p1 = deserializePage("data/serialized_pages/page0.ser");
+        System.out.println("Page 1 deserialized");
+        System.out.println(p1.numOfRows);
+        Page p2 = deserializePage("data/serialized_pages/page1.ser");
+        System.out.println("Page 2 deserialized");
+        System.out.println(p2.numOfRows);    }
 
     private static Table createTestTable() {
         String[] colNames = {"ID", "Name", "Number", "Specialisation", "Address"};
@@ -31,5 +37,6 @@ public class Testing {
 
     public static void main(String[] args) throws DBAppException {
         serializingTest();
+        deserializingTest();
     }
 }
