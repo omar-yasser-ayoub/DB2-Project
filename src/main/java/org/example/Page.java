@@ -76,6 +76,9 @@ public class Page implements Serializable {
     }
 
     public String toString() {
+        if (tuples == null || tuples.isEmpty()) {
+            return "Page is Empty";
+        }
         StringBuilder returnString = new StringBuilder();
         for (Object tuple : tuples) {
             returnString.append(tuple.toString());
