@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Hashtable;
 
 public class Table implements Serializable {
     String[] fileNames;//pages
@@ -13,7 +14,7 @@ public class Table implements Serializable {
     Page currentPage;
 
     //store relevant info about pages and serialize it
-    public Table( String tableName, String[] columnName, String[] columnType, boolean[] clusteringKey, String[] indexName, String[] indexType){
+    public Table(String tableName, Hashtable<String,String> ColNameType, boolean[] clusteringKey, String[] indexName, String[] indexType){
         //writeMetadataToCSV();
             CSVWriter writer = new CSVWriter(DBApp.outputFile, CSVWriter.DEFAULT_SEPARATOR, CSVWriter.NO_QUOTE_CHARACTER,
                     CSVWriter.DEFAULT_ESCAPE_CHARACTER, CSVWriter.RFC4180_LINE_END);

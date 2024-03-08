@@ -41,18 +41,36 @@ public class DBApp {
 		}
 	}
 
+
+
+
+
 	// following method creates one table only
-	// strClusteringKeyColumn is the name of the column that will be the primary
-	// key and the clustering column as well. The data type of that column will
-	// be passed in htblColNameType
-	// htblColNameValue will have the column name as key and the data 
-	// type as value
+	// strClusteringKeyColumn is the name of the column that will be the primary key and the clustering column as well.
+	// The data type of that column will be passed in htblColNameType
+	// htblColNameValue will have the column name as key and the data type as value
+
+
 	public void createTable(String strTableName, 
 							String strClusteringKeyColumn,  
 							Hashtable<String,String> htblColNameType) throws DBAppException{
-								
+
+		Table t = new Table(strTableName, );
 		throw new DBAppException("not implemented yet");
 	}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 	// following method creates a B+tree index 
