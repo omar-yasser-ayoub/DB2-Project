@@ -6,21 +6,22 @@ import java.util.Vector;
 
 public class Page implements Serializable {
 
-    static int pageCount = 0;
-    Vector<Tuple> tuples;
+    int pageNum;
+    Vector<Tuple> tuples = new Vector<>();
     Table parentTable;
     int numOfRows;
 
     /**
      * Constructor for the Page class
      * @param parentTable The table that the page is a part of
-     * @param numOfRows The number of rows that the page can hold
+     * @param pageNum The identifying number of the page
      */
-    public Page(Table parentTable, int numOfRows) throws DBAppException {
+    public Page(Table parentTable, int pageNum) throws DBAppException {
         this.parentTable = parentTable;
+        this.pageNum = pageNum;
 
         Properties prop = new Properties();
-        String fileName = "app.config";
+        String fileName = "src/main/java/org/example/resources/DBApp.config";
         try (InputStream input = new FileInputStream(fileName)) {
             prop.load(input);
             this.numOfRows = Integer.parseInt(prop.getProperty("MaximumRowsCountinPage"));
@@ -33,10 +34,17 @@ public class Page implements Serializable {
     /**
      * Attempts to insert into the Page instance and returns whether the insertion was successful
      * @param tuple The tuple to be inserted into the page
-     * @return True if the tuple was inserted successfully, false otherwise
+     * @return true if the tuple was inserted successfully, false otherwise
      */
     public boolean insertIntoPage(Tuple tuple){
-        return true;
+        if (tuples == null) {
+            tuples = new Vector<>();
+        }
+        if (tuples.size() < numOfRows) {
+            tuples.add(tuple);
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -45,10 +53,9 @@ public class Page implements Serializable {
      */
     public void serializePage() throws DBAppException {
         createSerializedDirectory();
-        String fileName = "data/serialized_pages/" + parentTable.tableName + pageCount + ".ser";
+        String fileName = "data/serialized_pages/" + parentTable.tableName + pageNum + ".ser";
         try (FileOutputStream fileOut = new FileOutputStream(fileName); ObjectOutputStream objOut = new ObjectOutputStream(fileOut)) {
             objOut.writeObject(this);
-            pageCount++;
         } catch (IOException e) {
             throw new DBAppException(e.getMessage());
         }
@@ -80,7 +87,9 @@ public class Page implements Serializable {
         StringBuilder returnString = new StringBuilder();
         for (Object tuple : tuples) {
             returnString.append(tuple.toString());
+            returnString.append(",");
         }
+        returnString.deleteCharAt(returnString.length() - 1);
         return returnString.toString();
     }
 }

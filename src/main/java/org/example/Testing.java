@@ -51,7 +51,72 @@ public class Testing {
         System.out.println(t);
     }
 
+    private static void insertIntoTableTest() throws DBAppException {
+        DBApp dbApp = new DBApp();
+        dbApp.init();
+        Table table1 = createTestTable();
+
+        //valid tuple
+        Tuple t = new Tuple();
+        t.insert("ID", 1);
+        t.insert("Name", "CityShop");
+        t.insert("Number", 123456);
+        t.insert("Specialisation", "Grocery");
+        t.insert("Address", "Cairo");
+        table1.insertToTable(t);
+
+        Tuple t2 = new Tuple();
+        t2.insert("ID", 2);
+        t2.insert("Name", "CityShop");
+        t2.insert("Number", 123456);
+        t2.insert("Specialisation", "Grocery");
+        t2.insert("Address", "Cairo");
+        table1.insertToTable(t2);
+
+        System.out.println(table1.pages.get(0));
+
+        try {
+            //wrong key
+            Tuple x1 = new Tuple();
+            x1.insert("ID", 2);
+            x1.insert("ShopName", "CityShop");
+            x1.insert("Number", 123456);
+            x1.insert("Specialisation", "Grocery");
+            x1.insert("Address", "Cairo");
+            table1.insertToTable(x1);
+        } catch (DBAppException e) {
+            System.out.println(e.getMessage());
+        }
+
+        try {
+            //wrong type
+            Tuple x2 = new Tuple();
+            x2.insert("ID", 2);
+            x2.insert("Name", 123);
+            x2.insert("Number", 123456);
+            x2.insert("Specialisation", "Grocery");
+            x2.insert("Address", "Cairo");
+            table1.insertToTable(x2);
+        } catch (DBAppException e) {
+            System.out.println(e.getMessage());
+        }
+
+        try {
+            Tuple x3 = new Tuple();
+            x3.insert("ID", 1);
+            x3.insert("Name", "CityShop");
+            x3.insert("Number", 123456);
+            x3.insert("Specialisation", "Grocery");
+            x3.insert("Address", "Cairo");
+            table1.insertToTable(x3);
+        } catch (DBAppException e) {
+            System.out.println(e.getMessage());
+        }
+
+
+    }
+
     public static void main(String[] args) throws DBAppException {
-        tupleTest();
+        insertIntoTableTest();
     }
 }
