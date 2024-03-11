@@ -7,6 +7,9 @@ public class Tuple implements java.io.Serializable {
     public Tuple() {
         values = new Hashtable<>();
     }
+    public Hashtable<Object, Object> getValues() {
+        return values;
+    }
     public void insert(Object key, Object value) throws DBAppException {
         try {
             values.put(key, value);
