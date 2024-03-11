@@ -2,25 +2,23 @@ package org.example;
 
 import com.opencsv.CSVWriter;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.Hashtable;
 import java.util.Enumeration;
+import java.util.Vector;
 
 public class Table implements Serializable {
     String tableName;
-    Hashtable<String,String> ColNameType;
+    Hashtable<String,String> colNameType;
     String clusteringKey;
     Hashtable<String, String> indicesColNameType;
+    Vector<Page> pages;
     Page currentPage;
 
-    //store relevant info about pages and serialize it
     public Table(String tableName, String clusteringKey, Hashtable<String,String> colNameType){
 
         this.tableName = tableName;
-        this.ColNameType = colNameType;
+        this.colNameType = colNameType;
         this.clusteringKey = clusteringKey;
 
         CSVWriter writer = new CSVWriter(DBApp.outputFile, CSVWriter.DEFAULT_SEPARATOR, CSVWriter.NO_QUOTE_CHARACTER,
@@ -41,7 +39,7 @@ public class Table implements Serializable {
     public void createPage(){
         //when inserting
     }
-    public void AddToPage(Tuple tuple){
+    public void addToPage(Tuple tuple){
         //insert and update index
         //boolean isInsertCorrectly = currentPage.insert(tuple);
         //if (!isInsertCorrectly){
@@ -55,6 +53,6 @@ public class Table implements Serializable {
         //create Index
     }
     public void updateIndex(){
-
+        //update index
     }
 }

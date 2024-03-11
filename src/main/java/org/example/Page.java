@@ -1,6 +1,7 @@
 package org.example;
 
 import java.io.*;
+import java.util.Properties;
 import java.util.Vector;
 
 public class Page implements Serializable {
@@ -15,9 +16,18 @@ public class Page implements Serializable {
      * @param parentTable The table that the page is a part of
      * @param numOfRows The number of rows that the page can hold
      */
-    public Page(Table parentTable, int numOfRows) {
+    public Page(Table parentTable, int numOfRows) throws DBAppException {
         this.parentTable = parentTable;
-        this.numOfRows = numOfRows;
+
+        Properties prop = new Properties();
+        String fileName = "app.config";
+        try (InputStream input = new FileInputStream(fileName)) {
+            prop.load(input);
+            this.numOfRows = Integer.parseInt(prop.getProperty("MaximumRowsCountinPage"));
+        }
+        catch (IOException e) {
+            throw new DBAppException(e.getMessage());
+        }
     }
 
     /**
