@@ -1,47 +1,41 @@
 package org.example;
 
-import java.util.Vector;
+import java.util.Hashtable;
 
 public class Tuple implements java.io.Serializable {
-    private Vector<Object> values;
+    private Hashtable<Object, Object> values;
     public Tuple() {
-        values = new Vector<>();
+        values = new Hashtable<>();
     }
-    public void insert(Object e) {
+    public void insert(Object key, Object value) throws DBAppException {
         try {
-            values.add(e);
-        } catch (NullPointerException ex) {
-            System.out.println("Cannot insert null element: " + ex.getMessage());
-        } catch (IllegalArgumentException ex) {
-            System.out.println("Invalid argument: " + ex.getMessage());
-        } catch (UnsupportedOperationException ex) {
-            System.out.println("Operation not supported: " + ex.getMessage());
-        } catch (ClassCastException ex) {
-            System.out.println("Incompatible types: " + ex.getMessage());
-        } catch (IndexOutOfBoundsException ex) {
-            System.out.println("Index out of bounds: " + ex.getMessage());
+            values.put(key, value);
+        } catch (Exception ex) {
+            throw new DBAppException(ex.getMessage());
         }
     }
-    public void remove(int index) {
-        if (index >= 0 && index < values.size()) {
-            values.remove(index);
-        } else {
-            throw new IndexOutOfBoundsException("Index " + index + " out of bounds for list of size " + values.size());
+    public void remove(Object key) throws DBAppException {
+        try {
+            values.remove(key);
+        } catch (Exception ex) {
+            throw new DBAppException(ex.getMessage());
         }
     }
-    public void replace(int index, Object value) {
-        if (index >= 0 && index < values.size()) {
-            values.remove(index);
-            values.add(index, value);
-        } else {
-            throw new IndexOutOfBoundsException("Index " + index + " out of bounds for list of size " + values.size());
+    public void replace(Object key, Object value) throws DBAppException {
+        try {
+            values.remove(key);
+            values.put(key, value);
+        } catch (Exception ex) {
+            throw new DBAppException(ex.getMessage());
         }
     }
     public String toString() {
         StringBuilder returnString = new StringBuilder();
-        for (Object value : values) {
-            returnString.append(String.valueOf(value));
+        for (Object key : values.keySet()) {
+            returnString.append(String.valueOf(this.values.get(key)));
+            returnString.append(",");
         }
+        returnString.deleteCharAt(returnString.length() - 1);
         return returnString.toString();
     }
 }

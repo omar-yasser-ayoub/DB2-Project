@@ -39,8 +39,19 @@ public class Testing {
         return new Table("CityShop", clusteringKey, ht);
     }
 
+    private static void tupleTest() throws DBAppException {
+        Tuple t = new Tuple();
+        t.insert("ID", 1);
+        t.insert("Name", "CityShop");
+        t.insert("Number", 123456);
+        t.insert("Specialisation", "Grocery");
+        t.insert("Address", "Cairo");
+        t.remove("Address");
+        t.replace("Specialisation", "Grocery Store");
+        System.out.println(t);
+    }
+
     public static void main(String[] args) throws DBAppException {
-        serializingTest();
-        deserializingTest();
+        tupleTest();
     }
 }
