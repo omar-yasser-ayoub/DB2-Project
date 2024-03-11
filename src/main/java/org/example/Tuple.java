@@ -2,7 +2,7 @@ package org.example;
 
 import java.util.Vector;
 
-public class Tuple {
+public class Tuple implements java.io.Serializable {
     private Vector<Object> values;
     public Tuple() {
         values = new Vector<>();

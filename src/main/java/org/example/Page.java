@@ -5,7 +5,7 @@ import java.util.Vector;
 
 public class Page implements Serializable {
 
-    static int PAGE_COUNT = 0;
+    static int pageCount = 0;
     Vector<Tuple> tuples;
     Table parentTable;
     int numOfRows;
@@ -34,9 +34,18 @@ public class Page implements Serializable {
      * @throws DBAppException If an error occurs during serialization
      */
     public void serializePage() throws DBAppException {
-        String directoryPath = "data/serialized_pages";
-        String fileName = "data/serialized_pages/page" + PAGE_COUNT + ".ser";
+        createSerializedDirectory();
+        String fileName = "data/serialized_pages/" + parentTable.tableName + pageCount + ".ser";
+        try (FileOutputStream fileOut = new FileOutputStream(fileName); ObjectOutputStream objOut = new ObjectOutputStream(fileOut)) {
+            objOut.writeObject(this);
+            pageCount++;
+        } catch (IOException e) {
+            throw new DBAppException(e.getMessage());
+        }
+    }
 
+    private static void createSerializedDirectory() throws DBAppException {
+        String directoryPath = "data/serialized_pages";
         File directory = new File(directoryPath);
         if (!directory.exists()) {
             boolean created = directory.mkdirs();
@@ -44,35 +53,14 @@ public class Page implements Serializable {
                 throw new DBAppException("Failed to create directory: " + directoryPath);
             }
         }
-
-        try {
-            FileOutputStream fileOut = new FileOutputStream(fileName);
-            ObjectOutputStream objOut = new ObjectOutputStream(fileOut);
-            objOut.writeObject(this);
-
-            objOut.flush();
-            objOut.close();
-            PAGE_COUNT++;
-        } catch (IOException e) {
-            throw new DBAppException(e.getMessage());
-        }
     }
 
-    public static Page deserializePage(String FileName) throws DBAppException{
-
-        try {
-            FileInputStream FileIn = new FileInputStream(FileName);
-            ObjectInputStream ObjIn = new ObjectInputStream(FileIn);
-            Page p = (Page) ObjIn.readObject();
-            ObjIn.close();
-            return p;
-        } catch (IOException e) {
-            throw new DBAppException(e.getMessage());
-        } catch (ClassNotFoundException e) {
+    public static Page deserializePage(String fileName) throws DBAppException {
+        try (FileInputStream fileIn = new FileInputStream(fileName); ObjectInputStream objIn = new ObjectInputStream(fileIn)) {
+            return  (Page) objIn.readObject();
+        } catch (IOException | ClassNotFoundException e) {
             throw new DBAppException(e.getMessage());
         }
-
-
     }
 
     public String toString() {
