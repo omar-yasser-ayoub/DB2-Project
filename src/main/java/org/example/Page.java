@@ -1,32 +1,50 @@
 package org.example;
 
 import java.io.*;
+import java.util.Properties;
 import java.util.Vector;
 
 public class Page implements Serializable {
 
-    static int PAGE_COUNT = 0;
-    Vector<Tuple> tuples;
+    int pageNum;
+    Vector<Tuple> tuples = new Vector<>();
     Table parentTable;
     int numOfRows;
 
     /**
      * Constructor for the Page class
      * @param parentTable The table that the page is a part of
-     * @param numOfRows The number of rows that the page can hold
+     * @param pageNum The identifying number of the page
      */
-    public Page(Table parentTable, int numOfRows) {
+    public Page(Table parentTable, int pageNum) throws DBAppException {
         this.parentTable = parentTable;
-        this.numOfRows = numOfRows;
+        this.pageNum = pageNum;
+
+        Properties prop = new Properties();
+        String fileName = "src/main/java/org/example/resources/DBApp.config";
+        try (InputStream input = new FileInputStream(fileName)) {
+            prop.load(input);
+            this.numOfRows = Integer.parseInt(prop.getProperty("MaximumRowsCountinPage"));
+        }
+        catch (IOException e) {
+            throw new DBAppException(e.getMessage());
+        }
     }
 
     /**
      * Attempts to insert into the Page instance and returns whether the insertion was successful
      * @param tuple The tuple to be inserted into the page
-     * @return True if the tuple was inserted successfully, false otherwise
+     * @return true if the tuple was inserted successfully, false otherwise
      */
     public boolean insertIntoPage(Tuple tuple){
-        return true;
+        if (tuples == null) {
+            tuples = new Vector<>();
+        }
+        if (tuples.size() < numOfRows) {
+            tuples.add(tuple);
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -34,9 +52,17 @@ public class Page implements Serializable {
      * @throws DBAppException If an error occurs during serialization
      */
     public void serializePage() throws DBAppException {
-        String directoryPath = "data/serialized_pages";
-        String fileName = "data/serialized_pages/page" + PAGE_COUNT + ".ser";
+        createSerializedDirectory();
+        String fileName = "data/serialized_pages/" + parentTable.tableName + pageNum + ".ser";
+        try (FileOutputStream fileOut = new FileOutputStream(fileName); ObjectOutputStream objOut = new ObjectOutputStream(fileOut)) {
+            objOut.writeObject(this);
+        } catch (IOException e) {
+            throw new DBAppException(e.getMessage());
+        }
+    }
 
+    private static void createSerializedDirectory() throws DBAppException {
+        String directoryPath = "data/serialized_pages";
         File directory = new File(directoryPath);
         if (!directory.exists()) {
             boolean created = directory.mkdirs();
@@ -44,35 +70,14 @@ public class Page implements Serializable {
                 throw new DBAppException("Failed to create directory: " + directoryPath);
             }
         }
-
-        try {
-            FileOutputStream fileOut = new FileOutputStream(fileName);
-            ObjectOutputStream objOut = new ObjectOutputStream(fileOut);
-            objOut.writeObject(this);
-
-            objOut.flush();
-            objOut.close();
-            PAGE_COUNT++;
-        } catch (IOException e) {
-            throw new DBAppException(e.getMessage());
-        }
     }
 
-    public static Page deserializePage(String FileName) throws DBAppException{
-
-        try {
-            FileInputStream FileIn = new FileInputStream(FileName);
-            ObjectInputStream ObjIn = new ObjectInputStream(FileIn);
-            Page p = (Page) ObjIn.readObject();
-            ObjIn.close();
-            return p;
-        } catch (IOException e) {
-            throw new DBAppException(e.getMessage());
-        } catch (ClassNotFoundException e) {
+    public static Page deserializePage(String fileName) throws DBAppException {
+        try (FileInputStream fileIn = new FileInputStream(fileName); ObjectInputStream objIn = new ObjectInputStream(fileIn)) {
+            return  (Page) objIn.readObject();
+        } catch (IOException | ClassNotFoundException e) {
             throw new DBAppException(e.getMessage());
         }
-
-
     }
 
     public String toString() {
@@ -82,7 +87,9 @@ public class Page implements Serializable {
         StringBuilder returnString = new StringBuilder();
         for (Object tuple : tuples) {
             returnString.append(tuple.toString());
+            returnString.append(",");
         }
+        returnString.deleteCharAt(returnString.length() - 1);
         return returnString.toString();
     }
 }
