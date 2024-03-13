@@ -1,50 +1,59 @@
 package org.example;
 
 import java.io.*;
-import java.util.Properties;
 import java.util.Vector;
 
 public class Page implements Serializable {
 
     int pageNum;
-    Vector<Tuple> tuples = new Vector<>();
+    Vector<Tuple> tuples;
     Table parentTable;
-    int numOfRows;
 
     /**
      * Constructor for the Page class
      * @param parentTable The table that the page is a part of
      * @param pageNum The identifying number of the page
      */
-    public Page(Table parentTable, int pageNum) throws DBAppException {
+    public Page(Table parentTable, int pageNum){
         this.parentTable = parentTable;
         this.pageNum = pageNum;
-
-        Properties prop = new Properties();
-        String fileName = "src/main/java/org/example/resources/DBApp.config";
-        try (InputStream input = new FileInputStream(fileName)) {
-            prop.load(input);
-            this.numOfRows = Integer.parseInt(prop.getProperty("MaximumRowsCountinPage"));
-        }
-        catch (IOException e) {
-            throw new DBAppException(e.getMessage());
-        }
+        this.tuples = new Vector<>();
     }
 
+    //TODO: Implement binary search
     /**
-     * Attempts to insert into the Page instance and returns whether the insertion was successful
+     * Attempts to insert into the Page instance
      * @param tuple The tuple to be inserted into the page
-     * @return true if the tuple was inserted successfully, false otherwise
+     * @return Overflowing tuple if the page is full
      */
-    public boolean insertIntoPage(Tuple tuple){
-        if (tuples == null) {
-            tuples = new Vector<>();
+    public Tuple insertIntoPage(Tuple tuple){
+        String clusteringKey = parentTable.clusteringKey;
+        Comparable<Object> clusteringKeyValue = (Comparable<Object>) tuple.getValues().get(clusteringKey);
+
+        if (tuples.size() <= DBApp.maxRowCount) {
+            if(tuples.isEmpty()){
+                tuples.add(tuple);
+                return null;
+            }
+            for (int i = 0; i < tuples.size(); i++) {
+                Comparable<Object> currentClusteringKeyValue = (Comparable<Object>) tuples.get(i).getValues().get(clusteringKey);
+                if (clusteringKeyValue.compareTo(currentClusteringKeyValue) < 0){
+                    tuples.add(i, tuple);
+                    break;
+                }
+                if (clusteringKeyValue.compareTo(currentClusteringKeyValue) > 0 && i == tuples.size()-1){
+                    tuples.add(i+1, tuple);
+                    break;
+                }
+            }
         }
-        if (tuples.size() < numOfRows) {
-            tuples.add(tuple);
-            return true;
+        else {
+            return tuple;
         }
-        return false;
+        if (tuples.size() > DBApp.maxRowCount){
+            return tuples.remove(tuples.size() - 1);
+        }
+        return null;
     }
 
     /**

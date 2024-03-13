@@ -3,28 +3,31 @@ package org.example;
 import java.util.Hashtable;
 
 public class Tuple implements java.io.Serializable {
-    private Hashtable<Object, Object> values;
+    private Hashtable<String, Object> values;
     public Tuple() {
         values = new Hashtable<>();
     }
-    public Hashtable<Object, Object> getValues() {
+    public Tuple(Hashtable<String, Object> values) {
+        this.values = values;
+    }
+    public Hashtable<String, Object> getValues() {
         return values;
     }
-    public void insert(Object key, Object value) throws DBAppException {
+    public void insert(String key, Object value) throws DBAppException {
         try {
             values.put(key, value);
         } catch (Exception ex) {
             throw new DBAppException(ex.getMessage());
         }
     }
-    public void remove(Object key) throws DBAppException {
+    public void remove(String key) throws DBAppException {
         try {
             values.remove(key);
         } catch (Exception ex) {
             throw new DBAppException(ex.getMessage());
         }
     }
-    public void replace(Object key, Object value) throws DBAppException {
+    public void replace(String key, Object value) throws DBAppException {
         try {
             values.remove(key);
             values.put(key, value);

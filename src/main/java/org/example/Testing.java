@@ -23,10 +23,10 @@ public class Testing {
     private static void deserializingTest() throws DBAppException {
         Page p1 = deserializePage("data/serialized_pages/CityShop0.ser");
         System.out.println("Page 1 deserialized");
-        System.out.println(p1.numOfRows);
+        System.out.println(p1.pageNum);
         Page p2 = deserializePage("data/serialized_pages/CityShop1.ser");
         System.out.println("Page 2 deserialized");
-        System.out.println(p2.numOfRows);    }
+        System.out.println(p2.pageNum);    }
 
     private static Table createTestTable() {
         String[] colNames = {"ID", "Name", "Number", "Specialisation", "Address"};
@@ -63,7 +63,15 @@ public class Testing {
         t.insert("Number", 123456);
         t.insert("Specialisation", "Grocery");
         t.insert("Address", "Cairo");
-        table1.insertToTable(t);
+        table1.insertIntoTable(t);
+
+        Tuple t3 = new Tuple();
+        t3.insert("ID", 3);
+        t3.insert("Name", "CityShop");
+        t3.insert("Number", 123456);
+        t3.insert("Specialisation", "Grocery");
+        t3.insert("Address", "Cairo");
+        table1.insertIntoTable(t3);
 
         Tuple t2 = new Tuple();
         t2.insert("ID", 2);
@@ -71,9 +79,10 @@ public class Testing {
         t2.insert("Number", 123456);
         t2.insert("Specialisation", "Grocery");
         t2.insert("Address", "Cairo");
-        table1.insertToTable(t2);
+        table1.insertIntoTable(t2);
 
         System.out.println(table1.pages.get(0));
+        System.out.println(table1.pages.get(1));
 
         try {
             //wrong key
@@ -83,7 +92,7 @@ public class Testing {
             x1.insert("Number", 123456);
             x1.insert("Specialisation", "Grocery");
             x1.insert("Address", "Cairo");
-            table1.insertToTable(x1);
+            table1.insertIntoTable(x1);
         } catch (DBAppException e) {
             System.out.println(e.getMessage());
         }
@@ -96,7 +105,7 @@ public class Testing {
             x2.insert("Number", 123456);
             x2.insert("Specialisation", "Grocery");
             x2.insert("Address", "Cairo");
-            table1.insertToTable(x2);
+            table1.insertIntoTable(x2);
         } catch (DBAppException e) {
             System.out.println(e.getMessage());
         }
@@ -108,7 +117,7 @@ public class Testing {
             x3.insert("Number", 123456);
             x3.insert("Specialisation", "Grocery");
             x3.insert("Address", "Cairo");
-            table1.insertToTable(x3);
+            table1.insertIntoTable(x3);
         } catch (DBAppException e) {
             System.out.println(e.getMessage());
         }

@@ -3,9 +3,7 @@ package org.example;
 import com.opencsv.CSVWriter;
 
 import java.io.Serializable;
-import java.util.Hashtable;
-import java.util.Enumeration;
-import java.util.Vector;
+import java.util.*;
 
 public class Table implements Serializable {
     String tableName;
@@ -35,34 +33,82 @@ public class Table implements Serializable {
             writer.writeNext(info);
         }
     }
-    public void createPage() throws DBAppException {
+
+    /**
+     * Creates a new page and adds it to the table, sorting all other tables by the clustering key
+     * @return The newly created page
+     */
+    public Page createPage() throws DBAppException {
         int pageNum = pages.size();
         Page newPage = new Page(this, pageNum);
         pages.add(newPage);
+        return newPage;
     }
-    public void insertToTable(Tuple tuple) throws DBAppException {
+    public Page createPage(Tuple tuple) throws DBAppException {
+        int pageNum = pages.size();
+        Page newPage = new Page(this, pageNum);
+        pages.add(newPage);
+        newPage.insertIntoPage(tuple);
+        sortPages();
+        return newPage;
+    }
+    private void sortPages() {
+        Collections.sort(pages, new Comparator<Page>() {
+            @Override
+            public int compare(Page p1, Page p2) {
+                Tuple t1 = p1.tuples.get(0);
+                Tuple t2 = p2.tuples.get(0);
+                Comparable<Object> key1 = (Comparable<Object>) t1.getValues().get(clusteringKey);
+                Comparable<Object> key2 = (Comparable<Object>) t2.getValues().get(clusteringKey);
+                return key1.compareTo(key2);
+            }
+        });
+    }
+    public void insertIntoTable(Tuple tuple) throws DBAppException {
+        isValidTuple(tuple);
+
         if(pages.isEmpty()){
             createPage();
         }
-        isValidTuple(tuple);
 
-        //TODO: Implement proper logic for finding the correct page to insert into
-        pages.lastElement().insertIntoPage(tuple);
-        //insert and update index
-        //boolean isInsertCorrectly = currentPage.insert(tuple);
-        //if (!isInsertCorrectly){
-        //AddToPage(newPage);
-        //logic for sorting
-        //}
-
+        Tuple overflowTuple = insertIntoCorrectPage(tuple);
+        if (overflowTuple != null){
+            createPage(overflowTuple);
+        }
     }
 
-    private void findPageToInsert(Tuple tuple){
-        //binary search
+    //TODO: Implement binary search
+
+    /**
+     * Finds the correct page to insert the tuple into so that the table is sorted by the clustering key
+     * @param tuple The tuple to be inserted into the page
+     * @return Overflowing tuple if the page is full
+     */
+    private Tuple insertIntoCorrectPage(Tuple tuple){
+        String clusteringKey = this.clusteringKey;
+        Comparable<Object> clusteringKeyValue = (Comparable<Object>) tuple.getValues().get(clusteringKey);
+
+        for (Page page : pages){
+            for (int i = 0; i < pages.size(); i++){
+                if (page.tuples.isEmpty()){
+                    return page.insertIntoPage(tuple);
+                }
+                Tuple firstTuple = page.tuples.get(0);
+                Comparable<Object> firstClusteringKeyValue = (Comparable<Object>) firstTuple.getValues().get(clusteringKey);
+                if(i == pages.size()-1){
+                    return pages.get(i).insertIntoPage(tuple);
+                }
+                if (clusteringKeyValue.compareTo(firstClusteringKeyValue) > 0){
+                    return pages.get(i-1).insertIntoPage(tuple);
+                }
+            }
+        }
+
+        return null;
     }
 
     private boolean isValidTuple(Tuple tuple) throws DBAppException {
-        Hashtable<Object, Object> values = tuple.getValues();
+        Hashtable<String, Object> values = tuple.getValues();
         for (Object key : values.keySet()){
             //check if key is in colNameType
             if (!colNameType.containsKey(key)){
@@ -89,7 +135,7 @@ public class Table implements Serializable {
     private boolean tupleHasNoDuplicateClusteringKey(Object key, Object value){
         for (Page page : pages){
             if (page.tuples.isEmpty()){
-                return true;
+                continue;
             }
             for (Tuple tuple : page.tuples){
                 if (tuple.getValues().get(key).equals(value)){
