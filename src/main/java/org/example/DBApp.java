@@ -3,16 +3,16 @@
 package org.example;
 import com.opencsv.CSVWriter;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.Iterator;
 import java.util.Hashtable;
+import java.util.Properties;
 
 
 public class DBApp {
 
 	public static FileWriter outputFile;
+	public static int maxRowCount;
 	static CSVWriter writer;
 
 
@@ -24,6 +24,11 @@ public class DBApp {
 	// or leave it empty if there is no code you want to 
 	// execute at application startup 
 	public void init( ){
+		initMaxRowCount();
+		initFileWriter();
+	}
+
+	private static void initFileWriter() {
 		try {
 			// creating file and writer
 			outputFile = new FileWriter("src/main/java/org/example/resources/metadata.csv");
@@ -41,8 +46,17 @@ public class DBApp {
 		}
 	}
 
-
-
+	private static void initMaxRowCount(){
+		Properties prop = new Properties();
+		String fileName = "src/main/java/org/example/resources/DBApp.config";
+		try (InputStream input = new FileInputStream(fileName)) {
+			prop.load(input);
+			maxRowCount = Integer.parseInt(prop.getProperty("MaximumRowsCountinPage"));
+		}
+		catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 
 
 	// following method creates one table only
@@ -87,7 +101,9 @@ public class DBApp {
 	public void insertIntoTable(String strTableName, 
 								Hashtable<String,Object>  htblColNameValue) throws DBAppException{
 	
-		throw new DBAppException("not implemented yet");
+		Tuple tuple = new Tuple(htblColNameValue);
+		//TODO: Load table from disk
+		//Table table = loadTableFromCSV(strTableName);
 	}
 
 
