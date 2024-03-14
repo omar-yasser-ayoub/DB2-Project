@@ -1,6 +1,7 @@
 
 /** * @author Wael Abouelsaadat */
 package org.example;
+import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
 
 import java.io.*;
@@ -139,7 +140,6 @@ public class DBApp {
 
 	public static void main( String[] args ){
 	try{
-			String strTableName = "Student";
 			DBApp dbApp = new DBApp();
 			dbApp.init();
 
@@ -155,6 +155,10 @@ public class DBApp {
 			Table test = new Table("CityShop", clusteringKey, ht);
 			Table test2 = new Table("CityShop2", clusteringKey, ht);
 
+			SQLTerm[] arrSQLTerms = new SQLTerm[5];
+			arrSQLTerms[0] = new SQLTerm("CityShop", "Name", "=", "John Noor");
+
+//			String strTableName = "Student";
 //			Hashtable htblColNameType = new Hashtable( );
 //			htblColNameType.put("id", "java.lang.Integer");
 //			htblColNameType.put("name", "java.lang.String");

@@ -1,12 +1,17 @@
 package org.example;
 
+import com.opencsv.CSVWriter;
+import com.opencsv.exceptions.CsvException;
+import com.opencsv.exceptions.CsvValidationException;
+
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Hashtable;
 
 import static org.example.Page.deserializePage;
 
 public class Testing {
     public static void serializingTest() throws DBAppException {
-
         DBApp dbApp = new DBApp();
         dbApp.init();
 
@@ -18,15 +23,16 @@ public class Testing {
         System.out.println("Page 1 serialized");
         page2.serializePage();
         System.out.println("Page 2 serialized");
-
     }
+
     private static void deserializingTest() throws DBAppException {
         Page p1 = deserializePage("data/serialized_pages/CityShop0.ser");
         System.out.println("Page 1 deserialized");
         System.out.println(p1.pageNum);
         Page p2 = deserializePage("data/serialized_pages/CityShop1.ser");
         System.out.println("Page 2 deserialized");
-        System.out.println(p2.pageNum);    }
+        System.out.println(p2.pageNum);
+    }
 
     private static Table createTestTable() {
         String[] colNames = {"ID", "Name", "Number", "Specialisation", "Address"};
@@ -121,11 +127,44 @@ public class Testing {
         } catch (DBAppException e) {
             System.out.println(e.getMessage());
         }
-
-
     }
 
-    public static void main(String[] args) throws DBAppException {
-        insertIntoTableTest();
+    private static void sqlTermTest() throws DBAppException, IOException {
+        SQLTerm[] arrSQLTerms = new SQLTerm[5];
+
+        // valid
+        arrSQLTerms[0] = new SQLTerm("CityShop", "Name", "=", "John Noor");
+
+        // table doesn't exist
+        try {
+            arrSQLTerms[1] = new SQLTerm("Something", "Name", "=", "John Noor");
+        } catch (DBAppException e) {
+            System.out.println(e.getMessage());
+        }
+
+        // column doesn't exist
+        try {
+            arrSQLTerms[2] = new SQLTerm("CityShop", "Something", "=", "John Noor");
+        } catch (DBAppException e) {
+            System.out.println(e.getMessage());
+        }
+
+        // object datatype doesn't match column datatype
+        try {
+            arrSQLTerms[3] = new SQLTerm("CityShop", "Name", "=", Integer.valueOf(2));
+        } catch (DBAppException e) {
+            System.out.println(e.getMessage());
+        }
+
+        // illegal operator
+        try {
+            arrSQLTerms[4] = new SQLTerm("CityShop", "Name", "=>", "John Noor");
+        } catch (DBAppException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    public static void main(String[] args) throws DBAppException, IOException {
+        sqlTermTest();
     }
 }
