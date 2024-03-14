@@ -56,6 +56,29 @@ public class Page implements Serializable {
         return null;
     }
 
+    public int deleteFromPage(Tuple tuple) throws DBAppException {
+        String clusteringKey = parentTable.clusteringKey;
+        Comparable<Object> clusteringKeyValue = (Comparable<Object>) tuple.getValues().get(clusteringKey);
+
+        for (int i = 0; i < tuples.size(); i++){
+            Comparable<Object> currentClusteringKeyValue = (Comparable<Object>) tuples.get(i).getValues().get(clusteringKey);
+            if (clusteringKeyValue.compareTo(currentClusteringKeyValue) == 0){
+                tuples.remove(i);
+                if(tuples.isEmpty()) {
+                    return 0;                                    //page empty after deletion, call deletePage
+                } else {
+                    for (int j = i; j < tuples.size(); j++) {
+                        tuples.get(i).insert(clusteringKey, tuples.get(i+1).getValues().get(clusteringKey));
+                        tuples.remove(i+1);
+                        return 1;                                //deleted and shifted
+                    }
+                }
+            }
+        }
+        return 2;                                                //not found
+    }
+
+
     /**
      * Serializes the page object to the disk
      * @throws DBAppException If an error occurs during serialization

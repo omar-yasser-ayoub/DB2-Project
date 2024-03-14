@@ -125,7 +125,51 @@ public class Testing {
 
     }
 
+    private static void deleteFromTableTest() throws DBAppException {
+        DBApp dbApp = new DBApp();
+        dbApp.init();
+        Table table1 = createTestTable();
+
+        //valid tuple
+        Tuple t = new Tuple();
+        t.insert("ID", 1);
+        t.insert("Name", "CityShop");
+        t.insert("Number", 123456);
+        t.insert("Specialisation", "Grocery");
+        t.insert("Address", "Cairo");
+        table1.insertIntoTable(t);
+
+        Tuple t3 = new Tuple();
+        t3.insert("ID", 3);
+        t3.insert("Name", "CityShop");
+        t3.insert("Number", 123456);
+        t3.insert("Specialisation", "Grocery");
+        t3.insert("Address", "Cairo");
+        table1.insertIntoTable(t3);
+
+        Tuple t2 = new Tuple();
+        t2.insert("ID", 2);
+        t2.insert("Name", "CityShop");
+        t2.insert("Number", 123456);
+        t2.insert("Specialisation", "Grocery");
+        t2.insert("Address", "Cairo");
+        table1.insertIntoTable(t2);
+
+        System.out.println(table1.pages.get(0));
+        System.out.println(table1.pages.get(1));
+        try{
+        table1.deleteFromTable(t);
+        } catch (DBAppException e) {
+            System.out.println(e.getMessage());
+        }
+
+        System.out.println(table1.pages.get(0));
+        System.out.println(table1.pages.get(1));
+
+    }
+
     public static void main(String[] args) throws DBAppException {
         insertIntoTableTest();
+        //deleteFromTableTest();
     }
 }

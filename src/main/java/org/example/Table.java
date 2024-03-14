@@ -146,6 +146,38 @@ public class Table implements Serializable {
         return true;
     }
 
+    public void deleteFromTable(Tuple tuple)throws DBAppException {
+        String clusteringKey = this.clusteringKey;
+        Comparable<Object> clusteringKeyValue = (Comparable<Object>) tuple.getValues().get(clusteringKey);
+        int c = -1;
+
+        if (pages.isEmpty()) {
+            throw new DBAppException("Table is already empty");
+        }else{
+            for (Page page : pages){
+                for (int i = 0; i < pages.size(); i++){
+                    Tuple firstTuple = page.tuples.get(0); //FIRST TUPLE OF CURRENT PAGE
+                    Comparable<Object> firstClusteringKeyValue = (Comparable<Object>) firstTuple.getValues().get(clusteringKey); //VALUE OF THAT TUPLE
+                    if (clusteringKeyValue.compareTo(firstClusteringKeyValue) > 0){
+                        c = pages.get(i-1).deleteFromPage(tuple);
+                        switch(c) {
+                            case 0:
+                                pages.remove(i-1);
+                                break;
+                            case 1:
+                                return;
+                            default:
+                                throw new DBAppException("Tuple not Found");
+                        }
+                    }
+                }
+            }
+        }
+
+        return;
+    }
+
+
     public void createIndex(){
         //indexKey as attribute
         //create Index
