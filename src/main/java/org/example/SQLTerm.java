@@ -14,7 +14,7 @@ public class SQLTerm {
 	public String _strTableName,_strColumnName, _strOperator;
 	public Object _objValue;
 
-	public SQLTerm(String strTableName, String strColumnName, String strOperator, Object objValue) throws DBAppException, IOException {
+	public SQLTerm(String strTableName, String strColumnName, String strOperator, Object objValue) throws DBAppException, IOException, CsvValidationException {
 		// get datatype of value
 		String type = "";
 		if (objValue instanceof String) {
@@ -31,13 +31,9 @@ public class SQLTerm {
 			// create a reader
 			CSVReader reader = new CSVReader(new FileReader("src/main/java/org/example/resources/metadata.csv"));
 			String[] line = reader.readNext();
-//			for(int i = 0; i < line.length; i++){
-//				System.out.print(line[i]);
-//			}
-//			System.out.println();
 
 			// exception message stuff
-			String exceptionMsg = "Cannot read file contents (fix this later)";
+			String exceptionMsg = "exceptionMsg";
 			Boolean colInTable = false;
 			Boolean tableExists = false;
 
@@ -67,8 +63,11 @@ public class SQLTerm {
 			if(_strTableName == null)
 				throw new DBAppException(exceptionMsg);
 		}
-		catch (Exception e) {
-			System.out.println(e.getMessage());
+		catch (IOException e) {
+			e.printStackTrace();
+		}
+		catch (CsvValidationException e) {
+			e.printStackTrace();
 		}
 
 		// check if operator is valid

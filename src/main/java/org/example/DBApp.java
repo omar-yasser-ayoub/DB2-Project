@@ -41,7 +41,7 @@ public class DBApp {
 			writer.writeNext(header);
 
 			// closing connection with writer
-			// writer.close();
+			writer.flush();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -68,10 +68,9 @@ public class DBApp {
 
 	public void createTable(String strTableName, 
 							String strClusteringKeyColumn,  
-							Hashtable<String,String> htblColNameType) throws DBAppException{
+							Hashtable<String,String> htblColNameType) throws IOException {
 
 		Table t = new Table(strTableName, strClusteringKeyColumn, htblColNameType);
-		throw new DBAppException("not implemented yet");
 	}
 
 
@@ -150,13 +149,14 @@ public class DBApp {
 				ht.put(colNames[i], colTypes[i]);
 			}
 			String clusteringKey = "ID";
-			String[] indexName = {"IDIndex", null, "NumberIndex", "SpecIndex", "AddrIndex"};
-			String[] indexType = {"B+tree", null, "B+tree", "B+tree", "B+tree"};
-			Table test = new Table("CityShop", clusteringKey, ht);
-			Table test2 = new Table("CityShop2", clusteringKey, ht);
+
+			dbApp.createTable("CityShop", clusteringKey, ht);
+			dbApp.createTable("CityShop2", clusteringKey, ht);
 
 			SQLTerm[] arrSQLTerms = new SQLTerm[5];
 			arrSQLTerms[0] = new SQLTerm("CityShop", "Name", "=", "John Noor");
+
+			Testing.sqlTermTest();
 
 //			String strTableName = "Student";
 //			Hashtable htblColNameType = new Hashtable( );
@@ -216,15 +216,6 @@ public class DBApp {
 		}
 		catch(Exception exp){
 			exp.printStackTrace();
-		}
-		finally {
-			if (writer != null) {
-				try {
-					writer.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
 		}
 	}
 

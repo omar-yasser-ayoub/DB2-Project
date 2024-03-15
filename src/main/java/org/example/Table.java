@@ -2,6 +2,7 @@ package org.example;
 
 import com.opencsv.CSVWriter;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
 
@@ -12,7 +13,7 @@ public class Table implements Serializable {
     Hashtable<String, String> indicesColNameType;
     Vector<Page> pages = new Vector<>();
 
-    public Table(String tableName, String clusteringKey, Hashtable<String,String> colNameType){
+    public Table(String tableName, String clusteringKey, Hashtable<String,String> colNameType) throws IOException {
 
         this.tableName = tableName;
         this.colNameType = colNameType;
@@ -32,6 +33,7 @@ public class Table implements Serializable {
 
             writer.writeNext(info);
         }
+        writer.flush();
     }
 
     /**
