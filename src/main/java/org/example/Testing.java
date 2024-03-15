@@ -87,8 +87,8 @@ public class Testing {
         t2.insert("Address", "Cairo");
         table1.insertIntoTable(t2);
 
-        System.out.println(table1.pages.get(0));
-        System.out.println(table1.pages.get(1));
+        System.out.println(table1.pageNames.get(0));
+        System.out.println(table1.pageNames.get(1));
 
         try {
             //wrong key
@@ -129,42 +129,42 @@ public class Testing {
         }
     }
 
-    public static void sqlTermTest() throws DBAppException, IOException, CsvValidationException {
-        SQLTerm[] arrSQLTerms = new SQLTerm[5];
-
-        // valid
-        arrSQLTerms[0] = new SQLTerm("CityShop", "Name", "=", "John Noor");
-
-        // table doesn't exist
-        try {
-            arrSQLTerms[1] = new SQLTerm("Something", "Name", "=", "John Noor");
-        } catch (DBAppException e) {
-            System.out.println(e.getMessage());
-        }
-
-        // column doesn't exist
-        try {
-            arrSQLTerms[2] = new SQLTerm("CityShop", "Something", "=", "John Noor");
-        } catch (DBAppException e) {
-            System.out.println(e.getMessage());
-        }
-
-        // object datatype doesn't match column datatype
-        try {
-            arrSQLTerms[3] = new SQLTerm("CityShop", "Name", "=", Integer.valueOf(2));
-        } catch (DBAppException e) {
-            System.out.println(e.getMessage());
-        }
-
-        // illegal operator
-        try {
-            arrSQLTerms[4] = new SQLTerm("CityShop", "Name", "=>", "John Noor");
-        } catch (DBAppException e) {
-            System.out.println(e.getMessage());
-        }
-    }
+//    public static void sqlTermTest() throws DBAppException, IOException, CsvValidationException {
+//        SQLTerm[] arrSQLTerms = new SQLTerm[5];
+//
+//        // valid
+//        arrSQLTerms[0] = new SQLTerm("CityShop", "Name", "=", "John Noor");
+//
+//        // table doesn't exist
+//        try {
+//            arrSQLTerms[1] = new SQLTerm("Something", "Name", "=", "John Noor");
+//        } catch (DBAppException e) {
+//            System.out.println(e.getMessage());
+//        }
+//
+//        // column doesn't exist
+//        try {
+//            arrSQLTerms[2] = new SQLTerm("CityShop", "Something", "=", "John Noor");
+//        } catch (DBAppException e) {
+//            System.out.println(e.getMessage());
+//        }
+//
+//        // object datatype doesn't match column datatype
+//        try {
+//            arrSQLTerms[3] = new SQLTerm("CityShop", "Name", "=", Integer.valueOf(2));
+//        } catch (DBAppException e) {
+//            System.out.println(e.getMessage());
+//        }
+//
+//        // illegal operator
+//        try {
+//            arrSQLTerms[4] = new SQLTerm("CityShop", "Name", "=>", "John Noor");
+//        } catch (DBAppException e) {
+//            System.out.println(e.getMessage());
+//        }
+//    }
 
     public static void main(String[] args) throws DBAppException, IOException, CsvValidationException {
-        sqlTermTest();
+        insertIntoTableTest();
     }
 }
