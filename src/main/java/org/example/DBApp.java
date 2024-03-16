@@ -9,6 +9,7 @@ import java.io.*;
 import java.util.Iterator;
 import java.util.Hashtable;
 import java.util.Properties;
+import java.util.Vector;
 
 
 public class DBApp {
@@ -17,7 +18,7 @@ public class DBApp {
 	public static int maxRowCount;
 	static CSVWriter writer;
 
-
+	static Vector<Table> tables = new Vector<Table>();
 	public DBApp( ){
 		
 	}
@@ -81,19 +82,6 @@ public class DBApp {
 	}
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 	// following method creates a B+tree index 
 	public void createIndex(String   strTableName,
 							String   strColName,
@@ -139,7 +127,72 @@ public class DBApp {
 
 	public Iterator selectFromTable(SQLTerm[] arrSQLTerms, 
 									String[]  strarrOperators) throws DBAppException{
-										
+		if (arrSQLTerms.length == 0) {
+			throw new DBAppException("Empty SQL Terms Array");
+		}
+		if (arrSQLTerms.length != strarrOperators.length + 1) {
+			throw new DBAppException("Incompatible Array Lengths (arrSQLTerms should have a length bigger than strarrOperators by 1)");
+		}
+		String TableName = arrSQLTerms[0]._strTableName;
+		for (SQLTerm arrSQLTerm : arrSQLTerms) {
+			if(!arrSQLTerm._strTableName.equals(TableName)) {
+				throw new DBAppException("SQL Terms on different tables are not allowed");
+			}
+			// get datatype of value
+			String type = "";
+			if (arrSQLTerm._objValue instanceof String) {
+				type = "java.lang.String";
+			} else if (arrSQLTerm._objValue instanceof Integer) {
+				type = "java.lang.Integer";
+			} else if (arrSQLTerm._objValue instanceof Double) {
+				type = "java.lang.Double";
+			}
+
+			try {
+				// create a reader
+				CSVReader reader = new CSVReader(new FileReader("src/main/java/org/example/resources/metadata.csv"));
+				String[] line = reader.readNext();
+
+				// exception message stuff
+				String exceptionMsg = "exceptionMsg";
+				Boolean colInTable = false;
+				Boolean tableExists = false;
+				boolean flag = true;
+
+				while ((line = reader.readNext()) != null) {
+					if (arrSQLTerm._strTableName.equals(line[0]) && arrSQLTerm._strColumnName.equals(line[1])) {
+						exceptionMsg = "Object datatype doesn't match column datatype";
+						colInTable = true;
+						tableExists = true;
+					}
+					if (arrSQLTerm._strTableName.equals(line[0]) && !arrSQLTerm._strColumnName.equals(line[1]) && !colInTable) {
+						exceptionMsg = "Column does not exist in table";
+						tableExists = true;
+					}
+					if (!tableExists)
+						exceptionMsg = "Table does not exist";
+
+					// if table exists and contains columns, and the datatype matches the column datatype, assign the values
+					if (arrSQLTerm._strTableName.equals(line[0]) && arrSQLTerm._strColumnName.equals(line[1]) && type.equals(line[2])) {
+						flag = false;
+						break;
+					}
+				}
+				// if values were never assigned, that means condition was never met and exception should be thrown
+				if (flag)
+					throw new DBAppException(exceptionMsg);
+			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (CsvValidationException e) {
+				e.printStackTrace();
+			}
+			if (!(arrSQLTerm._strOperator.equals(">") || arrSQLTerm._strOperator.equals(">=") || arrSQLTerm._strOperator.equals("<") || arrSQLTerm._strOperator.equals("<=") || arrSQLTerm._strOperator.equals("!=") || arrSQLTerm._strOperator.equals("=")))
+				throw new DBAppException("Illegal operator");
+		}
+		for (String strOperator : strarrOperators ) {
+			if (!(strOperator.equals("AND") || strOperator.equals("OR") || strOperator.equals("XOR")))
+				throw new DBAppException("Illegal operator");
+		}
 		return null;
 	}
 
