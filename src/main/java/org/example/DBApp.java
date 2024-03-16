@@ -3,6 +3,7 @@
 package org.example;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
+import com.opencsv.exceptions.CsvValidationException;
 
 import java.io.*;
 import java.util.Iterator;
@@ -31,18 +32,24 @@ public class DBApp {
 
 	private static void initFileWriter() {
 		try {
-			// creating file and writer
-			outputFile = new FileWriter("src/main/java/org/example/resources/metadata.csv");
+			outputFile = new FileWriter("src/main/java/org/example/resources/metadata.csv", true);
 			writer = new CSVWriter(outputFile, CSVWriter.DEFAULT_SEPARATOR, CSVWriter.NO_QUOTE_CHARACTER,
 					CSVWriter.DEFAULT_ESCAPE_CHARACTER, CSVWriter.RFC4180_LINE_END);
 
+			CSVReader reader = new CSVReader(new FileReader("src/main/java/org/example/resources/metadata.csv"));
+			String[] line = reader.readNext();
+
 			// adding headers to start of file
-			String[] header = { "Table Name", "Column Name", "Column Type", "ClusteringKey", "IndexName", "IndexType" };
-			writer.writeNext(header);
+			if(line == null){
+				String[] header = { "Table Name", "Column Name", "Column Type", "ClusteringKey", "IndexName", "IndexType" };
+				writer.writeNext(header);
+			}
 
 			// closing connection with writer
 			writer.flush();
 		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (CsvValidationException e) {
 			e.printStackTrace();
 		}
 	}
@@ -68,7 +75,7 @@ public class DBApp {
 
 	public void createTable(String strTableName, 
 							String strClusteringKeyColumn,  
-							Hashtable<String,String> htblColNameType) throws IOException {
+							Hashtable<String,String> htblColNameType) throws IOException, CsvValidationException, DBAppException {
 
 		Table t = new Table(strTableName, strClusteringKeyColumn, htblColNameType);
 	}
@@ -150,13 +157,13 @@ public class DBApp {
 			}
 			String clusteringKey = "ID";
 
-			dbApp.createTable("CityShop", clusteringKey, ht);
-			dbApp.createTable("CityShop2", clusteringKey, ht);
+			//dbApp.createTable("CityShop", clusteringKey, ht);
+			//dbApp.createTable("CityShop2", clusteringKey, ht);
 
-			SQLTerm[] arrSQLTerms = new SQLTerm[5];
-			arrSQLTerms[0] = new SQLTerm("CityShop", "Name", "=", "John Noor");
+			//SQLTerm[] arrSQLTerms = new SQLTerm[5];
+			//arrSQLTerms[0] = new SQLTerm("CityShop", "Name", "=", "John Noor");
 
-			Testing.sqlTermTest();
+			//Testing.sqlTermTest();
 
 //			String strTableName = "Student";
 //			Hashtable htblColNameType = new Hashtable( );

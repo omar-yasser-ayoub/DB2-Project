@@ -11,7 +11,7 @@ import java.util.Hashtable;
 import static org.example.Page.deserializePage;
 
 public class Testing {
-    public static void serializingTest() throws DBAppException, IOException {
+    public static void serializingTest() throws DBAppException, IOException, CsvValidationException {
         DBApp dbApp = new DBApp();
         dbApp.init();
 
@@ -34,7 +34,7 @@ public class Testing {
         System.out.println(p2.pageNum);
     }
 
-    private static Table createTestTable() throws IOException {
+    private static Table createTestTable() throws IOException, CsvValidationException, DBAppException {
         String[] colNames = {"ID", "Name", "Number", "Specialisation", "Address"};
         String[] colTypes = {"java.lang.Integer", "java.lang.String", "java.lang.Integer", "java.lang.String", "java.lang.String"};
         Hashtable<String, String> ht = new Hashtable<>();
@@ -57,7 +57,7 @@ public class Testing {
         System.out.println(t);
     }
 
-    private static void insertIntoTableTest() throws DBAppException, IOException {
+    private static void insertIntoTableTest() throws DBAppException, IOException, CsvValidationException {
         DBApp dbApp = new DBApp();
         dbApp.init();
         Table table1 = createTestTable();

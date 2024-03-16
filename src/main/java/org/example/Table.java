@@ -1,7 +1,10 @@
 package org.example;
 
+import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
+import com.opencsv.exceptions.CsvValidationException;
 
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
@@ -13,7 +16,15 @@ public class Table implements Serializable {
     Hashtable<String, String> indicesColNameType;
     Vector<Page> pages = new Vector<>();
 
-    public Table(String tableName, String clusteringKey, Hashtable<String,String> colNameType) throws IOException {
+    public Table(String tableName, String clusteringKey, Hashtable<String,String> colNameType) throws IOException, CsvValidationException, DBAppException {
+        CSVReader reader = new CSVReader(new FileReader("src/main/java/org/example/resources/metadata.csv"));
+        String[] line = reader.readNext();
+
+        while((line = reader.readNext()) != null){
+            if(tableName.equals(line[0])){
+                throw new DBAppException("Table already exists");
+            }
+        }
 
         this.tableName = tableName;
         this.colNameType = colNameType;
