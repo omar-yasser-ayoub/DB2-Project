@@ -209,7 +209,7 @@ public class DBApp {
 			SQLTerm[] arrSQLTerms = new SQLTerm[5];
 			arrSQLTerms[0] = new SQLTerm("CityShop", "Name", "=", "John Noor");
 
-			Testing.sqlTermTest();
+			//Testing.sqlTermTest();
 
 //			String strTableName = "Student";
 //			Hashtable htblColNameType = new Hashtable( );
