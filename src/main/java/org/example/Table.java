@@ -172,16 +172,84 @@ public class Table implements Serializable {
             for (Tuple tuple : page.tuples) {
                 switch (Term._strOperator) {
                     case ">":
-                        // Code for the ">" operator
+                        if (Term._objValue instanceof String) {
+                            int value = ((String) tuple.getValues().get(Term._strColumnName)).compareTo((String) Term._objValue);
+                            if (value > 0) {
+                                finalList.add(tuple);
+                            }
+                        }
+                        if (Term._objValue instanceof Integer) {
+                            int value = ((Integer) tuple.getValues().get(Term._strColumnName)).compareTo((Integer) Term._objValue);
+                            if (value > 0) {
+                                finalList.add(tuple);
+                            }
+                        }
+                        if (Term._objValue instanceof Double) {
+                            int value = ((Double) tuple.getValues().get(Term._strColumnName)).compareTo((Double) Term._objValue);
+                            if (value > 0) {
+                                finalList.add(tuple);
+                            }
+                        }
                         break;
                     case ">=":
-                        // Code for the ">=" operator
+                        if (Term._objValue instanceof String) {
+                            int value = ((String) tuple.getValues().get(Term._strColumnName)).compareTo((String) Term._objValue);
+                            if (value > 0 || value == 0) {
+                                finalList.add(tuple);
+                            }
+                        }
+                        if (Term._objValue instanceof Integer) {
+                            int value = ((Integer) tuple.getValues().get(Term._strColumnName)).compareTo((Integer) Term._objValue);
+                            if (value > 0 || value == 0) {
+                                finalList.add(tuple);
+                            }
+                        }
+                        if (Term._objValue instanceof Double) {
+                            int value = ((Double) tuple.getValues().get(Term._strColumnName)).compareTo((Double) Term._objValue);
+                            if (value > 0 || value == 0) {
+                                finalList.add(tuple);
+                            }
+                        }
                         break;
                     case "<":
-                        // Code for the "<" operator
+                        if (Term._objValue instanceof String) {
+                            int value = ((String) tuple.getValues().get(Term._strColumnName)).compareTo((String) Term._objValue);
+                            if (value < 0) {
+                                finalList.add(tuple);
+                            }
+                        }
+                        if (Term._objValue instanceof Integer) {
+                            int value = ((Integer) tuple.getValues().get(Term._strColumnName)).compareTo((Integer) Term._objValue);
+                            if (value < 0) {
+                                finalList.add(tuple);
+                            }
+                        }
+                        if (Term._objValue instanceof Double) {
+                            int value = ((Double) tuple.getValues().get(Term._strColumnName)).compareTo((Double) Term._objValue);
+                            if (value < 0) {
+                                finalList.add(tuple);
+                            }
+                        }
                         break;
                     case "<=":
-                        // Code for the "<=" operator
+                        if (Term._objValue instanceof String) {
+                            int value = ((String) tuple.getValues().get(Term._strColumnName)).compareTo((String) Term._objValue);
+                            if (value < 0 || value == 0) {
+                                finalList.add(tuple);
+                            }
+                        }
+                        if (Term._objValue instanceof Integer) {
+                            int value = ((Integer) tuple.getValues().get(Term._strColumnName)).compareTo((Integer) Term._objValue);
+                            if (value < 0 || value == 0) {
+                                finalList.add(tuple);
+                            }
+                        }
+                        if (Term._objValue instanceof Double) {
+                            int value = ((Double) tuple.getValues().get(Term._strColumnName)).compareTo((Double) Term._objValue);
+                            if (value < 0 || value == 0) {
+                                finalList.add(tuple);
+                            }
+                        }
                         break;
                     case "=":
                         if (tuple.getValues().get(Term._strColumnName).equals(Term._objValue)) {
