@@ -26,10 +26,10 @@ public class Testing {
     }
 
     private static void deserializingTest() throws DBAppException {
-        Page p1 = deserializePage("data/serialized_pages/CityShop0.ser");
+        Page p1 = deserializePage("CityShop0");
         System.out.println("Page 1 deserialized");
         System.out.println(p1.pageNum);
-        Page p2 = deserializePage("data/serialized_pages/CityShop1.ser");
+        Page p2 = deserializePage("CityShop1");
         System.out.println("Page 2 deserialized");
         System.out.println(p2.pageNum);
     }
@@ -87,8 +87,8 @@ public class Testing {
         t2.insert("Address", "Cairo");
         table1.insertIntoTable(t2);
 
-        System.out.println(table1.pageNames.get(0));
-        System.out.println(table1.pageNames.get(1));
+        System.out.println(deserializePage(table1.pageNames.get(0)));
+        System.out.println(deserializePage(table1.pageNames.get(1)));
 
         try {
             //wrong key
@@ -127,6 +127,7 @@ public class Testing {
         } catch (DBAppException e) {
             System.out.println(e.getMessage());
         }
+
     }
 
 //    public static void sqlTermTest() throws DBAppException, IOException, CsvValidationException {

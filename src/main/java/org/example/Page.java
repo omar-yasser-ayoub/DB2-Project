@@ -92,7 +92,8 @@ public class Page implements Serializable {
         }
     }
 
-    public static Page deserializePage(String fileName) throws DBAppException {
+    public static Page deserializePage(String pageName) throws DBAppException {
+        String fileName = "data/serialized_pages/" + pageName + ".ser";
         try (FileInputStream fileIn = new FileInputStream(fileName); ObjectInputStream objIn = new ObjectInputStream(fileIn)) {
             return  (Page) objIn.readObject();
         } catch (IOException | ClassNotFoundException e) {

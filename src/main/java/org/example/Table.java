@@ -42,7 +42,7 @@ public class Table implements Serializable {
     }
 
     /**
-     * Creates a new page and adds it to the table, sorting all other tables by the clustering key
+     * Creates a new page and adds it to the table
      * @return The newly created page
      */
     public Page createPage() throws DBAppException {
@@ -53,27 +53,21 @@ public class Table implements Serializable {
         pageCount++;
         return newPage;
     }
+    /**
+     * Creates a new page with a tuple, and adds it to the table at the specified index
+     * @param tuple The tuple to be inserted into the page
+     * @param index The index at which the page is to be inserted
+     * @return The newly created page
+     */
     public Page createPage(Tuple tuple, int index) throws DBAppException {
         Page newPage = new Page(this, pageCount);
         newPage.serializePage();
         String pageName = tableName + pageCount;
-        pageNames.add(index, pageName);
+        pageNames.add(index + 1, pageName);
         newPage.insertIntoPage(tuple);
-        //sortPages();
         return newPage;
     }
-//    private void sortPages() {
-//        Collections.sort(pages, new Comparator<Page>() {
-//            @Override
-//            public int compare(Page p1, Page p2) {
-//                Tuple t1 = p1.tuples.get(0);
-//                Tuple t2 = p2.tuples.get(0);
-//                Comparable<Object> key1 = (Comparable<Object>) t1.getValues().get(clusteringKey);
-//                Comparable<Object> key2 = (Comparable<Object>) t2.getValues().get(clusteringKey);
-//                return key1.compareTo(key2);
-//            }
-//        });
-//    }
+
     public void insertIntoTable(Tuple tuple) throws DBAppException {
         isValidTuple(tuple);
 
@@ -82,7 +76,7 @@ public class Table implements Serializable {
         }
 
         Object[] overflowTupleIndex = insertIntoCorrectPage(tuple);
-        if (overflowTupleIndex != null){
+        if (overflowTupleIndex[0] != null){
             createPage((Tuple)overflowTupleIndex[0], (int) overflowTupleIndex[1]);
         }
     }
@@ -95,35 +89,34 @@ public class Table implements Serializable {
      * @return An object array containing the index of the page and the tuple that overflowed
      */
     private Object[] insertIntoCorrectPage(Tuple tuple) throws DBAppException {
-        String clusteringKey = this.clusteringKey;
         Comparable<Object> clusteringKeyValue = (Comparable<Object>) tuple.getValues().get(clusteringKey);
-        Object[] overflowTupleIndex = null;
+        Object[] overflowTupleIndex = new Object[2];
 
         for (String pageName : pageNames){
-            Page page = deserializePage("data/serialized_pages/" + pageName + ".ser");
+            Page page = deserializePage(pageName);
             int i = pageNames.indexOf(pageName);
             //if page is empty, insert into page
             if (page.tuples.isEmpty()){
-                overflowTupleIndex = new Object[2];
                 overflowTupleIndex[1] = i;
                 overflowTupleIndex[0] = page.insertIntoPage(tuple);
+                return overflowTupleIndex;
             }
 
             Tuple firstTuple = page.tuples.get(0);
             Comparable<Object> firstClusteringKeyValue = (Comparable<Object>) firstTuple.getValues().get(clusteringKey);
             //if page is last page insert
             if(i == pageNames.size()-1){
-                overflowTupleIndex = new Object[2];
                 overflowTupleIndex[1] = i;
                 overflowTupleIndex[0] = page.insertIntoPage(tuple);
+                return overflowTupleIndex;
             }
 
             //if tuple is greater than first tuple in page, insert into previous page
             if (clusteringKeyValue.compareTo(firstClusteringKeyValue) > 0){
-                page = deserializePage("data/serialized_pages/" + pageNames.get(i-1) + ".ser");
-                overflowTupleIndex = new Object[2];
+                page = deserializePage(pageNames.get(i-1));
                 overflowTupleIndex[1] = i;
                 overflowTupleIndex[0] = page.insertIntoPage(tuple);
+                return overflowTupleIndex;
             }
         }
         return overflowTupleIndex;
@@ -156,7 +149,7 @@ public class Table implements Serializable {
     //TODO: Implement binary search
     private boolean tupleHasNoDuplicateClusteringKey(String key, Object value) throws DBAppException {
         for (String pageName : pageNames){
-            Page page = deserializePage("data/serialized_pages/" + pageName + ".ser");
+            Page page = deserializePage(pageName);
             if (page.tuples.isEmpty()){
                 continue;
             }
