@@ -162,6 +162,45 @@ public class Table implements Serializable {
         return true;
     }
 
+    public Vector<Tuple> linearSearch(SQLTerm Term) throws DBAppException {
+        Vector<Tuple> finalList = new Vector<Tuple>();
+        for (String pageName : pageNames) {
+            Page page = deserializePage(pageName);
+            if (page.tuples.isEmpty()){
+                continue;
+            }
+            for (Tuple tuple : page.tuples) {
+                switch (Term._strOperator) {
+                    case ">":
+                        // Code for the ">" operator
+                        break;
+                    case ">=":
+                        // Code for the ">=" operator
+                        break;
+                    case "<":
+                        // Code for the "<" operator
+                        break;
+                    case "<=":
+                        // Code for the "<=" operator
+                        break;
+                    case "=":
+                        if (tuple.getValues().get(Term._strColumnName).equals(Term._objValue)) {
+                            finalList.add(tuple);
+                        }
+                        break;
+                    case "!=":
+                        if (!tuple.getValues().get(Term._strColumnName).equals(Term._objValue)) {
+                            finalList.add(tuple);
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+        return finalList;
+    }
+
     public void createIndex(){
         //indexKey as attribute
         //create Index

@@ -9,6 +9,7 @@ import java.io.*;
 import java.util.Iterator;
 import java.util.Hashtable;
 import java.util.Properties;
+import java.util.Vector;
 
 
 public class DBApp {
@@ -17,7 +18,7 @@ public class DBApp {
 	public static int maxRowCount;
 	static CSVWriter writer;
 
-
+	static Vector<Table> tables = new Vector<Table>();
 	public DBApp( ){
 		
 	}
