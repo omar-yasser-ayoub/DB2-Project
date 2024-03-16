@@ -166,6 +166,10 @@ public class Testing {
 //    }
 
     public static void main(String[] args) throws DBAppException, IOException, CsvValidationException {
-
+        BTree<Integer, String> test = new BTree<>();
+        test.insert(1,"hello");
+        test.insert(2,"test");
+        test.insert(3,"test2");
+        System.out.println(test.search(3));
     }
 }
