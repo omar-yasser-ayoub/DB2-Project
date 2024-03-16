@@ -20,6 +20,9 @@ public class Page implements Serializable {
         this.tuples = new Vector<>();
     }
 
+    public int getNumOfTuples(){
+        return tuples.size();
+    }
     //TODO: Implement binary search
     /**
      * Attempts to insert into the Page instance

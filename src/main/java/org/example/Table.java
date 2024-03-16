@@ -157,18 +157,78 @@ public class Table implements Serializable {
         }
         return true;
     }
+
+    private static int compareObjects(Object obj1 , Object obj2){
+        if(  obj1 instanceof String && obj2 instanceof String){
+            String currS = (String)(obj1);
+            String valS = (String)(obj2);
+
+            return currS.compareTo(valS);       //if first>second then positive
+
+
+        }
+        if(  obj1 instanceof Integer && obj2 instanceof Integer){
+            Integer currI = (Integer)(obj1);
+            Integer valI = (Integer)(obj2);
+
+            return currI.compareTo(valI);
+        }
+        if( obj1 instanceof Double && obj2 instanceof Double){
+            Double currD = (Double)(obj1);
+            Double valD = (Double)(obj2);
+
+            return currD.compareTo(valD)   ;
+        }
+        else
+            return 0;
+    }
     //TODO: Implement binary search
     private boolean tupleHasNoDuplicateClusteringKey(String key, Object value) throws DBAppException {
-        for (String pageName : pageNames){
+        //for (String pageName : pageNames)
+        //key is column name, value is value of column for this record
+        int startTupleNum = 0;
+        int numberOfTuples=0;
+
+        int numberOfPages = pageNames.size();
+        int startPageNum = 0;
+
+        while(startPageNum <= numberOfPages){
+            //get current page number
+            int currPageNum = startPageNum + (numberOfPages -1) /2;
+
+            //get Page
+            String pageName = pageNames.get(currPageNum);
             Page page = deserializePage(pageName);
+            numberOfTuples = page.getNumOfTuples();
+
+            //is page empty
             if (page.tuples.isEmpty()){
                 continue;
             }
-            for (Tuple tuple : page.tuples){
+
+            //loop on page to check if i found sth similar
+            while(startTupleNum <= numberOfTuples){
+                //get current tuple
+                int currTupleNum = startTupleNum + (numberOfTuples - 1) / 2 ;
+                Tuple tuple = page.tuples.get(currTupleNum);
+
+                //if tuple is our target
                 if (tuple.getValues().get(key).equals(value)){
                     return false;
                 }
+                //if our value is greater than current value, ignore left half
+                if(  compareObjects(tuple.getValues().get(key) , value) < 0){
+                   startTupleNum = currTupleNum + 1;
+                }
+                else{
+                    startTupleNum = currTupleNum - 1;
+                }
+
             }
+
+            //if i didnt find sth similar, binary search on page
+            //check
+
         }
         return true;
     }
