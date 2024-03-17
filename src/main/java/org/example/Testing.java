@@ -166,10 +166,12 @@ public class Testing {
 //    }
 
     public static void main(String[] args) throws DBAppException, IOException, CsvValidationException {
-        BTree<Integer, String> test = new BTree<>();
-        test.insert(1,"hello");
-        test.insert(2,"test");
-        test.insert(3,"test2");
-        System.out.println(test.search(3));
+        Table table1 = createTestTable();
+//        table1.index = new BTree<Integer,Page>();
+//        ((BTree<Integer,Page>) table1.index).insert(1,new Page(table1, 1));
+//        ((BTree<Integer,Page>) table1.index).insert(2,new Page(table1, 2));
+//        ((BTree<Integer,Page>) table1.index).insert(3,new Page(table1, 3));
+//        ((BTree<Integer,Page>) table1.index).search(3);
     }
+
 }
