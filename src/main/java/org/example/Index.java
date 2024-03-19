@@ -91,4 +91,13 @@ public class Index implements Serializable {
     public String search(Double key) {
         return doubleIndex.search(key);
     }
+    public void delete(String key) {
+        stringIndex.delete(key);
+    }
+    public void delete(Integer key) {
+        integerIndex.delete(key);
+    }
+    public void delete(Double key) {
+        doubleIndex.delete(key);
+    }
 }
