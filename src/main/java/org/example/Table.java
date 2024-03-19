@@ -342,43 +342,7 @@ public class Table implements Serializable {
         return finalList;
     }
 
-    public void createIndex(String _keyType, String column) throws DBAppException {
-        switch (_keyType) {
-            case "Integer":
-                index = new BTree<Integer, String>();
-                keyType = "Integer";
-                break;
-            case "Double":
-                index = new BTree<Double, String>();
-                keyType = "Double";
-                break;
-            case "String":
-                index = new BTree<String, String>();
-                keyType = "String";
-                break;
-            default:
-                throw new DBAppException("Invalid key type: " + _keyType);
-        }
 
-        for (String pageName : pageNames) {
-            Page page = deserializePage(pageName);
-            if (page.tuples.isEmpty()) {
-                continue;
-            }
-
-            switch (_keyType) {
-                case "Integer":
-                    ((BTree<Integer,String>) index).insert((Integer) page.tuples.get(0).getValues().get(column), pageName);
-                    break;
-                case "Double":
-                    ((BTree<Double,String>) index).insert((Double) page.tuples.get(0).getValues().get(column), pageName);
-                    break;
-                case "String":
-                    ((BTree<String,String>) index).insert((String) page.tuples.get(0).getValues().get(column), pageName);
-                    break;
-            }
-        }
-    }
     public void updateIndex(){
         //update index
     }

@@ -166,12 +166,10 @@ public class Testing {
 //    }
 
     public static void main(String[] args) throws DBAppException, IOException, CsvValidationException {
-        Table table1 = createTestTable();
-//        table1.index = new BTree<Integer,Page>();
-//        ((BTree<Integer,Page>) table1.index).insert(1,new Page(table1, 1));
-//        ((BTree<Integer,Page>) table1.index).insert(2,new Page(table1, 2));
-//        ((BTree<Integer,Page>) table1.index).insert(3,new Page(table1, 3));
-//        ((BTree<Integer,Page>) table1.index).search(3);
+        DBApp app = new DBApp();
+        app.init();
+        Index testIndex = Index.deserializeIndex("CityShopName");
+        System.out.println(testIndex._indexType);
     }
 
 }
