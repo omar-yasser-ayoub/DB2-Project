@@ -1,5 +1,8 @@
 package org.example;
-class BTreeLeafNode<TKey extends Comparable<TKey>, TValue> extends BTreeNode<TKey> {
+
+import java.io.Serializable;
+
+class BTreeLeafNode<TKey extends Comparable<TKey>, TValue> extends BTreeNode<TKey> implements Serializable {
 	protected final static int LEAFORDER = 4;
 	private Object[] values;
 	

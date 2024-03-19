@@ -1,21 +1,29 @@
 package org.example;
 
 import java.io.*;
+import java.lang.reflect.Constructor;
+import java.util.Vector;
 
 import static org.example.Page.deserializePage;
 
 public class Index implements Serializable {
-
-
-
-    String _indexType;
+    BTree<Integer,String> integerIndex;
+    BTree<String,String> stringIndex;
+    BTree<Double,String> doubleIndex;
+    String _columnType;
     String _columnName;
     Table _parentTable;
 
-    public Index(Table parentTable, String indexType, String columnName) {
-        this._indexType = indexType;
+    public Index(Table parentTable, String columnType, String columnName) throws IllegalArgumentException {
+        this._columnType = columnType;
         this._parentTable = parentTable;
         this._columnName = columnName;
+        switch (columnType) {
+            case "java.lang.String" -> stringIndex = new BTree<String, String>();
+            case "java.lang.Integer" -> integerIndex = new BTree<Integer, String>();
+            case "java.lang.Double" -> doubleIndex = new BTree<Double, String>();
+            default -> throw new IllegalArgumentException("Unsupported column type: " + columnType);
+        }
     }
 
     public void serializeIndex() throws DBAppException {
@@ -48,41 +56,39 @@ public class Index implements Serializable {
         }
     }
 
-//    public void createIndex(String _keyType, String column) throws DBAppException {
-//        switch (_keyType) {
-//            case "Integer":
-//                index = new BTree<Integer, String>();
-//                keyType = "Integer";
-//                break;
-//            case "Double":
-//                index = new BTree<Double, String>();
-//                keyType = "Double";
-//                break;
-//            case "String":
-//                index = new BTree<String, String>();
-//                keyType = "String";
-//                break;
-//            default:
-//                throw new DBAppException("Invalid key type: " + _keyType);
-//        }
-//
-//        for (String pageName : pageNames) {
-//            Page page = deserializePage(pageName);
-//            if (page.tuples.isEmpty()) {
-//                continue;
-//            }
-//
-//            switch (_keyType) {
-//                case "Integer":
-//                    ((BTree<Integer,String>) index).insert((Integer) page.tuples.get(0).getValues().get(column), pageName);
-//                    break;
-//                case "Double":
-//                    ((BTree<Double,String>) index).insert((Double) page.tuples.get(0).getValues().get(column), pageName);
-//                    break;
-//                case "String":
-//                    ((BTree<String,String>) index).insert((String) page.tuples.get(0).getValues().get(column), pageName);
-//                    break;
-//            }
-//        }
-//    }
+    public void populateIndex() throws DBAppException {
+        Vector<String> pageNames = _parentTable.pageNames;
+        for (String pageName : pageNames) {
+            Page page = deserializePage(pageName);
+            if (page.tuples.isEmpty()) {
+                continue;
+            }
+            switch (_columnType) {
+                case "java.lang.Integer" ->
+                        integerIndex.insert((Integer) page.tuples.get(0).getValues().get(_columnName), pageName);
+                case "java.lang.Double" ->
+                        doubleIndex.insert((Double) page.tuples.get(0).getValues().get(_columnName), pageName);
+                case "java.lang.String" ->
+                        stringIndex.insert((String) page.tuples.get(0).getValues().get(_columnName), pageName);
+            }
+        }
+    }
+    public void insert(String key, String value) {
+        stringIndex.insert(key,value);
+    }
+    public void insert(Integer key, String value) {
+        integerIndex.insert(key,value);
+    }
+    public void insert(Double key, String value) {
+        doubleIndex.insert(key,value);
+    }
+    public String search(String key) {
+        return stringIndex.search(key);
+    }
+    public String search(Integer key) {
+        return integerIndex.search(key);
+    }
+    public String search(Double key) {
+        return doubleIndex.search(key);
+    }
 }

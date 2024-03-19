@@ -1,5 +1,7 @@
 package org.example;
 
+import java.io.Serializable;
+
 /**
  * A B+ tree
  * Since the structures and behaviors between internal node and external node are different, 
@@ -7,7 +9,7 @@ package org.example;
  * @param <TKey> the data type of the key
  * @param <TValue> the data type of the value
  */
-public class BTree<TKey extends Comparable<TKey>, TValue> {
+public class BTree<TKey extends Comparable<TKey>, TValue> implements Serializable {
 	private BTreeNode<TKey> root;
 	
 	public BTree() {

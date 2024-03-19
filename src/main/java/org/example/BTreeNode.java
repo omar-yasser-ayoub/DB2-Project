@@ -1,10 +1,13 @@
 package org.example;
-enum TreeNodeType {
+
+import java.io.Serializable;
+
+enum TreeNodeType implements Serializable{
 	InnerNode,
 	LeafNode
 }
 
-abstract class BTreeNode<TKey extends Comparable<TKey>> {
+abstract class BTreeNode<TKey extends Comparable<TKey>> implements Serializable {
 	protected Object[] keys;
 	protected int keyCount;
 	protected BTreeNode<TKey> parentNode;

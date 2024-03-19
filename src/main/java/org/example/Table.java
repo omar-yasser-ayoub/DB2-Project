@@ -186,51 +186,50 @@ public class Table implements Serializable {
     }
     //TODO: Implement binary search
     private boolean tupleHasNoDuplicateClusteringKey(String key, Object value) throws DBAppException {
-        //for (String pageName : pageNames)
-        //key is column name, value is value of column for this record
-        int startTupleNum = 0;
-        int numberOfTuples=0;
-
         int numberOfPages = pageNames.size();
         int startPageNum = 0;
 
-        while(startPageNum <= numberOfPages){
+        while (startPageNum < numberOfPages) {
             //get current page number
-            int currPageNum = startPageNum + (numberOfPages -1) /2;
+            int currPageNum = startPageNum + (numberOfPages - startPageNum) / 2;
 
             //get Page
             String pageName = pageNames.get(currPageNum);
             Page page = deserializePage(pageName);
-            numberOfTuples = page.getNumOfTuples();
 
             //is page empty
-            if (page.tuples.isEmpty()){
+            if (page.tuples.isEmpty()) {
+                startPageNum = currPageNum + 1; // Move to the next page
                 continue;
             }
 
-            //loop on page to check if i found sth similar
-            while(startTupleNum <= numberOfTuples){
-                //get current tuple
-                int currTupleNum = startTupleNum + (numberOfTuples - 1) / 2 ;
-                Tuple tuple = page.tuples.get(currTupleNum);
+            int startTupleNum = 0;
+            int numberOfTuples = page.getNumOfTuples();
 
-                //if tuple is our target
-                if (tuple.getValues().get(key).equals(value)){
+            // Binary search within the current page
+            int low = startTupleNum;
+            int high = numberOfTuples - 1;
+            while (low <= high) {
+                int mid = low + (high - low) / 2;
+                Tuple tuple = page.tuples.get(mid);
+
+                // Compare the key value with the target value
+                int comparisonResult = compareObjects(tuple.getValues().get(key), value);
+
+                if (comparisonResult == 0) {
+                    // Key-value pair found, return false
                     return false;
+                } else if (comparisonResult < 0) {
+                    // If our value is greater than current value, search in the right half
+                    low = mid + 1;
+                } else {
+                    // If our value is less than current value, search in the left half
+                    high = mid - 1;
                 }
-                //if our value is greater than current value, ignore left half
-                if(  compareObjects(tuple.getValues().get(key) , value) < 0){
-                   startTupleNum = currTupleNum + 1;
-                }
-                else{
-                    startTupleNum = currTupleNum - 1;
-                }
-
             }
 
-            //if i didnt find sth similar, binary search on page
-            //check
-
+            // Move to the next page
+            startPageNum = currPageNum + 1;
         }
         return true;
     }

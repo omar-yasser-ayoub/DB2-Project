@@ -1,5 +1,8 @@
 package org.example;
-class BTreeInnerNode<TKey extends Comparable<TKey>> extends BTreeNode<TKey> {
+
+import java.io.Serializable;
+
+class BTreeInnerNode<TKey extends Comparable<TKey>> extends BTreeNode<TKey> implements Serializable {
 	protected final static int INNERORDER = 4;
 	protected Object[] children; 
 	
