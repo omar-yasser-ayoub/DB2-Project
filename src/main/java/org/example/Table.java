@@ -234,6 +234,94 @@ public class Table implements Serializable {
         return true;
     }
 
+    public void deleteFromTable(Tuple tuple)throws DBAppException {
+//        int numberOfPages = pageNames.size();
+//        int startPageNum = 0;
+//
+//        while (startPageNum < numberOfPages) {
+//            //get current page number
+//            int currPageNum = startPageNum + (numberOfPages - startPageNum) / 2;
+//
+//            //get Page
+//            String pageName = pageNames.get(currPageNum);
+//            Page page = deserializePage(pageName);
+//
+//            //is page empty
+//            if (page.tuples.isEmpty()) {
+//                startPageNum = currPageNum + 1; // Move to the next page
+//                continue;
+//            }
+//
+//            int startTupleNum = 0;
+//            int numberOfTuples = page.getNumOfTuples();
+//
+//            // Binary search within the current page
+//            int low = startTupleNum;
+//            int high = numberOfTuples - 1;
+//            while (low <= high) {
+//                int mid = low + (high - low) / 2;
+//                Tuple currentTuple = page.tuples.get(mid);
+//
+//                // Compare the key value with the target value
+//                int comparisonResult = compareObjects(currentTuple.getValues().get(clusteringKey), tuple.getValues().get(clusteringKey));
+//
+//                if (comparisonResult == 0) {
+//                    int deletionResult = page.deleteFromPage(tuple);
+//                    switch (deletionResult) {
+//                        case 0 -> pageNames.remove(currPageNum);
+//                        case 1 -> {
+//                            return;
+//                        }
+//                        default -> throw new DBAppException("Tuple not Found");
+//                    }
+//
+//                } else if (comparisonResult < 0) {
+//                    // If our value is greater than current value, search in the right half
+//                    low = mid + 1;
+//                } else {
+//                    // If our value is less than current value, search in the left half
+//                    high = mid - 1;
+//                }
+//            }
+//
+//            // Move to the next page
+//            startPageNum = currPageNum + 1;
+//        }
+//        return;
+
+        Comparable<Object> clusteringKeyValue = (Comparable<Object>) tuple.getValues().get(clusteringKey);
+        int deletionResult = -1;
+
+        if (pageNames.isEmpty()) {
+            throw new DBAppException("Table is already empty");
+        }else{
+            for (String pageName : pageNames){
+                int i = pageNames.indexOf(pageName);
+                Page page = deserializePage(pageName);
+                Tuple firstTuple = page.tuples.get(0); //FIRST TUPLE OF CURRENT PAGE
+                Comparable<Object> firstClusteringKeyValue = (Comparable<Object>) firstTuple.getValues().get(clusteringKey); //VALUE OF THAT TUPLE
+                if (clusteringKeyValue.compareTo(firstClusteringKeyValue) < 0){
+                    Page prevPage = deserializePage(pageNames.get(i-1));
+                    deletionResult = prevPage.deleteFromPage(tuple);
+                    switch(deletionResult) {
+                        case 0:
+                            pageNames.remove(i-1);
+                            break;
+                        case 1:
+                            return;
+                        default:
+                            throw new DBAppException("Tuple not Found");
+                    }
+                }
+            }
+        }
+    }
+
+
+    public void createIndex(){
+        //indexKey as attribute
+        //create Index
+    }
     public Vector<Tuple> linearSearch(SQLTerm Term) throws DBAppException {
         Vector<Tuple> finalList = new Vector<Tuple>();
         for (String pageName : pageNames) {
