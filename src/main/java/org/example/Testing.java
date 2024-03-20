@@ -90,43 +90,43 @@ public class Testing {
         System.out.println(deserializePage(table1.pageNames.get(0)));
         System.out.println(deserializePage(table1.pageNames.get(1)));
 
-//        try {
-//            //wrong key
-//            Tuple x1 = new Tuple();
-//            x1.insert("ID", 2);
-//            x1.insert("ShopName", "CityShop");
-//            x1.insert("Number", 123456);
-//            x1.insert("Specialisation", "Grocery");
-//            x1.insert("Address", "Cairo");
-//            table1.insertIntoTable(x1);
-//        } catch (DBAppException e) {
-//            System.out.println(e.getMessage());
-//        }
-//
-//        try {
-//            //wrong type
-//            Tuple x2 = new Tuple();
-//            x2.insert("ID", 2);
-//            x2.insert("Name", 123);
-//            x2.insert("Number", 123456);
-//            x2.insert("Specialisation", "Grocery");
-//            x2.insert("Address", "Cairo");
-//            table1.insertIntoTable(x2);
-//        } catch (DBAppException e) {
-//            System.out.println(e.getMessage());
-//        }
-//
-//        try {
-//            Tuple x3 = new Tuple();
-//            x3.insert("ID", 1);
-//            x3.insert("Name", "CityShop");
-//            x3.insert("Number", 123456);
-//            x3.insert("Specialisation", "Grocery");
-//            x3.insert("Address", "Cairo");
-//            table1.insertIntoTable(x3);
-//        } catch (DBAppException e) {
-//            System.out.println(e.getMessage());
-//        }
+        try {
+            //wrong key
+            Tuple x1 = new Tuple();
+            x1.insert("ID", 2);
+            x1.insert("ShopName", "CityShop");
+            x1.insert("Number", 123456);
+            x1.insert("Specialisation", "Grocery");
+            x1.insert("Address", "Cairo");
+            table1.insertIntoTable(x1);
+        } catch (DBAppException e) {
+            System.out.println(e.getMessage());
+        }
+
+        try {
+            //wrong type
+            Tuple x2 = new Tuple();
+            x2.insert("ID", 2);
+            x2.insert("Name", 123);
+            x2.insert("Number", 123456);
+            x2.insert("Specialisation", "Grocery");
+            x2.insert("Address", "Cairo");
+            table1.insertIntoTable(x2);
+        } catch (DBAppException e) {
+            System.out.println(e.getMessage());
+        }
+
+        try {
+            Tuple x3 = new Tuple();
+            x3.insert("ID", 1);
+            x3.insert("Name", "CityShop");
+            x3.insert("Number", 123456);
+            x3.insert("Specialisation", "Grocery");
+            x3.insert("Address", "Cairo");
+            table1.insertIntoTable(x3);
+        } catch (DBAppException e) {
+            System.out.println(e.getMessage());
+        }
         return table1;
     }
 
@@ -164,17 +164,7 @@ public class Testing {
 //            System.out.println(e.getMessage());
 //        }
 //    }
-
-    public static void main(String[] args) throws DBAppException, IOException, CsvValidationException {
-        DBApp app = new DBApp();
-        app.init();
-        Table test = insertIntoTableTest();
-        Index testIndex = new Index(test, "java.lang.String", "Name");
-        testIndex.populateIndex();
-
-    }
-
-    private static void deleteFromTableTest() throws DBAppException {
+    private static void deleteFromTableTest() throws DBAppException, CsvValidationException, IOException {
         DBApp dbApp = new DBApp();
         dbApp.init();
         Table table1 = createTestTable();
@@ -204,21 +194,21 @@ public class Testing {
         t2.insert("Address", "Cairo");
         table1.insertIntoTable(t2);
 
-        System.out.println(table1.pages.get(0));
-        System.out.println(table1.pages.get(1));
+        System.out.println(deserializePage(table1.pageNames.get(0)));
+        System.out.println(deserializePage(table1.pageNames.get(1)));
+
         try{
         table1.deleteFromTable(t);
         } catch (DBAppException e) {
             System.out.println(e.getMessage());
         }
 
-        System.out.println(table1.pages.get(0));
-        System.out.println(table1.pages.get(1));
+        System.out.println(deserializePage(table1.pageNames.get(0)));
+        System.out.println(deserializePage(table1.pageNames.get(1)));
 
     }
 
-    public static void main(String[] args) throws DBAppException {
-        insertIntoTableTest();
-        //deleteFromTableTest();
+    public static void main(String[] args) throws Exception {
+        deleteFromTableTest();
     }
 }
