@@ -1,0 +1,7 @@
+Table Name,Column Name,Column Type,ClusteringKey,IndexName,IndexTypeCityShop,Name,java.lang.String,False,null,null
+
+CityShop,Name,java.lang.String,False,null,null
+CityShop,ID,java.lang.Integer,True,null,null
+CityShop,Number,java.lang.Integer,False,null,null
+CityShop,Specialisation,java.lang.String,False,null,null
+CityShop,Address,java.lang.String,False,null,null

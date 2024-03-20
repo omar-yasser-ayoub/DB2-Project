@@ -20,39 +20,53 @@ public class Page implements Serializable {
         this.tuples = new Vector<>();
     }
 
+    public int getNumOfTuples(){
+        return tuples.size();
+    }
     //TODO: Implement binary search
     /**
      * Attempts to insert into the Page instance
      * @param tuple The tuple to be inserted into the page
      * @return Overflowing tuple if the page is full
      */
-    public Tuple insertIntoPage(Tuple tuple){
+    public Tuple insertIntoPage(Tuple tuple) throws DBAppException {
         String clusteringKey = parentTable.clusteringKey;
         Comparable<Object> clusteringKeyValue = (Comparable<Object>) tuple.getValues().get(clusteringKey);
 
         if (tuples.size() <= DBApp.maxRowCount) {
+            //if page is empty, insert into page
             if(tuples.isEmpty()){
                 tuples.add(tuple);
+                this.serializePage();
                 return null;
             }
             for (int i = 0; i < tuples.size(); i++) {
                 Comparable<Object> currentClusteringKeyValue = (Comparable<Object>) tuples.get(i).getValues().get(clusteringKey);
+                //if tuple is less than current tuple, insert before current tuple
                 if (clusteringKeyValue.compareTo(currentClusteringKeyValue) < 0){
                     tuples.add(i, tuple);
+                    this.serializePage();
                     break;
                 }
+                //if tuple is greater than current tuple and is the last tuple, insert after current tuple
                 if (clusteringKeyValue.compareTo(currentClusteringKeyValue) > 0 && i == tuples.size()-1){
                     tuples.add(i+1, tuple);
+                    this.serializePage();
                     break;
                 }
             }
         }
+        //if page is greater than max size, return overflow tuple
         else {
             return tuple;
         }
+        //if page became greater than max size after insertion, return overflow tuple
         if (tuples.size() > DBApp.maxRowCount){
-            return tuples.remove(tuples.size() - 1);
+            Tuple overflowTuple = tuples.remove(tuples.size() - 1);
+            this.serializePage();
+            return overflowTuple;
         }
+        //if page is still less than max size, return null because no overflow
         return null;
     }
 
@@ -104,7 +118,8 @@ public class Page implements Serializable {
         }
     }
 
-    public static Page deserializePage(String fileName) throws DBAppException {
+    public static Page deserializePage(String pageName) throws DBAppException {
+        String fileName = "data/serialized_pages/" + pageName + ".ser";
         try (FileInputStream fileIn = new FileInputStream(fileName); ObjectInputStream objIn = new ObjectInputStream(fileIn)) {
             return  (Page) objIn.readObject();
         } catch (IOException | ClassNotFoundException e) {

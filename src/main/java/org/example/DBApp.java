@@ -1,12 +1,15 @@
 
 /** * @author Wael Abouelsaadat */
 package org.example;
+import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
+import com.opencsv.exceptions.CsvValidationException;
 
 import java.io.*;
 import java.util.Iterator;
 import java.util.Hashtable;
 import java.util.Properties;
+import java.util.Vector;
 
 
 public class DBApp {
@@ -15,7 +18,7 @@ public class DBApp {
 	public static int maxRowCount;
 	static CSVWriter writer;
 
-
+	static Vector<Table> tables = new Vector<Table>();
 	public DBApp( ){
 		
 	}
@@ -30,18 +33,24 @@ public class DBApp {
 
 	private static void initFileWriter() {
 		try {
-			// creating file and writer
-			outputFile = new FileWriter("src/main/java/org/example/resources/metadata.csv");
+			outputFile = new FileWriter("src/main/java/org/example/resources/metadata.csv", true);
 			writer = new CSVWriter(outputFile, CSVWriter.DEFAULT_SEPARATOR, CSVWriter.NO_QUOTE_CHARACTER,
 					CSVWriter.DEFAULT_ESCAPE_CHARACTER, CSVWriter.RFC4180_LINE_END);
 
+			CSVReader reader = new CSVReader(new FileReader("src/main/java/org/example/resources/metadata.csv"));
+			String[] line = reader.readNext();
+
 			// adding headers to start of file
-			String[] header = { "Table Name", "Column Name", "Column Type", "ClusteringKey", "IndexName", "IndexType" };
-			writer.writeNext(header);
+			if(line == null){
+				String[] header = { "Table Name", "Column Name", "Column Type", "ClusteringKey", "IndexName", "IndexType" };
+				writer.writeNext(header);
+			}
 
 			// closing connection with writer
-			// writer.close();
+			writer.flush();
 		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (CsvValidationException e) {
 			e.printStackTrace();
 		}
 	}
@@ -67,24 +76,10 @@ public class DBApp {
 
 	public void createTable(String strTableName, 
 							String strClusteringKeyColumn,  
-							Hashtable<String,String> htblColNameType) throws DBAppException{
+							Hashtable<String,String> htblColNameType) throws IOException, CsvValidationException, DBAppException {
 
 		Table t = new Table(strTableName, strClusteringKeyColumn, htblColNameType);
-		throw new DBAppException("not implemented yet");
 	}
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 	// following method creates a B+tree index 
@@ -132,14 +127,78 @@ public class DBApp {
 
 	public Iterator selectFromTable(SQLTerm[] arrSQLTerms, 
 									String[]  strarrOperators) throws DBAppException{
-										
+		if (arrSQLTerms.length == 0) {
+			throw new DBAppException("Empty SQL Terms Array");
+		}
+		if (arrSQLTerms.length != strarrOperators.length + 1) {
+			throw new DBAppException("Incompatible Array Lengths (arrSQLTerms should have a length bigger than strarrOperators by 1)");
+		}
+		String TableName = arrSQLTerms[0]._strTableName;
+		for (SQLTerm arrSQLTerm : arrSQLTerms) {
+			if(!arrSQLTerm._strTableName.equals(TableName)) {
+				throw new DBAppException("SQL Terms on different tables are not allowed");
+			}
+			// get datatype of value
+			String type = "";
+			if (arrSQLTerm._objValue instanceof String) {
+				type = "java.lang.String";
+			} else if (arrSQLTerm._objValue instanceof Integer) {
+				type = "java.lang.Integer";
+			} else if (arrSQLTerm._objValue instanceof Double) {
+				type = "java.lang.Double";
+			}
+
+			try {
+				// create a reader
+				CSVReader reader = new CSVReader(new FileReader("src/main/java/org/example/resources/metadata.csv"));
+				String[] line = reader.readNext();
+
+				// exception message stuff
+				String exceptionMsg = "exceptionMsg";
+				Boolean colInTable = false;
+				Boolean tableExists = false;
+				boolean flag = true;
+
+				while ((line = reader.readNext()) != null) {
+					if (arrSQLTerm._strTableName.equals(line[0]) && arrSQLTerm._strColumnName.equals(line[1])) {
+						exceptionMsg = "Object datatype doesn't match column datatype";
+						colInTable = true;
+						tableExists = true;
+					}
+					if (arrSQLTerm._strTableName.equals(line[0]) && !arrSQLTerm._strColumnName.equals(line[1]) && !colInTable) {
+						exceptionMsg = "Column does not exist in table";
+						tableExists = true;
+					}
+					if (!tableExists)
+						exceptionMsg = "Table does not exist";
+
+					// if table exists and contains columns, and the datatype matches the column datatype, assign the values
+					if (arrSQLTerm._strTableName.equals(line[0]) && arrSQLTerm._strColumnName.equals(line[1]) && type.equals(line[2])) {
+						flag = false;
+						break;
+					}
+				}
+				// if values were never assigned, that means condition was never met and exception should be thrown
+				if (flag)
+					throw new DBAppException(exceptionMsg);
+			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (CsvValidationException e) {
+				e.printStackTrace();
+			}
+			if (!(arrSQLTerm._strOperator.equals(">") || arrSQLTerm._strOperator.equals(">=") || arrSQLTerm._strOperator.equals("<") || arrSQLTerm._strOperator.equals("<=") || arrSQLTerm._strOperator.equals("!=") || arrSQLTerm._strOperator.equals("=")))
+				throw new DBAppException("Illegal operator");
+		}
+		for (String strOperator : strarrOperators ) {
+			if (!(strOperator.equals("AND") || strOperator.equals("OR") || strOperator.equals("XOR")))
+				throw new DBAppException("Illegal operator");
+		}
 		return null;
 	}
 
 
 	public static void main( String[] args ){
 	try{
-			String strTableName = "Student";
 			DBApp dbApp = new DBApp();
 			dbApp.init();
 
@@ -150,11 +209,16 @@ public class DBApp {
 				ht.put(colNames[i], colTypes[i]);
 			}
 			String clusteringKey = "ID";
-			String[] indexName = {"IDIndex", null, "NumberIndex", "SpecIndex", "AddrIndex"};
-			String[] indexType = {"B+tree", null, "B+tree", "B+tree", "B+tree"};
-			Table test = new Table("CityShop", clusteringKey, ht);
-			Table test2 = new Table("CityShop2", clusteringKey, ht);
 
+			//dbApp.createTable("CityShop", clusteringKey, ht);
+			//dbApp.createTable("CityShop2", clusteringKey, ht);
+
+			//SQLTerm[] arrSQLTerms = new SQLTerm[5];
+			//arrSQLTerms[0] = new SQLTerm("CityShop", "Name", "=", "John Noor");
+
+			//Testing.sqlTermTest();
+
+//			String strTableName = "Student";
 //			Hashtable htblColNameType = new Hashtable( );
 //			htblColNameType.put("id", "java.lang.Integer");
 //			htblColNameType.put("name", "java.lang.String");
@@ -212,15 +276,6 @@ public class DBApp {
 		}
 		catch(Exception exp){
 			exp.printStackTrace();
-		}
-		finally {
-			if (writer != null) {
-				try {
-					writer.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
 		}
 	}
 
