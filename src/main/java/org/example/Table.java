@@ -25,11 +25,43 @@ public class Table implements Serializable {
         this.clusteringKey = clusteringKey;
         this.pageNames = new Vector<>();
         this.pageCount = 0;
-
-        writeMetadata(tableName, clusteringKey, colNameType);
+        writeMetadata();
     }
 
-    private static void writeMetadata(String tableName, String clusteringKey, Hashtable<String, String> colNameType) throws IOException {
+    public String getTableName() {
+        return tableName;
+    }
+
+    public Hashtable<String, String> getColNameType() {
+        return colNameType;
+    }
+
+    public String getClusteringKey() {
+        return clusteringKey;
+    }
+
+    public Hashtable<String, String> getIndicesColNameType() {
+        return indicesColNameType;
+    }
+
+    public Vector<String> getPageNames() {
+        return pageNames;
+    }
+
+    public int getPageCount() {
+        return pageCount;
+    }
+
+    public String getKeyType() {
+        return keyType;
+    }
+
+    public Object getIndex() {
+        return index;
+    }
+
+    //** Writes the metadata of the table to the metadata file
+    private void writeMetadata() throws IOException {
         CSVWriter writer = DBApp.metadataWriter;
         Enumeration<String> columns = colNameType.keys();
         while (columns.hasMoreElements()){
@@ -68,65 +100,11 @@ public class Table implements Serializable {
         newPage.serializePage();
         String pageName = tableName + pageCount;
         pageNames.add(index + 1, pageName);
-        newPage.insertIntoPage(tuple);
+        InsertionManager.insertIntoPage(tuple, newPage);
         return newPage;
     }
 
-    public void insertIntoTable(Tuple tuple) throws DBAppException {
-        isValidTuple(tuple);
-
-        if(pageNames.isEmpty()){
-            createPage();
-        }
-
-        Object[] overflowTupleIndex = insertIntoCorrectPage(tuple);
-        if (overflowTupleIndex[0] != null){
-            createPage((Tuple)overflowTupleIndex[0], (int) overflowTupleIndex[1]);
-        }
-    }
-
-    //TODO: Implement binary search
-
-    /**
-     * Finds the correct page to insert the tuple into so that the table is sorted by the clustering key.
-     * @param tuple The tuple to be inserted into the page
-     * @return An object array containing the index of the page and the tuple that overflowed
-     */
-    private Object[] insertIntoCorrectPage(Tuple tuple) throws DBAppException {
-        Comparable<Object> clusteringKeyValue = (Comparable<Object>) tuple.getValues().get(clusteringKey);
-        Object[] overflowTupleIndex = new Object[2];
-
-        for (String pageName : pageNames){
-            Page page = deserializePage(pageName);
-            int i = pageNames.indexOf(pageName);
-            //if page is empty, insert into page
-            if (page.tuples.isEmpty()){
-                overflowTupleIndex[1] = i;
-                overflowTupleIndex[0] = page.insertIntoPage(tuple);
-                return overflowTupleIndex;
-            }
-
-            Tuple firstTuple = page.tuples.get(0);
-            Comparable<Object> firstClusteringKeyValue = (Comparable<Object>) firstTuple.getValues().get(clusteringKey);
-            //if page is last page insert
-            if(i == pageNames.size()-1){
-                overflowTupleIndex[1] = i;
-                overflowTupleIndex[0] = page.insertIntoPage(tuple);
-                return overflowTupleIndex;
-            }
-
-            //if tuple is greater than first tuple in page, insert into previous page
-            if (clusteringKeyValue.compareTo(firstClusteringKeyValue) > 0){
-                page = deserializePage(pageNames.get(i-1));
-                overflowTupleIndex[1] = i;
-                overflowTupleIndex[0] = page.insertIntoPage(tuple);
-                return overflowTupleIndex;
-            }
-        }
-        return overflowTupleIndex;
-    }
-
-    private boolean isValidTuple(Tuple tuple) throws DBAppException {
+    public boolean isValidTuple(Tuple tuple) throws DBAppException {
         Hashtable<String, Object> values = tuple.getValues();
         for (String key : values.keySet()){
             //check if key is in colNameType
@@ -141,12 +119,6 @@ public class Table implements Serializable {
             } catch (ClassNotFoundException | ClassCastException ex) {
                 throw new DBAppException("Key is not of the correct type");
             }
-
-            //check if clustering key is unique
-            if (key.equals(clusteringKey) && (!tupleHasNoDuplicateClusteringKey(key, values.get(key)))){
-                throw new DBAppException("Clustering key is not unique");
-            }
-
         }
         return true;
     }
@@ -175,56 +147,6 @@ public class Table implements Serializable {
         else
             return 0;
     }
-    //TODO: Implement binary search
-    private boolean tupleHasNoDuplicateClusteringKey(String key, Object value) throws DBAppException {
-        int numberOfPages = pageNames.size();
-        int startPageNum = 0;
-
-        while (startPageNum < numberOfPages) {
-            //get current page number
-            int currPageNum = startPageNum + (numberOfPages - startPageNum) / 2;
-
-            //get Page
-            String pageName = pageNames.get(currPageNum);
-            Page page = deserializePage(pageName);
-
-            //is page empty
-            if (page.tuples.isEmpty()) {
-                startPageNum = currPageNum + 1; // Move to the next page
-                continue;
-            }
-
-            int startTupleNum = 0;
-            int numberOfTuples = page.getNumOfTuples();
-
-            // Binary search within the current page
-            int low = startTupleNum;
-            int high = numberOfTuples - 1;
-            while (low <= high) {
-                int mid = low + (high - low) / 2;
-                Tuple tuple = page.tuples.get(mid);
-
-                // Compare the key value with the target value
-                int comparisonResult = compareObjects(tuple.getValues().get(key), value);
-
-                if (comparisonResult == 0) {
-                    // Key-value pair found, return false
-                    return false;
-                } else if (comparisonResult < 0) {
-                    // If our value is greater than current value, search in the right half
-                    low = mid + 1;
-                } else {
-                    // If our value is less than current value, search in the left half
-                    high = mid - 1;
-                }
-            }
-
-            // Move to the next page
-            startPageNum = currPageNum + 1;
-        }
-        return true;
-    }
-
     public void deleteFromTable(Tuple tuple)throws DBAppException {
 //        int numberOfPages = pageNames.size();
 //        int startPageNum = 0;
