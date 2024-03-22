@@ -14,6 +14,7 @@ import java.util.Vector;
 
 public class DBApp {
 
+	public static final String METADATA_DIR = "src/data/table_metadata/metadata.csv";
 	public static FileWriter outputFile;
 	public static int maxRowCount;
 	static CSVWriter writer;
@@ -33,11 +34,11 @@ public class DBApp {
 
 	private static void initFileWriter() {
 		try {
-			outputFile = new FileWriter("src/main/java/org/example/resources/metadata.csv", true);
+			outputFile = new FileWriter(METADATA_DIR, true);
 			writer = new CSVWriter(outputFile, CSVWriter.DEFAULT_SEPARATOR, CSVWriter.NO_QUOTE_CHARACTER,
 					CSVWriter.DEFAULT_ESCAPE_CHARACTER, CSVWriter.RFC4180_LINE_END);
 
-			CSVReader reader = new CSVReader(new FileReader("src/main/java/org/example/resources/metadata.csv"));
+			CSVReader reader = new CSVReader(new FileReader(METADATA_DIR));
 			String[] line = reader.readNext();
 
 			// adding headers to start of file
@@ -77,6 +78,15 @@ public class DBApp {
 	public void createTable(String strTableName, 
 							String strClusteringKeyColumn,  
 							Hashtable<String,String> htblColNameType) throws IOException, CsvValidationException, DBAppException {
+
+		CSVReader reader = new CSVReader(new FileReader(METADATA_DIR));
+		String[] line = reader.readNext();
+
+		while((line = reader.readNext()) != null){
+			if(strTableName.equals(line[0])){
+				throw new DBAppException("Table already exists");
+			}
+		}
 
 		Table t = new Table(strTableName, strClusteringKeyColumn, htblColNameType);
 	}
@@ -150,7 +160,7 @@ public class DBApp {
 
 			try {
 				// create a reader
-				CSVReader reader = new CSVReader(new FileReader("src/main/java/org/example/resources/metadata.csv"));
+				CSVReader reader = new CSVReader(new FileReader(METADATA_DIR));
 				String[] line = reader.readNext();
 
 				// exception message stuff

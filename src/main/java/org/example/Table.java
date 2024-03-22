@@ -12,40 +12,34 @@ import java.util.*;
 import static org.example.Page.deserializePage;
 
 public class Table implements Serializable {
-    String tableName;
-    Hashtable<String,String> colNameType;
-    String clusteringKey;
-    Hashtable<String, String> indicesColNameType;
-    Vector<String> pageNames;
-    int pageCount;
-    String keyType;
+    private String tableName;
+    private Hashtable<String,String> colNameType;
+    private String clusteringKey;
+    private Hashtable<String, String> indicesColNameType;
+    private Vector<String> pageNames;
+    private int pageCount;
+    private String keyType;
     public Object index;
 
     public Table(String tableName, String clusteringKey, Hashtable<String,String> colNameType) throws IOException, CsvValidationException, DBAppException {
-        CSVReader reader = new CSVReader(new FileReader("src/main/java/org/example/resources/metadata.csv"));
-        String[] line = reader.readNext();
-
-        while((line = reader.readNext()) != null){
-            if(tableName.equals(line[0])){
-                throw new DBAppException("Table already exists");
-            }
-        }
-
         this.tableName = tableName;
         this.colNameType = colNameType;
         this.clusteringKey = clusteringKey;
         this.pageNames = new Vector<>();
         this.pageCount = 0;
 
-        CSVWriter writer = new CSVWriter(DBApp.outputFile, CSVWriter.DEFAULT_SEPARATOR, CSVWriter.NO_QUOTE_CHARACTER,
-                CSVWriter.DEFAULT_ESCAPE_CHARACTER, CSVWriter.RFC4180_LINE_END);
-        Enumeration<String> e = colNameType.keys();
-        while (e.hasMoreElements()){
-            String key = e.nextElement();
+        writeMetadata(tableName, clusteringKey, colNameType);
+    }
+
+    private static void writeMetadata(String tableName, String clusteringKey, Hashtable<String, String> colNameType) throws IOException {
+        CSVWriter writer = DBApp.writer;
+        Enumeration<String> columns = colNameType.keys();
+        while (columns.hasMoreElements()){
+            String column = columns.nextElement();
             String[] info = {tableName,
-                    key,
-                    colNameType.get(key),
-                    clusteringKey==key ? "True" : "False",
+                    column,
+                    colNameType.get(column),
+                    Objects.equals(clusteringKey, column) ? "True" : "False",
                     "null",
                     "null"};
 
@@ -53,6 +47,8 @@ public class Table implements Serializable {
         }
         writer.flush();
     }
+
+
 
     /**
      * Creates a new page and adds it to the table
@@ -317,11 +313,6 @@ public class Table implements Serializable {
         }
     }
 
-
-    public void createIndex(){
-        //indexKey as attribute
-        //create Index
-    }
     public Vector<Tuple> linearSearch(SQLTerm Term) throws DBAppException {
         Vector<Tuple> finalList = new Vector<Tuple>();
         for (String pageName : pageNames) {
@@ -427,10 +418,5 @@ public class Table implements Serializable {
             }
         }
         return finalList;
-    }
-
-
-    public void updateIndex(){
-        //update index
     }
 }
