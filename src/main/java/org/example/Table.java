@@ -25,11 +25,11 @@ public class Table implements Serializable {
         CSVReader reader = new CSVReader(new FileReader("src/main/java/org/example/resources/metadata.csv"));
         String[] line = reader.readNext();
 
-        while((line = reader.readNext()) != null){
-            if(tableName.equals(line[0])){
-                throw new DBAppException("Table already exists");
-            }
-        }
+        //while((line = reader.readNext()) != null){
+          //  if(tableName.equals(line[0])){
+            //    throw new DBAppException("Table already exists");
+            //}
+        //}
 
         this.tableName = tableName;
         this.colNameType = colNameType;
@@ -160,80 +160,72 @@ public class Table implements Serializable {
         return true;
     }
 
-    private static int compareObjects(Object obj1 , Object obj2){
-        if(  obj1 instanceof String && obj2 instanceof String){
-            String currS = (String)(obj1);
-            String valS = (String)(obj2);
-
-            return currS.compareTo(valS);       //if first>second then positive
 
 
-        }
-        if(  obj1 instanceof Integer && obj2 instanceof Integer){
-            Integer currI = (Integer)(obj1);
-            Integer valI = (Integer)(obj2);
+    public boolean tupleHasNoDuplicateClusteringKey(String key, Object value) throws DBAppException {
+        //value here is the value itself: int, float, double
+        int low = 0;
+        int high = pageNames.size() -1;
+        int numberOfTuplesInPage;
+        boolean keyFound = false;
 
-            return currI.compareTo(valI);
-        }
-        if( obj1 instanceof Double && obj2 instanceof Double){
-            Double currD = (Double)(obj1);
-            Double valD = (Double)(obj2);
+        while (low <= high) {
 
-            return currD.compareTo(valD)   ;
-        }
-        else
-            return 0;
-    }
-    //TODO: Implement binary search
-    private boolean tupleHasNoDuplicateClusteringKey(String key, Object value) throws DBAppException {
-        int numberOfPages = pageNames.size();
-        int startPageNum = 0;
-
-        while (startPageNum < numberOfPages) {
             //get current page number
-            int currPageNum = startPageNum + (numberOfPages - startPageNum) / 2;
+            int mid = low + (high - low) / 2;
 
             //get Page
-            String pageName = pageNames.get(currPageNum);
+            String pageName = pageNames.get(mid);
             Page page = deserializePage(pageName);
+            numberOfTuplesInPage = page.getNumOfTuples();
+            Tuple min = page.tuples.get(0);
+            Tuple max = page.tuples.get(numberOfTuplesInPage -1);
 
             //is page empty
             if (page.tuples.isEmpty()) {
-                startPageNum = currPageNum + 1; // Move to the next page
+                 // Assuming if page is empty then go left
+                high = mid-1;
                 continue;
+
             }
+            //1 tuple in page and theyre similar
+            if(numberOfTuplesInPage ==1 && Page.compareObjects(value,min.getValues().get(key)) == 0){
+                System.out.println("Duplicate found and number of tuples in page was 1");
+                return false;
+            }
+            //one tuple in page and theyre not similar
+            if(numberOfTuplesInPage ==1 && Page.compareObjects(value,min.getValues().get(key)) != 0){
+                System.out.println("Duplicate not found and number of tuples in page was 1");
+                return true;
+            }
+            //Search in a page
+            if( Page.compareObjects(value,min.getValues().get(key)) >= 0 &&
+                    Page.compareObjects(max.getValues().get(key),value) >= 0){
+                //value is in between 0 and last record
+                keyFound = Page.binarySearch(page, key, value); //if found , true was returned
 
-            int startTupleNum = 0;
-            int numberOfTuples = page.getNumOfTuples();
-
-            // Binary search within the current page
-            int low = startTupleNum;
-            int high = numberOfTuples - 1;
-            while (low <= high) {
-                int mid = low + (high - low) / 2;
-                Tuple tuple = page.tuples.get(mid);
-
-                // Compare the key value with the target value
-                int comparisonResult = compareObjects(tuple.getValues().get(key), value);
-
-                if (comparisonResult == 0) {
-                    // Key-value pair found, return false
+                if(keyFound == true){
+                    System.out.println("Duplicate found");
                     return false;
-                } else if (comparisonResult < 0) {
-                    // If our value is greater than current value, search in the right half
-                    low = mid + 1;
-                } else {
-                    // If our value is less than current value, search in the left half
-                    high = mid - 1;
                 }
             }
+            else if(Page.compareObjects(value,min.getValues().get(key)) < 0){
+                //look in left side of pages
+                high = mid-1;
+            }
+            else{
+                //look in right side of pages
+                high = mid+1;
+            }
+            if(pageNames.size()==1){
+                break;
+            }
 
-            // Move to the next page
-            startPageNum = currPageNum + 1;
         }
+        System.out.println("Duplicate not found");
         return true;
     }
-
+    //TODO: Implement binary search
     public void deleteFromTable(Tuple tuple)throws DBAppException {
 //        int numberOfPages = pageNames.size();
 //        int startPageNum = 0;

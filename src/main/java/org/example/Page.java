@@ -137,4 +137,56 @@ public class Page implements Serializable {
         returnString.deleteCharAt(returnString.length() - 1);
         return returnString.toString();
     }
+
+    public static boolean binarySearch(Page page, String key, Object value){
+        //key is column name
+        //"value" attribute is the value we wanna find , can be int,String or double
+        int startTupleNum = 0;
+        int numberOfTuples = page.getNumOfTuples();
+
+        // Binary search within the current page
+        int low = startTupleNum;
+        int high = numberOfTuples - 1;
+        while (low <= high) {
+            int mid = low + (high - low) / 2;
+            Tuple tuple = page.tuples.get(mid);
+
+            // Compare the key value with the target value
+            int comparisonResult = compareObjects(tuple.getValues().get(key), value);
+            
+
+           if (comparisonResult == 0) {
+                // Key-value pair found, return false
+                return true;
+           } else if (comparisonResult < 0) {
+                // If our value is greater than current value, search in the right half
+                low = mid + 1;
+           } else {
+                // If our value is less than current value, search in the left half
+                high = mid - 1;
+           }
+        }
+        return false;
+    }
+
+    public static int compareObjects(Object obj1 , Object obj2){
+       if(  obj1 instanceof Integer && obj2 instanceof Integer){
+            Integer currI = (Integer)(obj1);
+            Integer valI = (Integer)(obj2);
+            return currI.compareTo(valI);
+       }
+       else if( obj1 instanceof Double && obj2 instanceof Double){
+           Double currD = (Double)(obj1);
+           Double valD = (Double)(obj2);
+           return currD.compareTo(valD) ;
+       }
+       else if(  obj1 instanceof String && obj2 instanceof String) {
+           String currS = (String) (obj1);
+           String valS = (String) (obj2);
+           return currS.compareTo(valS);       //if first>second then positive
+       }
+       else{
+           throw new IllegalArgumentException("Objects must be of type Integer, Double, or String");
+       }
+    }
 }
