@@ -35,6 +35,8 @@ public class Testing {
     }
 
     private static Table createTestTable() throws IOException, CsvValidationException, DBAppException {
+        DBApp dbApp = new DBApp();
+        dbApp.init();
         String[] colNames = {"ID", "Name", "Number", "Specialisation", "Address"};
         String[] colTypes = {"java.lang.Integer", "java.lang.String", "java.lang.Integer", "java.lang.String", "java.lang.String"};
         Hashtable<String, String> ht = new Hashtable<>();
@@ -209,6 +211,10 @@ public class Testing {
     }
 
     public static void main(String[] args) throws Exception {
-        deleteFromTableTest();
+        createTestTable();
+        createTestTable();
+        createTestTable();
+        createTestTable();
+        createTestTable();
     }
 }

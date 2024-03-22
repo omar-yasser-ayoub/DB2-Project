@@ -14,10 +14,9 @@ import java.util.Vector;
 
 public class DBApp {
 
-	public static final String METADATA_DIR = "src/data/table_metadata/metadata.csv";
-	public static FileWriter outputFile;
+	public static final String METADATA_DIR = "data/table_metadata/metadata.csv";
 	public static int maxRowCount;
-	static CSVWriter writer;
+	static CSVWriter metadataWriter;
 
 	static Vector<Table> tables = new Vector<Table>();
 	public DBApp( ){
@@ -29,13 +28,13 @@ public class DBApp {
 	// execute at application startup 
 	public void init( ){
 		initMaxRowCount();
-		initFileWriter();
+		initMetadataWriter();
 	}
 
-	private static void initFileWriter() {
+	private static void initMetadataWriter() {
 		try {
-			outputFile = new FileWriter(METADATA_DIR, true);
-			writer = new CSVWriter(outputFile, CSVWriter.DEFAULT_SEPARATOR, CSVWriter.NO_QUOTE_CHARACTER,
+			metadataWriter = new CSVWriter(new FileWriter(METADATA_DIR, true),
+					CSVWriter.DEFAULT_SEPARATOR, CSVWriter.NO_QUOTE_CHARACTER,
 					CSVWriter.DEFAULT_ESCAPE_CHARACTER, CSVWriter.RFC4180_LINE_END);
 
 			CSVReader reader = new CSVReader(new FileReader(METADATA_DIR));
@@ -44,14 +43,12 @@ public class DBApp {
 			// adding headers to start of file
 			if(line == null){
 				String[] header = { "Table Name", "Column Name", "Column Type", "ClusteringKey", "IndexName", "IndexType" };
-				writer.writeNext(header);
+				metadataWriter.writeNext(header);
 			}
 
 			// closing connection with writer
-			writer.flush();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (CsvValidationException e) {
+			metadataWriter.flush();
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
@@ -68,13 +65,10 @@ public class DBApp {
 		}
 	}
 
-
 	// following method creates one table only
 	// strClusteringKeyColumn is the name of the column that will be the primary key and the clustering column as well.
 	// The data type of that column will be passed in htblColNameType
 	// htblColNameValue will have the column name as key and the data type as value
-
-
 	public void createTable(String strTableName, 
 							String strClusteringKeyColumn,  
 							Hashtable<String,String> htblColNameType) throws IOException, CsvValidationException, DBAppException {

@@ -1,10 +1,8 @@
 package org.example;
 
-import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
 import com.opencsv.exceptions.CsvValidationException;
 
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
@@ -12,13 +10,13 @@ import java.util.*;
 import static org.example.Page.deserializePage;
 
 public class Table implements Serializable {
-    private String tableName;
-    private Hashtable<String,String> colNameType;
-    private String clusteringKey;
-    private Hashtable<String, String> indicesColNameType;
-    private Vector<String> pageNames;
-    private int pageCount;
-    private String keyType;
+    String tableName;
+    Hashtable<String,String> colNameType;
+    String clusteringKey;
+    Hashtable<String, String> indicesColNameType;
+    Vector<String> pageNames;
+    int pageCount;
+    String keyType;
     public Object index;
 
     public Table(String tableName, String clusteringKey, Hashtable<String,String> colNameType) throws IOException, CsvValidationException, DBAppException {
@@ -32,7 +30,7 @@ public class Table implements Serializable {
     }
 
     private static void writeMetadata(String tableName, String clusteringKey, Hashtable<String, String> colNameType) throws IOException {
-        CSVWriter writer = DBApp.writer;
+        CSVWriter writer = DBApp.metadataWriter;
         Enumeration<String> columns = colNameType.keys();
         while (columns.hasMoreElements()){
             String column = columns.nextElement();
@@ -42,13 +40,10 @@ public class Table implements Serializable {
                     Objects.equals(clusteringKey, column) ? "True" : "False",
                     "null",
                     "null"};
-
             writer.writeNext(info);
+            writer.flush();
         }
-        writer.flush();
     }
-
-
 
     /**
      * Creates a new page and adds it to the table
