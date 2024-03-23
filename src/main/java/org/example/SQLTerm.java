@@ -2,25 +2,38 @@
 /** * @author Wael Abouelsaadat */
 package org.example;
 
-import com.opencsv.CSVReader;
-import com.opencsv.exceptions.CsvValidationException;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
 
 public class SQLTerm {
 
-	public String _strTableName,_strColumnName, _strOperator;
-	public Object _objValue;
+	private String strTableName;
+	private String strColumnName;
+	private String strOperator;
+	private Object objValue;
 
 	public SQLTerm(String strTableName, String strColumnName, String strOperator, Object objValue) {
-		_strTableName = strTableName;
-		_strColumnName = strColumnName;
-		_objValue = objValue;
-		_strOperator = strOperator;
+		this.strTableName = strTableName;
+		this.strColumnName = strColumnName;
+		this.objValue = objValue;
+		this.strOperator = strOperator;
 	}
 	public SQLTerm() {
 
+	}
+
+	public String getStrTableName() {
+		return strTableName;
+	}
+
+	public String getStrColumnName() {
+		return strColumnName;
+	}
+
+	public String getStrOperator() {
+		return strOperator;
+	}
+
+	public Object getObjValue() {
+		return objValue;
 	}
 }

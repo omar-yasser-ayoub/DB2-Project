@@ -1,12 +1,6 @@
 package org.example;
-
-import com.opencsv.exceptions.CsvValidationException;
-
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
-
-import static org.example.FileManager.deserializePage;
 
 public class Table implements Serializable {
     private String tableName;
@@ -16,9 +10,9 @@ public class Table implements Serializable {
     private Vector<String> pageNames;
     private int pageCount;
     private String keyType;
-    private Object index;
+    private Index index;
 
-    public Table(String tableName, String clusteringKey, Hashtable<String,String> colNameType) throws IOException, CsvValidationException, DBAppException {
+    public Table(String tableName, String clusteringKey, Hashtable<String,String> colNameType){
         this.tableName = tableName;
         this.colNameType = colNameType;
         this.clusteringKey = clusteringKey;
@@ -58,7 +52,7 @@ public class Table implements Serializable {
         return index;
     }
 
-    public void setIndex(Object index) {
+    public void setIndex(Index index) {
         this.index = index;
     }
 
@@ -114,113 +108,6 @@ public class Table implements Serializable {
             }
         }
         return true;
-    }
-
-    public Vector<Tuple> linearSearch(SQLTerm Term) throws DBAppException {
-        Vector<Tuple> finalList = new Vector<Tuple>();
-        for (String pageName : getPageNames()) {
-            Page page = deserializePage(pageName);
-            if (page.getTuples().isEmpty()){
-                continue;
-            }
-            for (Tuple tuple : page.getTuples()) {
-                switch (Term._strOperator) {
-                    case ">":
-                        if (Term._objValue instanceof String) {
-                            int value = ((String) tuple.getValues().get(Term._strColumnName)).compareTo((String) Term._objValue);
-                            if (value > 0) {
-                                finalList.add(tuple);
-                            }
-                        }
-                        if (Term._objValue instanceof Integer) {
-                            int value = ((Integer) tuple.getValues().get(Term._strColumnName)).compareTo((Integer) Term._objValue);
-                            if (value > 0) {
-                                finalList.add(tuple);
-                            }
-                        }
-                        if (Term._objValue instanceof Double) {
-                            int value = ((Double) tuple.getValues().get(Term._strColumnName)).compareTo((Double) Term._objValue);
-                            if (value > 0) {
-                                finalList.add(tuple);
-                            }
-                        }
-                        break;
-                    case ">=":
-                        if (Term._objValue instanceof String) {
-                            int value = ((String) tuple.getValues().get(Term._strColumnName)).compareTo((String) Term._objValue);
-                            if (value > 0 || value == 0) {
-                                finalList.add(tuple);
-                            }
-                        }
-                        if (Term._objValue instanceof Integer) {
-                            int value = ((Integer) tuple.getValues().get(Term._strColumnName)).compareTo((Integer) Term._objValue);
-                            if (value > 0 || value == 0) {
-                                finalList.add(tuple);
-                            }
-                        }
-                        if (Term._objValue instanceof Double) {
-                            int value = ((Double) tuple.getValues().get(Term._strColumnName)).compareTo((Double) Term._objValue);
-                            if (value > 0 || value == 0) {
-                                finalList.add(tuple);
-                            }
-                        }
-                        break;
-                    case "<":
-                        if (Term._objValue instanceof String) {
-                            int value = ((String) tuple.getValues().get(Term._strColumnName)).compareTo((String) Term._objValue);
-                            if (value < 0) {
-                                finalList.add(tuple);
-                            }
-                        }
-                        if (Term._objValue instanceof Integer) {
-                            int value = ((Integer) tuple.getValues().get(Term._strColumnName)).compareTo((Integer) Term._objValue);
-                            if (value < 0) {
-                                finalList.add(tuple);
-                            }
-                        }
-                        if (Term._objValue instanceof Double) {
-                            int value = ((Double) tuple.getValues().get(Term._strColumnName)).compareTo((Double) Term._objValue);
-                            if (value < 0) {
-                                finalList.add(tuple);
-                            }
-                        }
-                        break;
-                    case "<=":
-                        if (Term._objValue instanceof String) {
-                            int value = ((String) tuple.getValues().get(Term._strColumnName)).compareTo((String) Term._objValue);
-                            if (value < 0 || value == 0) {
-                                finalList.add(tuple);
-                            }
-                        }
-                        if (Term._objValue instanceof Integer) {
-                            int value = ((Integer) tuple.getValues().get(Term._strColumnName)).compareTo((Integer) Term._objValue);
-                            if (value < 0 || value == 0) {
-                                finalList.add(tuple);
-                            }
-                        }
-                        if (Term._objValue instanceof Double) {
-                            int value = ((Double) tuple.getValues().get(Term._strColumnName)).compareTo((Double) Term._objValue);
-                            if (value < 0 || value == 0) {
-                                finalList.add(tuple);
-                            }
-                        }
-                        break;
-                    case "=":
-                        if (tuple.getValues().get(Term._strColumnName).equals(Term._objValue)) {
-                            finalList.add(tuple);
-                        }
-                        break;
-                    case "!=":
-                        if (!tuple.getValues().get(Term._strColumnName).equals(Term._objValue)) {
-                            finalList.add(tuple);
-                        }
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
-        return finalList;
     }
 
 }
