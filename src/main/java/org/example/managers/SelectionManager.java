@@ -51,6 +51,122 @@ public class SelectionManager implements Serializable {
         }
     }
 
+    public static boolean binarySearchInPage(Page page, String key, Object value){
+        //key is column name
+        //"value" attribute is the value we wanna find , can be int,String or double
+        int startTupleNum = 0;
+        int numberOfTuples = page.getTuples().size();
+
+        // Binary search within the current page
+        int low = startTupleNum;
+        int high = numberOfTuples - 1;
+        while (low <= high) {
+            int mid = low + (high - low) / 2;
+            Tuple tuple = page.getTuples().get(mid);
+
+            // Compare the key value with the target value
+            int comparisonResult = compareObjects(tuple.getValues().get(key), value);
+
+
+            if (comparisonResult == 0) {
+                // Key-value pair found, return false
+                return true;
+            } else if (comparisonResult < 0) {
+                // If our value is greater than current value, search in the right half
+                low = mid + 1;
+            } else {
+                // If our value is less than current value, search in the left half
+                high = mid - 1;
+            }
+        }
+        return false;
+
+//        public boolean tupleHasNoDuplicateClusteringKey(String key, Object value) throws DBAppException {
+//            //value here is the value itself: int, float, double
+//            int low = 0;
+//            int high = pageNames.size() -1;
+//            int numberOfTuplesInPage;
+//            boolean keyFound = false;
+//
+//            while (low <= high) {
+//
+//                //get current page number
+//                int mid = low + (high - low) / 2;
+//
+//                //get Page
+//                String pageName = pageNames.get(mid);
+//                Page page = deserializePage(pageName);
+//                numberOfTuplesInPage = page.getNumOfTuples();
+//                Tuple min = page.tuples.get(0);
+//                Tuple max = page.tuples.get(numberOfTuplesInPage -1);
+//
+//                //is page empty
+//                if (page.tuples.isEmpty()) {
+//                    // Assuming if page is empty then go left
+//                    high = mid-1;
+//                    continue;
+//
+//                }
+//                //1 tuple in page and theyre similar
+//                if(numberOfTuplesInPage ==1 && Page.compareObjects(value,min.getValues().get(key)) == 0){
+//                    System.out.println("Duplicate found and number of tuples in page was 1");
+//                    return false;
+//                }
+//                //one tuple in page and theyre not similar
+//                if(numberOfTuplesInPage ==1 && Page.compareObjects(value,min.getValues().get(key)) != 0){
+//                    System.out.println("Duplicate not found and number of tuples in page was 1");
+//                    return true;
+//                }
+//                //Search in a page
+//                if( Page.compareObjects(value,min.getValues().get(key)) >= 0 &&
+//                        Page.compareObjects(max.getValues().get(key),value) >= 0){
+//                    //value is in between 0 and last record
+//                    keyFound = Page.binarySearch(page, key, value); //if found , true was returned
+//
+//                    if(keyFound == true){
+//                        System.out.println("Duplicate found");
+//                        return false;
+//                    }
+//                }
+//                else if(Page.compareObjects(value,min.getValues().get(key)) < 0){
+//                    //look in left side of pages
+//                    high = mid-1;
+//                }
+//                else{
+//                    //look in right side of pages
+//                    high = mid+1;
+//                }
+//                if(pageNames.size()==1){
+//                    break;
+//                }
+//
+//            }
+//            System.out.println("Duplicate not found");
+//            return true;
+//        }
+    }
+
+    public static int compareObjects(Object obj1 , Object obj2){
+        if(  obj1 instanceof Integer && obj2 instanceof Integer){
+            Integer currI = (Integer)(obj1);
+            Integer valI = (Integer)(obj2);
+            return currI.compareTo(valI);
+        }
+        else if( obj1 instanceof Double && obj2 instanceof Double){
+            Double currD = (Double)(obj1);
+            Double valD = (Double)(obj2);
+            return currD.compareTo(valD) ;
+        }
+        else if(  obj1 instanceof String && obj2 instanceof String) {
+            String currS = (String) (obj1);
+            String valS = (String) (obj2);
+            return currS.compareTo(valS);       //if first>second then positive
+        }
+        else{
+            throw new IllegalArgumentException("Objects must be of type Integer, Double, or String");
+        }
+    }
+
     public static Iterator selectFromTable(SQLTerm[] arrSQLTerms,
                                     String[]  strarrOperators) throws DBAppException{
         if (arrSQLTerms.length == 0) {
