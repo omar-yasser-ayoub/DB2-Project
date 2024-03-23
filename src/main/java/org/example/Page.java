@@ -32,6 +32,10 @@ public class Page implements Serializable {
         return parentTable;
     }
 
+    public String getPageName() {
+        return parentTable.tableName + pageNum;
+    }
+
     //TODO: Implement delete page from disk
     public int deleteFromPage(Tuple tuple) throws DBAppException {
         String clusteringKey = parentTable.clusteringKey;

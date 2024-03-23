@@ -1,10 +1,7 @@
 package org.example;
 
-import com.opencsv.CSVWriter;
-import com.opencsv.exceptions.CsvException;
 import com.opencsv.exceptions.CsvValidationException;
 
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Hashtable;
 
@@ -71,7 +68,7 @@ public class Testing {
         t.insert("Number", 123456);
         t.insert("Specialisation", "Grocery");
         t.insert("Address", "Cairo");
-        table1.insertIntoTable(t);
+        InsertionManager.insertTupleIntoTable(t, table1);
 
         Tuple t3 = new Tuple();
         t3.insert("ID", 3);
@@ -79,7 +76,7 @@ public class Testing {
         t3.insert("Number", 123456);
         t3.insert("Specialisation", "Grocery");
         t3.insert("Address", "Cairo");
-        table1.insertIntoTable(t3);
+        InsertionManager.insertTupleIntoTable(t3, table1);
 
         Tuple t2 = new Tuple();
         t2.insert("ID", 2);
@@ -87,7 +84,7 @@ public class Testing {
         t2.insert("Number", 123456);
         t2.insert("Specialisation", "Grocery");
         t2.insert("Address", "Cairo");
-        table1.insertIntoTable(t2);
+        InsertionManager.insertTupleIntoTable(t2, table1);
 
         System.out.println(deserializePage(table1.pageNames.get(0)));
         System.out.println(deserializePage(table1.pageNames.get(1)));
@@ -100,7 +97,7 @@ public class Testing {
             x1.insert("Number", 123456);
             x1.insert("Specialisation", "Grocery");
             x1.insert("Address", "Cairo");
-            table1.insertIntoTable(x1);
+            InsertionManager.insertTupleIntoTable(x1, table1);
         } catch (DBAppException e) {
             System.out.println(e.getMessage());
         }
@@ -113,7 +110,7 @@ public class Testing {
             x2.insert("Number", 123456);
             x2.insert("Specialisation", "Grocery");
             x2.insert("Address", "Cairo");
-            table1.insertIntoTable(x2);
+            InsertionManager.insertTupleIntoTable(x2, table1);
         } catch (DBAppException e) {
             System.out.println(e.getMessage());
         }
@@ -125,7 +122,7 @@ public class Testing {
             x3.insert("Number", 123456);
             x3.insert("Specialisation", "Grocery");
             x3.insert("Address", "Cairo");
-            table1.insertIntoTable(x3);
+            InsertionManager.insertTupleIntoTable(x3, table1);
         } catch (DBAppException e) {
             System.out.println(e.getMessage());
         }
@@ -178,23 +175,23 @@ public class Testing {
         t.insert("Number", 123456);
         t.insert("Specialisation", "Grocery");
         t.insert("Address", "Cairo");
-        table1.insertIntoTable(t);
+        InsertionManager.insertTupleIntoTable(t, table1);
 
         Tuple t3 = new Tuple();
         t3.insert("ID", 3);
-        t3.insert("Name", "CityShop");
+        t3.insert("Name", "CityShop2");
         t3.insert("Number", 123456);
         t3.insert("Specialisation", "Grocery");
         t3.insert("Address", "Cairo");
-        table1.insertIntoTable(t3);
+        InsertionManager.insertTupleIntoTable(t3, table1);
 
         Tuple t2 = new Tuple();
         t2.insert("ID", 2);
-        t2.insert("Name", "CityShop");
+        t2.insert("Name", "CityShop3");
         t2.insert("Number", 123456);
         t2.insert("Specialisation", "Grocery");
         t2.insert("Address", "Cairo");
-        table1.insertIntoTable(t2);
+        InsertionManager.insertTupleIntoTable(t2, table1);
 
         System.out.println(deserializePage(table1.pageNames.get(0)));
         System.out.println(deserializePage(table1.pageNames.get(1)));
@@ -211,10 +208,6 @@ public class Testing {
     }
 
     public static void main(String[] args) throws Exception {
-        createTestTable();
-        createTestTable();
-        createTestTable();
-        createTestTable();
-        createTestTable();
+        insertIntoTableTest();
     }
 }
