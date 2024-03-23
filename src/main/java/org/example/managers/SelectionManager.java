@@ -1,4 +1,10 @@
-package org.example;
+package org.example.managers;
+
+import org.example.exceptions.DBAppException;
+import org.example.data_structures.SQLTerm;
+import org.example.data_structures.Tuple;
+import org.example.data_structures.Page;
+import org.example.data_structures.Table;
 
 import java.io.Serializable;
 import java.util.Vector;

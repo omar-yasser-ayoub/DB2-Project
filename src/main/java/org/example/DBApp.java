@@ -4,6 +4,10 @@ package org.example;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
 import com.opencsv.exceptions.CsvValidationException;
+import org.example.data_structures.SQLTerm;
+import org.example.data_structures.Table;
+import org.example.data_structures.Tuple;
+import org.example.exceptions.DBAppException;
 
 import java.io.*;
 import java.util.*;
@@ -144,7 +148,7 @@ public class DBApp {
 	}
 
 
-	public Iterator selectFromTable(SQLTerm[] arrSQLTerms, 
+	public Iterator selectFromTable(SQLTerm[] arrSQLTerms,
 									String[]  strarrOperators) throws DBAppException{
 		if (arrSQLTerms.length == 0) {
 			throw new DBAppException("Empty SQL Terms Array");

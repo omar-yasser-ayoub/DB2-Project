@@ -1,6 +1,6 @@
 
 /** * @author Wael Abouelsaadat */
-package org.example;
+package org.example.exceptions;
 public class DBAppException extends Exception {
 
 

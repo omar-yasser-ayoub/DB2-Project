@@ -1,4 +1,7 @@
-package org.example;
+package org.example.data_structures;
+
+import org.example.exceptions.DBAppException;
+import org.example.managers.FileManager;
 
 import java.io.*;
 import java.util.Vector;

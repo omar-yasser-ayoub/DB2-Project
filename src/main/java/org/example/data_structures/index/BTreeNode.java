@@ -1,4 +1,4 @@
-package org.example;
+package org.example.data_structures.index;
 
 import java.io.Serializable;
 

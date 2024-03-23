@@ -1,9 +1,9 @@
-package org.example;
+package org.example.data_structures.index;
+
+import org.example.exceptions.DBAppException;
+import org.example.data_structures.Table;
 
 import java.io.*;
-import java.util.Vector;
-
-import static org.example.FileManager.deserializePage;
 
 public interface Index extends Serializable {
     public String getColumnType();

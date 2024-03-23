@@ -1,6 +1,6 @@
 
 /** * @author Wael Abouelsaadat */
-package org.example;
+package org.example.data_structures;
 
 
 

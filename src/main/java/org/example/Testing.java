@@ -1,11 +1,16 @@
 package org.example;
 
 import com.opencsv.exceptions.CsvValidationException;
+import org.example.data_structures.Page;
+import org.example.data_structures.Table;
+import org.example.data_structures.Tuple;
+import org.example.exceptions.DBAppException;
+import org.example.managers.FileManager;
 
 import java.io.IOException;
 import java.util.Hashtable;
 
-import static org.example.FileManager.deserializePage;
+import static org.example.managers.FileManager.deserializePage;
 
 public class Testing {
     public static void serializingTest() throws DBAppException, IOException, CsvValidationException {

@@ -1,4 +1,8 @@
-package org.example;
+package org.example.managers;
+
+import org.example.exceptions.DBAppException;
+import org.example.data_structures.Page;
+import org.example.data_structures.index.Index;
 
 import java.io.*;
 

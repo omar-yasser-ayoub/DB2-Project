@@ -1,4 +1,6 @@
-package org.example;
+package org.example.data_structures;
+
+import org.example.exceptions.DBAppException;
 
 import java.util.Hashtable;
 
