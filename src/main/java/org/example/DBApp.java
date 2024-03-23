@@ -6,10 +6,7 @@ import com.opencsv.CSVWriter;
 import com.opencsv.exceptions.CsvValidationException;
 
 import java.io.*;
-import java.util.Iterator;
-import java.util.Hashtable;
-import java.util.Properties;
-import java.util.Vector;
+import java.util.*;
 
 
 public class DBApp {
@@ -82,9 +79,27 @@ public class DBApp {
 			}
 		}
 
-		Table t = new Table(strTableName, strClusteringKeyColumn, htblColNameType);
+		Table newTable = new Table(strTableName, strClusteringKeyColumn, htblColNameType);
+		writeMetadata(newTable);
 	}
 
+	//** Writes the metadata of the table to the metadata file
+	private void writeMetadata(Table table) throws IOException {
+		CSVWriter writer = DBApp.metadataWriter;
+		Hashtable<String, String> colNameType = table.getColNameType();
+		Enumeration<String> columns = colNameType.keys();
+		while (columns.hasMoreElements()){
+			String column = columns.nextElement();
+			String[] info = {table.getTableName(),
+					column,
+					colNameType.get(column),
+					Objects.equals(table.getClusteringKey(), column) ? "True" : "False",
+					"null",
+					"null"};
+			writer.writeNext(info);
+			writer.flush();
+		}
+	}
 
 	// following method creates a B+tree index 
 	public void createIndex(String   strTableName,

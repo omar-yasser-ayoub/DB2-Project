@@ -1,10 +1,9 @@
 package org.example;
 
 import java.io.*;
-import java.lang.reflect.Constructor;
 import java.util.Vector;
 
-import static org.example.Page.deserializePage;
+import static org.example.FileManager.deserializePage;
 
 public class Index implements Serializable {
     BTree<Integer,String> integerIndex;
@@ -28,7 +27,7 @@ public class Index implements Serializable {
 
     public void serializeIndex() throws DBAppException {
         createSerializedDirectory();
-        String fileName = "data/serialized_indices/" + _parentTable.tableName + _columnName + ".ser";
+        String fileName = "data/serialized_indices/" + _parentTable.getTableName() + _columnName + ".ser";
         try (FileOutputStream fileOut = new FileOutputStream(fileName); ObjectOutputStream objOut = new ObjectOutputStream(fileOut)) {
             objOut.writeObject(this);
         } catch (IOException e) {
@@ -57,19 +56,19 @@ public class Index implements Serializable {
     }
 
     public void populateIndex() throws DBAppException {
-        Vector<String> pageNames = _parentTable.pageNames;
+        Vector<String> pageNames = _parentTable.getPageNames();
         for (String pageName : pageNames) {
             Page page = deserializePage(pageName);
-            if (page.tuples.isEmpty()) {
+            if (page.getTuples().isEmpty()) {
                 continue;
             }
             switch (_columnType) {
                 case "java.lang.Integer" ->
-                        integerIndex.insert((Integer) page.tuples.get(0).getValues().get(_columnName), pageName);
+                        integerIndex.insert((Integer) page.getTuples().get(0).getValues().get(_columnName), pageName);
                 case "java.lang.Double" ->
-                        doubleIndex.insert((Double) page.tuples.get(0).getValues().get(_columnName), pageName);
+                        doubleIndex.insert((Double) page.getTuples().get(0).getValues().get(_columnName), pageName);
                 case "java.lang.String" ->
-                        stringIndex.insert((String) page.tuples.get(0).getValues().get(_columnName), pageName);
+                        stringIndex.insert((String) page.getTuples().get(0).getValues().get(_columnName), pageName);
             }
         }
     }

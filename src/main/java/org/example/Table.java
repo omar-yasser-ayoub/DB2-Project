@@ -1,23 +1,22 @@
 package org.example;
 
-import com.opencsv.CSVWriter;
 import com.opencsv.exceptions.CsvValidationException;
 
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
 
-import static org.example.Page.deserializePage;
+import static org.example.FileManager.deserializePage;
 
 public class Table implements Serializable {
-    String tableName;
-    Hashtable<String,String> colNameType;
-    String clusteringKey;
-    Hashtable<String, String> indicesColNameType;
-    Vector<String> pageNames;
-    int pageCount;
-    String keyType;
-    public Object index;
+    private String tableName;
+    private Hashtable<String,String> colNameType;
+    private String clusteringKey;
+    private Hashtable<String, String> indicesColNameType;
+    private Vector<String> pageNames;
+    private int pageCount;
+    private String keyType;
+    private Object index;
 
     public Table(String tableName, String clusteringKey, Hashtable<String,String> colNameType) throws IOException, CsvValidationException, DBAppException {
         this.tableName = tableName;
@@ -25,7 +24,6 @@ public class Table implements Serializable {
         this.clusteringKey = clusteringKey;
         this.pageNames = new Vector<>();
         this.pageCount = 0;
-        writeMetadata();
     }
 
     public String getTableName() {
@@ -60,33 +58,28 @@ public class Table implements Serializable {
         return index;
     }
 
-    //** Writes the metadata of the table to the metadata file
-    private void writeMetadata() throws IOException {
-        CSVWriter writer = DBApp.metadataWriter;
-        Enumeration<String> columns = colNameType.keys();
-        while (columns.hasMoreElements()){
-            String column = columns.nextElement();
-            String[] info = {tableName,
-                    column,
-                    colNameType.get(column),
-                    Objects.equals(clusteringKey, column) ? "True" : "False",
-                    "null",
-                    "null"};
-            writer.writeNext(info);
-            writer.flush();
-        }
+    public void setIndex(Object index) {
+        this.index = index;
+    }
+
+    public void insert(Tuple tuple) throws DBAppException {
+        InsertionManager.insertTupleIntoTable(tuple, this);
+    }
+
+    public void delete(Tuple tuple) throws DBAppException {
+        DeletionManager.deleteFromTable(tuple, this);
     }
 
     /**
      * Creates a new page and adds it to the table
      * @return The newly created page
      */
-    public Page createPage() throws DBAppException {
-        Page newPage = new Page(this, pageCount);
-        newPage.serializePage();
-        String pageName = tableName + pageCount;
-        pageNames.add(pageName);
-        pageCount++;
+    public Page createPageInTable() throws DBAppException {
+        Page newPage = new Page(this, getPageCount());
+        newPage.save();
+        String pageName = getTableName() + getPageCount();
+        getPageNames().add(pageName);
+        pageCount = getPageCount() + 1;
         return newPage;
     }
     /**
@@ -95,11 +88,11 @@ public class Table implements Serializable {
      * @param index The index at which the page is to be inserted
      * @return The newly created page
      */
-    public Page createPage(Tuple tuple, int index) throws DBAppException {
-        Page newPage = new Page(this, pageCount);
-        newPage.serializePage();
-        String pageName = tableName + pageCount;
-        pageNames.add(index + 1, pageName);
+    public Page createPageInTable(Tuple tuple, int index) throws DBAppException {
+        Page newPage = new Page(this, getPageCount());
+        newPage.save();
+        String pageName = getTableName() + getPageCount();
+        getPageNames().add(index + 1, pageName);
         InsertionManager.insertTupleIntoPage(tuple, newPage);
         return newPage;
     }
@@ -108,13 +101,13 @@ public class Table implements Serializable {
         Hashtable<String, Object> values = tuple.getValues();
         for (String key : values.keySet()){
             //check if key is in colNameType
-            if (!colNameType.containsKey(key)){
+            if (!getColNameType().containsKey(key)){
                 throw new DBAppException("Key not found in table");
             }
 
             //check if value is of the correct type
             try {
-                Class<?> expectedClass = Class.forName(colNameType.get(key));
+                Class<?> expectedClass = Class.forName(getColNameType().get(key));
                 expectedClass.cast(values.get(key));
             } catch (ClassNotFoundException | ClassCastException ex) {
                 throw new DBAppException("Key is not of the correct type");
@@ -123,121 +116,14 @@ public class Table implements Serializable {
         return true;
     }
 
-    private static int compareObjects(Object obj1 , Object obj2){
-        if(  obj1 instanceof String && obj2 instanceof String){
-            String currS = (String)(obj1);
-            String valS = (String)(obj2);
-
-            return currS.compareTo(valS);       //if first>second then positive
-
-
-        }
-        if(  obj1 instanceof Integer && obj2 instanceof Integer){
-            Integer currI = (Integer)(obj1);
-            Integer valI = (Integer)(obj2);
-
-            return currI.compareTo(valI);
-        }
-        if( obj1 instanceof Double && obj2 instanceof Double){
-            Double currD = (Double)(obj1);
-            Double valD = (Double)(obj2);
-
-            return currD.compareTo(valD)   ;
-        }
-        else
-            return 0;
-    }
-    public void deleteFromTable(Tuple tuple)throws DBAppException {
-//        int numberOfPages = pageNames.size();
-//        int startPageNum = 0;
-//
-//        while (startPageNum < numberOfPages) {
-//            //get current page number
-//            int currPageNum = startPageNum + (numberOfPages - startPageNum) / 2;
-//
-//            //get Page
-//            String pageName = pageNames.get(currPageNum);
-//            Page page = deserializePage(pageName);
-//
-//            //is page empty
-//            if (page.tuples.isEmpty()) {
-//                startPageNum = currPageNum + 1; // Move to the next page
-//                continue;
-//            }
-//
-//            int startTupleNum = 0;
-//            int numberOfTuples = page.getNumOfTuples();
-//
-//            // Binary search within the current page
-//            int low = startTupleNum;
-//            int high = numberOfTuples - 1;
-//            while (low <= high) {
-//                int mid = low + (high - low) / 2;
-//                Tuple currentTuple = page.tuples.get(mid);
-//
-//                // Compare the key value with the target value
-//                int comparisonResult = compareObjects(currentTuple.getValues().get(clusteringKey), tuple.getValues().get(clusteringKey));
-//
-//                if (comparisonResult == 0) {
-//                    int deletionResult = page.deleteFromPage(tuple);
-//                    switch (deletionResult) {
-//                        case 0 -> pageNames.remove(currPageNum);
-//                        case 1 -> {
-//                            return;
-//                        }
-//                        default -> throw new DBAppException("Tuple not Found");
-//                    }
-//
-//                } else if (comparisonResult < 0) {
-//                    // If our value is greater than current value, search in the right half
-//                    low = mid + 1;
-//                } else {
-//                    // If our value is less than current value, search in the left half
-//                    high = mid - 1;
-//                }
-//            }
-//
-//            // Move to the next page
-//            startPageNum = currPageNum + 1;
-//        }
-//        return;
-
-        Comparable<Object> clusteringKeyValue = (Comparable<Object>) tuple.getValues().get(clusteringKey);
-        int deletionResult = -1;
-
-        if (pageNames.isEmpty()) {
-            throw new DBAppException("Table is already empty");
-        }else{
-            for (String pageName : pageNames){
-                int i = pageNames.indexOf(pageName);
-                Page page = deserializePage(pageName);
-                Tuple firstTuple = page.tuples.get(0); //FIRST TUPLE OF CURRENT PAGE
-                Comparable<Object> firstClusteringKeyValue = (Comparable<Object>) firstTuple.getValues().get(clusteringKey); //VALUE OF THAT TUPLE
-                if (clusteringKeyValue.compareTo(firstClusteringKeyValue) < 0){
-                    Page prevPage = deserializePage(pageNames.get(i-1));
-                    deletionResult = prevPage.deleteFromPage(tuple);
-                    switch(deletionResult) {
-                        case 0:
-                            pageNames.remove(i-1);
-                            break;
-                        case 1:
-                            return;
-                        default:
-                            throw new DBAppException("Tuple not Found");
-                    }
-                }
-            }
-        }
-    }
-
     public Vector<Tuple> linearSearch(SQLTerm Term) throws DBAppException {
         Vector<Tuple> finalList = new Vector<Tuple>();
-        for (String pageName : pageNames) {
+        for (String pageName : getPageNames()) {
             Page page = deserializePage(pageName);
-            if (page.tuples.isEmpty()){
+            if (page.getTuples().isEmpty()){
                 continue;
             }
-            for (Tuple tuple : page.tuples) {
+            for (Tuple tuple : page.getTuples()) {
                 switch (Term._strOperator) {
                     case ">":
                         if (Term._objValue instanceof String) {
@@ -336,4 +222,5 @@ public class Table implements Serializable {
         }
         return finalList;
     }
+
 }
