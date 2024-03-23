@@ -8,6 +8,7 @@ import org.example.data_structures.SQLTerm;
 import org.example.data_structures.Table;
 import org.example.data_structures.Tuple;
 import org.example.exceptions.DBAppException;
+import org.example.managers.SelectionManager;
 
 import java.io.*;
 import java.util.*;
@@ -73,18 +74,22 @@ public class DBApp {
 	public void createTable(String strTableName, 
 							String strClusteringKeyColumn,  
 							Hashtable<String,String> htblColNameType) throws IOException, CsvValidationException, DBAppException {
+		try {
+			CSVReader reader = new CSVReader(new FileReader(METADATA_DIR));
+			String[] line = reader.readNext();
 
-		CSVReader reader = new CSVReader(new FileReader(METADATA_DIR));
-		String[] line = reader.readNext();
-
-		while((line = reader.readNext()) != null){
-			if(strTableName.equals(line[0])){
-				throw new DBAppException("Table already exists");
+			while ((line = reader.readNext()) != null) {
+				if (strTableName.equals(line[0])) {
+					throw new DBAppException("Table already exists");
+				}
 			}
-		}
 
-		Table newTable = new Table(strTableName, strClusteringKeyColumn, htblColNameType);
-		writeMetadata(newTable);
+			Table newTable = new Table(strTableName, strClusteringKeyColumn, htblColNameType);
+			writeMetadata(newTable);
+		}
+		catch (Exception e){
+			System.out.println("Error while creating table");
+		}
 	}
 
 	//** Writes the metadata of the table to the metadata file
@@ -150,71 +155,12 @@ public class DBApp {
 
 	public Iterator selectFromTable(SQLTerm[] arrSQLTerms,
 									String[]  strarrOperators) throws DBAppException{
-		if (arrSQLTerms.length == 0) {
-			throw new DBAppException("Empty SQL Terms Array");
+		try {
+			Iterator resultSet = SelectionManager.selectFromTable(arrSQLTerms, strarrOperators);
+			return resultSet;
 		}
-		if (arrSQLTerms.length != strarrOperators.length + 1) {
-			throw new DBAppException("Incompatible Array Lengths (arrSQLTerms should have a length bigger than strarrOperators by 1)");
-		}
-		String TableName = arrSQLTerms[0]._strTableName;
-		for (SQLTerm arrSQLTerm : arrSQLTerms) {
-			if(!arrSQLTerm._strTableName.equals(TableName)) {
-				throw new DBAppException("SQL Terms on different tables are not allowed");
-			}
-			// get datatype of value
-			String type = "";
-			if (arrSQLTerm._objValue instanceof String) {
-				type = "java.lang.String";
-			} else if (arrSQLTerm._objValue instanceof Integer) {
-				type = "java.lang.Integer";
-			} else if (arrSQLTerm._objValue instanceof Double) {
-				type = "java.lang.Double";
-			}
-
-			try {
-				// create a reader
-				CSVReader reader = new CSVReader(new FileReader(METADATA_DIR));
-				String[] line = reader.readNext();
-
-				// exception message stuff
-				String exceptionMsg = "exceptionMsg";
-				Boolean colInTable = false;
-				Boolean tableExists = false;
-				boolean flag = true;
-
-				while ((line = reader.readNext()) != null) {
-					if (arrSQLTerm._strTableName.equals(line[0]) && arrSQLTerm._strColumnName.equals(line[1])) {
-						exceptionMsg = "Object datatype doesn't match column datatype";
-						colInTable = true;
-						tableExists = true;
-					}
-					if (arrSQLTerm._strTableName.equals(line[0]) && !arrSQLTerm._strColumnName.equals(line[1]) && !colInTable) {
-						exceptionMsg = "Column does not exist in table";
-						tableExists = true;
-					}
-					if (!tableExists)
-						exceptionMsg = "Table does not exist";
-
-					// if table exists and contains columns, and the datatype matches the column datatype, assign the values
-					if (arrSQLTerm._strTableName.equals(line[0]) && arrSQLTerm._strColumnName.equals(line[1]) && type.equals(line[2])) {
-						flag = false;
-						break;
-					}
-				}
-				// if values were never assigned, that means condition was never met and exception should be thrown
-				if (flag)
-					throw new DBAppException(exceptionMsg);
-			} catch (IOException e) {
-				e.printStackTrace();
-			} catch (CsvValidationException e) {
-				e.printStackTrace();
-			}
-			if (!(arrSQLTerm._strOperator.equals(">") || arrSQLTerm._strOperator.equals(">=") || arrSQLTerm._strOperator.equals("<") || arrSQLTerm._strOperator.equals("<=") || arrSQLTerm._strOperator.equals("!=") || arrSQLTerm._strOperator.equals("=")))
-				throw new DBAppException("Illegal operator");
-		}
-		for (String strOperator : strarrOperators ) {
-			if (!(strOperator.equals("AND") || strOperator.equals("OR") || strOperator.equals("XOR")))
-				throw new DBAppException("Illegal operator");
+		catch (Exception e){
+			System.out.println("Error while selecting from table");
 		}
 		return null;
 	}
@@ -282,15 +228,15 @@ public class DBApp {
 //
 //			SQLTerm[] arrSQLTerms;
 //			arrSQLTerms = new SQLTerm[2];
-//			arrSQLTerms[0]._strTableName =  "Student";
-//			arrSQLTerms[0]._strColumnName=  "name";
-//			arrSQLTerms[0]._strOperator  =  "=";
-//			arrSQLTerms[0]._objValue     =  "John Noor";
+//			arrSQLTerms[0].getStrTableName() =  "Student";
+//			arrSQLTerms[0].getStrColumnName()=  "name";
+//			arrSQLTerms[0].getStrOperator()  =  "=";
+//			arrSQLTerms[0].getObjValue()     =  "John Noor";
 //
-//			arrSQLTerms[1]._strTableName =  "Student";
-//			arrSQLTerms[1]._strColumnName=  "gpa";
-//			arrSQLTerms[1]._strOperator  =  "=";
-//			arrSQLTerms[1]._objValue     =  Double.valueOf( 1.5 );
+//			arrSQLTerms[1].getStrTableName() =  "Student";
+//			arrSQLTerms[1].getStrColumnName()=  "gpa";
+//			arrSQLTerms[1].getStrOperator()  =  "=";
+//			arrSQLTerms[1].getObjValue()     =  Double.valueOf( 1.5 );
 //
 //			String[] strarrOperators = new String[1];
 //			strarrOperators[0] = "OR";
