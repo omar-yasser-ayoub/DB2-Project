@@ -2,6 +2,7 @@ package org.example.managers;
 
 import org.example.exceptions.DBAppException;
 import org.example.data_structures.Page;
+import org.example.data_structures.Table;
 import org.example.data_structures.index.Index;
 
 import java.io.*;
@@ -10,6 +11,8 @@ public class FileManager implements Serializable {
 
     public static final String SERIALIZED_PAGES_PATH = "data/serialized_pages";
     public static final String SERIALIZED_INDICES_PATH = "data/serialized_indices";
+
+    public static final String SERIALIZED_TABLES_PATH = "data/serialized_tables";
 
     private FileManager() {
         throw new IllegalStateException("Utility class");
@@ -43,12 +46,14 @@ public class FileManager implements Serializable {
 
     public static void serializePage(Page page) throws DBAppException {
         createSerializedDirectory(SERIALIZED_PAGES_PATH);
-        String fileName = SERIALIZED_PAGES_PATH + page.getParentTable().getTableName() + page.getPageNum() + ".ser";
+        String fileName = SERIALIZED_PAGES_PATH + "/" + page.getParentTable().getTableName() + page.getPageNum() + ".ser";
+        ((page.getParentTable()).getPageNames()).add(page.getParentTable().getTableName() + page.getPageNum());
+        page.getParentTable().save();
         serialize(page, fileName);
     }
 
     public static Page deserializePage(String pageName) throws DBAppException {
-        String fileName = SERIALIZED_PAGES_PATH + pageName + ".ser";
+        String fileName = SERIALIZED_PAGES_PATH + "/" + pageName + ".ser";
         return (Page)deserialize(fileName);
     }
 
@@ -61,5 +66,30 @@ public class FileManager implements Serializable {
     public static Index deserializeIndex(String indexName) throws DBAppException {
         String fileName = SERIALIZED_INDICES_PATH + indexName + ".ser";
         return (Index)deserialize(fileName);
+    }
+
+    public static void serializeTable(Table table) throws DBAppException{
+        createSerializedDirectory(SERIALIZED_TABLES_PATH);
+        String fileName = SERIALIZED_TABLES_PATH + "/" + table.getTableName() + ".ser";
+        serialize(table, fileName);
+    }
+
+    public static Table deserializeTable(String tableName) throws DBAppException{
+        String fileName = SERIALIZED_TABLES_PATH + "/" + tableName + ".ser";
+        return (Table)deserialize(fileName);
+    }
+
+    //takes a pageName or tableName and deletes the file in their corresponding file path
+    public static void deleteFile(String objName)throws DBAppException{
+        String fileName;
+        if(Character.isDigit(objName.charAt((objName.length())-1))){
+            fileName = SERIALIZED_PAGES_PATH + "/" + objName + ".ser";
+        }else{
+            fileName = SERIALIZED_TABLES_PATH + "/" + objName + ".ser";
+        }
+        File file = new File(fileName);
+        if (file.exists()){
+            file.delete();
+        }
     }
 }

@@ -81,6 +81,7 @@ public class DeletionManager{
                     switch (deletionResult) {
                         case 0:
                             table.getPageNames().remove(i - 1);
+                            table.save();
                             break;
                         case 1:
                             return;
@@ -102,7 +103,7 @@ public class DeletionManager{
             if (clusteringKeyValue.compareTo(currentClusteringKeyValue) == 0){
                 page.getTuples().remove(i);
                 if(page.getTuples().isEmpty()) {
-                    //delete page from disk
+                    FileManager.deleteFile(page.getPageName());
                     return 0;                                    //page empty after deletion, call deletePage
                 } else {
                     page.save();

@@ -1,6 +1,7 @@
 package org.example.data_structures;
 import org.example.exceptions.DBAppException;
 import org.example.managers.DeletionManager;
+import org.example.managers.FileManager;
 import org.example.managers.InsertionManager;
 import org.example.data_structures.index.Index;
 
@@ -67,6 +68,10 @@ public class Table implements Serializable {
 
     public void delete(Tuple tuple) throws DBAppException {
         DeletionManager.deleteFromTable(tuple, this);
+    }
+
+    public void save() throws DBAppException {
+        FileManager.serializeTable(this);
     }
 
     /**

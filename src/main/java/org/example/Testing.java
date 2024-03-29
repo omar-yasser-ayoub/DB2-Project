@@ -18,13 +18,15 @@ public class Testing {
         dbApp.init();
 
         Table table1 = createTestTable();
-        Page page1 = new Page(table1, 200);
-        Page page2 = new Page(table1, 200);
+        Page page1 = new Page(table1, 0);
+        Page page2 = new Page(table1, 1);
 
         page1.save();
         System.out.println("Page 1 serialized");
         page2.save();
         System.out.println("Page 2 serialized");
+        table1.save();
+        System.out.println("Table1 serialized");
     }
 
     private static void deserializingTest() throws DBAppException {
@@ -34,6 +36,11 @@ public class Testing {
         Page p2 = FileManager.deserializePage("CityShop1");
         System.out.println("Page 2 deserialized");
         System.out.println(p2.getPageNum());
+        Table t = FileManager.deserializeTable("CityShop");
+        System.out.println("Table1 deserialized");
+        System.out.println(t.getTableName());
+        System.out.println(t.getPageNames());
+
     }
 
     private static Table createTestTable() throws IOException, CsvValidationException, DBAppException {
@@ -212,6 +219,78 @@ public class Testing {
 
     }
 
+    /**private static void BinarySearchTest() throws DBAppException, IOException, CsvValidationException {
+        DBApp dbApp1 = new DBApp();
+        dbApp1.init();
+        Table tableBin = createTestTable();
+
+        //valid tuple
+        Tuple t = new Tuple();
+        t.insert("ID", 1);
+        t.insert("Name", "CityShop");
+        t.insert("Number", 123456);
+        t.insert("Specialisation", "Grocery");
+        t.insert("Address", "Cairo");
+        tableBin.insert(t);
+        System.out.println("Done inserting");
+
+        Tuple t2 = new Tuple();
+        t2.insert("ID", 2);
+        t2.insert("Name", "Shop");
+        t2.insert("Number", 123);
+        t2.insert("Specialisation", "Grocery");
+        t2.insert("Address", "Cairo");
+        tableBin.insert(t2);
+        System.out.println("Done inserting");
+
+
+        //System.out.println(deserializePage(tableBin.pageNames.get(0)));
+
+        try {
+
+
+
+            Tuple x1 = new Tuple();
+            x1.insert("ID", 4);
+            x1.insert("Name", "Shop");
+            x1.insert("Number", 11);
+            x1.insert("Specialisation", "Grocery");
+            x1.insert("Address", "Cairo");
+            tableBin.insert(x1);
+            System.out.println("Done inserting");
+
+
+            Tuple x2 = new Tuple();
+            x2.insert("ID", 3);
+            x2.insert("Name", "CityShop");
+            x2.insert("Number", 12);
+            x2.insert("Specialisation", "Grocery");
+            x2.insert("Address", "Cairo");
+            tableBin.insert(x2);
+            System.out.println("Done inserting");
+
+
+            //boolean b = tableBin.tupleHasNoDuplicateClusteringKey("Number",(Object)x1);
+
+            /*Tuple x2 = new Tuple();
+            x2.insert("ID", 3);
+            x2.insert("Name", "CityShop");
+            x2.insert("Number", 3456);
+            x2.insert("Specialisation", "Grocery");
+            x2.insert("Address", "Cairo");
+            tableBin.insertIntoTable(x2);
+            //Tuple valt = (Tuple)x2;
+            //boolean b2 = tableBin.tupleHasNoDuplicateClusteringKey("ID",(Object)3);
+            //Tuple valt = (Tuple)x2;
+            //int b2 = compareObjects(valt.getValues().get("ID"),)
+            //System.out.println(b);
+           // System.out.println(b2);
+        } catch (DBAppException e) {
+            System.out.println(e.getMessage());
+        }
+
+
+    }*/
     private static void BinarySearchTest() throws DBAppException, IOException, CsvValidationException {
         DBApp dbApp1 = new DBApp();
         dbApp1.init();
@@ -284,79 +363,8 @@ public class Testing {
 
 
     }
-    private static void BinarySearchTest() throws DBAppException, IOException, CsvValidationException {
-        DBApp dbApp1 = new DBApp();
-        dbApp1.init();
-        Table tableBin = createTestTable();
-
-        //valid tuple
-        Tuple t = new Tuple();
-        t.insert("ID", 1);
-        t.insert("Name", "CityShop");
-        t.insert("Number", 123456);
-        t.insert("Specialisation", "Grocery");
-        t.insert("Address", "Cairo");
-        tableBin.insertIntoTable(t);
-        System.out.println("Done inserting");
-
-        Tuple t2 = new Tuple();
-        t2.insert("ID", 2);
-        t2.insert("Name", "Shop");
-        t2.insert("Number", 123);
-        t2.insert("Specialisation", "Grocery");
-        t2.insert("Address", "Cairo");
-        tableBin.insertIntoTable(t2);
-        System.out.println("Done inserting");
-
-
-        //System.out.println(deserializePage(tableBin.pageNames.get(0)));
-
-        try {
-
-
-
-            Tuple x1 = new Tuple();
-            x1.insert("ID", 4);
-            x1.insert("Name", "Shop");
-            x1.insert("Number", 11);
-            x1.insert("Specialisation", "Grocery");
-            x1.insert("Address", "Cairo");
-            tableBin.insertIntoTable(x1);
-            System.out.println("Done inserting");
-
-
-            Tuple x2 = new Tuple();
-            x2.insert("ID", 3);
-            x2.insert("Name", "CityShop");
-            x2.insert("Number", 12);
-            x2.insert("Specialisation", "Grocery");
-            x2.insert("Address", "Cairo");
-            tableBin.insertIntoTable(x2);
-            System.out.println("Done inserting");
-
-
-            //boolean b = tableBin.tupleHasNoDuplicateClusteringKey("Number",(Object)x1);
-
-            /*Tuple x2 = new Tuple();
-            x2.insert("ID", 3);
-            x2.insert("Name", "CityShop");
-            x2.insert("Number", 3456);
-            x2.insert("Specialisation", "Grocery");
-            x2.insert("Address", "Cairo");
-            tableBin.insertIntoTable(x2);
-            //Tuple valt = (Tuple)x2;
-            //boolean b2 = tableBin.tupleHasNoDuplicateClusteringKey("ID",(Object)3);
-            //Tuple valt = (Tuple)x2;
-            //int b2 = compareObjects(valt.getValues().get("ID"),)
-            //System.out.println(b);
-           // System.out.println(b2);*/
-        } catch (DBAppException e) {
-            System.out.println(e.getMessage());
-        }
-
-
-    }
     public static void main(String[] args) throws Exception {
-        BinarySearchTest();
+        serializingTest();
+        deserializingTest();
     }
 }
