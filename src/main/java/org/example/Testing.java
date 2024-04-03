@@ -288,8 +288,6 @@ public class Testing {
 
         try {
 
-
-
             Tuple x1 = new Tuple();
             x1.insert("ID", 4);
             x1.insert("Name", "Shop");
@@ -298,7 +296,6 @@ public class Testing {
             x1.insert("Address", "Cairo");
             tableBin.insert(x1);
             System.out.println("Done inserting");
-
 
             Tuple x2 = new Tuple();
             x2.insert("ID", 3);
@@ -310,6 +307,17 @@ public class Testing {
             System.out.println("Done inserting");
 
 
+
+
+
+
+            for (String pageName : tableBin.getPageNames()) {
+                System.out.println(deserializePage(pageName));
+            }
+            tableBin.delete(x2);
+            for (String pageName : tableBin.getPageNames()) {
+                System.out.println(deserializePage(pageName));
+            }
             //boolean b = tableBin.tupleHasNoDuplicateClusteringKey("Number",(Object)x1);
 
             /*Tuple x2 = new Tuple();
@@ -332,6 +340,6 @@ public class Testing {
 
     }
     public static void main(String[] args) throws Exception {
-        deleteFromTableTest();
+        BinarySearchTest();
     }
 }

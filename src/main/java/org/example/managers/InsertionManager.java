@@ -6,6 +6,8 @@ import org.example.data_structures.Tuple;
 import org.example.data_structures.Page;
 import org.example.data_structures.Table;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Vector;
 
 public class InsertionManager{
@@ -42,9 +44,62 @@ public class InsertionManager{
         Vector<String> pageNames = table.getPageNames();
         Comparable<Object> clusteringKeyValue = (Comparable<Object>) tuple.getValues().get(table.getClusteringKey());
 
-        for (String pageName : pageNames) {
+
+        int low = 0;
+        int high = table.getPageNames().size();
+
+        while (low <= high) {
+
+            int mid = low + (high - low) / 2;
+
+            //get Page
+            String pageName = table.getPageNames().get(mid);
             Page page = FileManager.deserializePage(pageName);
             Vector<Tuple> tuples = page.getTuples();
+
+
+            //if page is empty, insert into page
+            if (tuples.isEmpty()) {
+                return page;
+            }
+
+            //First and Last Tuple of Current Page
+            Tuple firstTuple = page.getTuples().get(0);
+            int numberOfTuplesInPage = page.getTuples().size();
+            Tuple lastTuple = page.getTuples().get(numberOfTuplesInPage -1);
+
+            //Value of these Tuples
+            Comparable<Object> firstClusteringKeyValue = (Comparable<Object>) firstTuple.getValues().get(table.getClusteringKey());
+            Comparable<Object> LastClusteringKeyValue = (Comparable<Object>) lastTuple.getValues().get(table.getClusteringKey());
+
+            //if tuple is smaller than first tuple in page, insert into previous page
+            if (clusteringKeyValue.compareTo(firstClusteringKeyValue) >= 0 && clusteringKeyValue.compareTo(LastClusteringKeyValue) <= 0) {
+
+                return page;
+            }
+            else if(clusteringKeyValue.compareTo(firstClusteringKeyValue) < 0){
+                if ( mid == 0) {
+                    return page;
+                }
+                high = mid - 1;
+            }
+            else{
+                low = mid + 1;
+            }
+
+            //if page is last page insert
+            if (mid == table.getPageNames().size() - 1) {
+                return page;
+            }
+
+
+        }
+        return null;
+        /*for (String pageName : pageNames) {
+
+            Page page = FileManager.deserializePage(pageName);
+            Vector<Tuple> tuples = page.getTuples();
+
             int i = pageNames.indexOf(pageName);
 
             //if page is empty, insert into page
@@ -71,9 +126,19 @@ public class InsertionManager{
 
 
         }
-        return null;
+        return null;*/
     }
-
+    public static int tupleFoundInPage(Page page, Tuple tuple, String clusteringKey){
+        Vector<Tuple> tuples = page.getTuples();
+        Comparator<Tuple> c = new Comparator<Tuple>() {
+            public int compare(Tuple u1, Tuple u2)
+            {
+                return SelectionManager.compareObjects(u1.getValues().get(clusteringKey),u2.getValues().get(clusteringKey));
+            }
+        };
+        int index = Collections.binarySearch(tuples, tuple, c);
+        return index;
+    }
     /**
      * Attempts to insert into the Page instance
      * @param tuple The tuple to be inserted into the page
@@ -83,6 +148,8 @@ public class InsertionManager{
         String clusteringKey = parentTable.getClusteringKey();
         Vector<Tuple> tuples = page.getTuples();
         Comparable<Object> clusteringKeyValue = (Comparable<Object>) tuple.getValues().get(clusteringKey);
+        int low = 0;
+        int high = parentTable.getPageNames().size();
 
         if (tuples.size() <= DBApp.maxRowCount) {
             //if page is empty, insert into page
@@ -91,8 +158,22 @@ public class InsertionManager{
                 page.save();
                 return null;
             }
-            for (int i = 0; i < tuples.size(); i++) {
-                Comparable<Object> currentClusteringKeyValue = (Comparable<Object>) tuples.get(i).getValues().get(clusteringKey);
+            //[1,3,6,8,9] insert 5--> -3 (return value +1 then *-1)
+
+            int index = tupleFoundInPage(page,tuple,clusteringKey);
+            if(index<0){
+                index++;
+                index*=-1;
+            }
+            tuples.add(index, tuple);
+            page.save();
+
+            /*while (low <= high) {
+
+                //current tuple's index and is value
+                int mid = low + (high - low) / 2;
+                Comparable<Object> currentClusteringKeyValue = (Comparable<Object>) tuples.get(mid).getValues().get(clusteringKey);
+
                 //if tuple is less than current tuple, insert before current tuple
                 if (clusteringKeyValue.compareTo(currentClusteringKeyValue) < 0){
                     tuples.add(i, tuple);
@@ -105,7 +186,7 @@ public class InsertionManager{
                     page.save();
                     break;
                 }
-            }
+            }*/
         }
         //if page is greater than max size, create overflow page and insert tuple into it directly
         else {
