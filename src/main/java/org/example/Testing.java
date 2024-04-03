@@ -4,6 +4,8 @@ import com.opencsv.exceptions.CsvValidationException;
 import org.example.data_structures.Page;
 import org.example.data_structures.Table;
 import org.example.data_structures.Tuple;
+import org.example.data_structures.index.Index;
+import org.example.data_structures.index.IntegerIndex;
 import org.example.exceptions.DBAppException;
 import org.example.managers.FileManager;
 
@@ -259,6 +261,16 @@ public class Testing {
 
 
     }*/
+    private static void IndexTest() throws DBAppException, CsvValidationException, IOException {
+        DBApp dbApp1 = new DBApp();
+        dbApp1.init();
+        Table table = createTestTable();
+        Index index = new IntegerIndex(table, "Integer", "Number" );
+        for (int i = 0; i < 50; i++) {
+            index.insert(i, String.valueOf(i));
+        }
+        System.out.println(index.search(40));
+    }
     private static void BinarySearchTest() throws DBAppException, IOException, CsvValidationException {
         DBApp dbApp1 = new DBApp();
         dbApp1.init();
@@ -340,6 +352,7 @@ public class Testing {
 
     }
     public static void main(String[] args) throws Exception {
-        BinarySearchTest();
+        IndexTest();
+
     }
 }

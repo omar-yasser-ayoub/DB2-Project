@@ -20,6 +20,7 @@ public class DoubleIndex implements Index {
         this.columnType = columnType;
         this.parentTable = parentTable;
         this.columnName = columnName;
+        this.bTree = new BTree<>();
     }
 
     public String getColumnType() {
