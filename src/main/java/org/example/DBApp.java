@@ -8,6 +8,7 @@ import org.example.data_structures.SQLTerm;
 import org.example.data_structures.Table;
 import org.example.data_structures.Tuple;
 import org.example.exceptions.DBAppException;
+import org.example.managers.FileManager;
 import org.example.managers.SelectionManager;
 
 import java.io.*;
@@ -35,6 +36,7 @@ public class DBApp {
 
 	private static void initMetadataWriter() {
 		try {
+			FileManager.createDirectory(METADATA_DIR);
 			metadataWriter = new CSVWriter(new FileWriter(METADATA_DIR, true),
 					CSVWriter.DEFAULT_SEPARATOR, CSVWriter.NO_QUOTE_CHARACTER,
 					CSVWriter.DEFAULT_ESCAPE_CHARACTER, CSVWriter.RFC4180_LINE_END);

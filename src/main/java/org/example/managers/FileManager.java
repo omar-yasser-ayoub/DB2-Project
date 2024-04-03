@@ -18,7 +18,7 @@ public class FileManager implements Serializable {
         throw new IllegalStateException("Utility class");
     }
 
-    private static void createSerializedDirectory(String dirPath) throws DBAppException {
+    public static void createDirectory(String dirPath) throws DBAppException {
         File directory = new File(dirPath);
         if (!directory.exists()) {
             boolean created = directory.mkdirs();
