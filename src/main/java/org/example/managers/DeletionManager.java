@@ -65,36 +65,29 @@ public class DeletionManager{
 //        }
 //        return;
         Comparable<Object> clusteringKeyValue = (Comparable<Object>) tuple.getValues().get(table.getClusteringKey());
-        int deletionResult = -1;
 
         if (table.getPageNames().isEmpty()) {
             throw new DBAppException("Table is already empty");
-        } else {
+        }
+        else {
             for (String pageName : table.getPageNames()) {
+
                 int i = table.getPageNames().indexOf(pageName);
                 Page page = FileManager.deserializePage(pageName);
                 Tuple firstTuple = page.getTuples().get(0); //FIRST TUPLE OF CURRENT PAGE
                 Comparable<Object> firstClusteringKeyValue = (Comparable<Object>) firstTuple.getValues().get(table.getClusteringKey()); //VALUE OF THAT TUPLE
+
                 if (clusteringKeyValue.compareTo(firstClusteringKeyValue) < 0) {
                     Page prevPage = FileManager.deserializePage(table.getPageNames().get(i - 1));
-                    deletionResult = deleteFromPage(tuple, prevPage);
-                    switch (deletionResult) {
-                        case 0:
-                            table.getPageNames().remove(i - 1);
-                            table.save();
-                            break;
-                        case 1:
-                            return;
-                        default:
-                            throw new DBAppException("Tuple not Found");
+                    deleteFromPage(tuple, table, prevPage);
+                    return;
                     }
                 }
+                throw new DBAppException("Tuple Page not Found");
             }
         }
-    }
 
-    //TODO: Implement delete page from disk
-    public static int deleteFromPage(Tuple tuple, Page page) throws DBAppException {
+    public static void deleteFromPage(Tuple tuple, Table table, Page page) throws DBAppException {
         String clusteringKey = page.getParentTable().getClusteringKey();
         Comparable<Object> clusteringKeyValue = (Comparable<Object>) tuple.getValues().get(clusteringKey);
 
@@ -102,15 +95,19 @@ public class DeletionManager{
             Comparable<Object> currentClusteringKeyValue = (Comparable<Object>) page.getTuples().get(i).getValues().get(clusteringKey);
             if (clusteringKeyValue.compareTo(currentClusteringKeyValue) == 0){
                 page.getTuples().remove(i);
+
                 if(page.getTuples().isEmpty()) {
-                    FileManager.deleteFile(page.getPageName());
-                    return 0;                                    //page empty after deletion, call deletePage
+                    FileManager.deleteFile(page.getPageName()); //delete from disk
+                    table.getPageNames().remove(i);
+                    table.save();
+                    return;
+
                 } else {
                     page.save();
-                    return 1;                                //deleted and shifted
+                    return;
                 }
             }
         }
-        return 2;                                                //not found
+        throw new DBAppException("Tuple not Found"); //tuple not found
     }
 }

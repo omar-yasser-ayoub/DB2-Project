@@ -71,12 +71,11 @@ public class Testing {
         System.out.println(t);
     }
 
-    private static void insertIntoTableTest() throws DBAppException, IOException, CsvValidationException {
+    private static Table insertIntoTableTest() throws DBAppException, IOException, CsvValidationException {
         DBApp dbApp = new DBApp();
         dbApp.init();
         Table table1 = createTestTable();
         int numOfTestTuples = 50;
-        int numOfPages = numOfTestTuples / DBApp.maxRowCount;
 
         List<Integer> numbers = new ArrayList<>();
         for (int i = 1; i <= numOfTestTuples; i++) {
@@ -93,8 +92,8 @@ public class Testing {
             System.out.println("Inserting tuple " + num);
             table1.insert(t);
         }
-        for (int i = 0; i < numOfPages; i++) {
-            System.out.println(deserializePage(table1.getPageNames().get(i)));
+        for (String pageName : table1.getPageNames()) {
+            System.out.println(deserializePage(pageName));
         }
 
         try {
@@ -122,18 +121,7 @@ public class Testing {
         } catch (DBAppException e) {
             System.out.println(e.getMessage());
         }
-
-        try {
-            Tuple x3 = new Tuple();
-            x3.insert("ID", 1);
-            x3.insert("Name", "CityShop");
-            x3.insert("Number", 123456);
-            x3.insert("Specialisation", "Grocery");
-            x3.insert("Address", "Cairo");
-            table1.insert(x3);
-        } catch (DBAppException e) {
-            System.out.println(e.getMessage());
-        }
+        return table1;
     }
 
 //    public static void sqlTermTest() throws DBAppException, IOException, CsvValidationException {
@@ -173,44 +161,29 @@ public class Testing {
     private static void deleteFromTableTest() throws DBAppException, CsvValidationException, IOException {
         DBApp dbApp = new DBApp();
         dbApp.init();
-        Table table1 = createTestTable();
+        Table table1 = insertIntoTableTest();
 
-        //valid tuple
-        Tuple t = new Tuple();
-        t.insert("ID", 1);
-        t.insert("Name", "CityShop");
-        t.insert("Number", 123456);
-        t.insert("Specialisation", "Grocery");
-        t.insert("Address", "Cairo");
-        table1.insert(t);
+        int numOfTestTuples = 7;
 
-        Tuple t3 = new Tuple();
-        t3.insert("ID", 3);
-        t3.insert("Name", "CityShop2");
-        t3.insert("Number", 123456);
-        t3.insert("Specialisation", "Grocery");
-        t3.insert("Address", "Cairo");
-        table1.insert(t3);
-
-        Tuple t2 = new Tuple();
-        t2.insert("ID", 2);
-        t2.insert("Name", "CityShop3");
-        t2.insert("Number", 123456);
-        t2.insert("Specialisation", "Grocery");
-        t2.insert("Address", "Cairo");
-        table1.insert(t2);
-
-        System.out.println(deserializePage(table1.getPageNames().get(0)));
-        System.out.println(deserializePage(table1.getPageNames().get(1)));
-
-        try{
-        table1.delete(t);
-        } catch (DBAppException e) {
-            System.out.println(e.getMessage());
+        List<Integer> numbers = new ArrayList<>();
+        for (int i = 1; i <= numOfTestTuples; i++) {
+            numbers.add(i);
         }
+        Collections.shuffle(numbers);
 
-        System.out.println(deserializePage(table1.getPageNames().get(0)));
-        System.out.println(deserializePage(table1.getPageNames().get(1)));
+        for (int num : numbers) {
+            Tuple t = new Tuple();
+            t.insert("ID", num);
+            t.insert("Name", "City Shop");
+            t.insert("Number", num);
+            t.insert("Specialisation", "");
+            t.insert("Address", "");
+            System.out.println("Deleting tuple " + num);
+            table1.delete(t);
+        }
+        for (String pageName : table1.getPageNames()) {
+            System.out.println(deserializePage(pageName));
+        }
 
     }
 
@@ -359,6 +332,6 @@ public class Testing {
 
     }
     public static void main(String[] args) throws Exception {
-        insertIntoTableTest();
+        deleteFromTableTest();
     }
 }
