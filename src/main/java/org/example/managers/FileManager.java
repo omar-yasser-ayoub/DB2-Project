@@ -45,10 +45,8 @@ public class FileManager implements Serializable {
     }
 
     public static void serializePage(Page page) throws DBAppException {
-        createSerializedDirectory(SERIALIZED_PAGES_PATH);
+        createDirectory(SERIALIZED_PAGES_PATH);
         String fileName = SERIALIZED_PAGES_PATH + "/" + page.getParentTable().getTableName() + page.getPageNum() + ".ser";
-        ((page.getParentTable()).getPageNames()).add(page.getParentTable().getTableName() + page.getPageNum());
-        page.getParentTable().save();
         serialize(page, fileName);
     }
 
@@ -58,7 +56,7 @@ public class FileManager implements Serializable {
     }
 
     public static void serializeIndex(Index index) throws DBAppException {
-        createSerializedDirectory(SERIALIZED_INDICES_PATH);
+        createDirectory(SERIALIZED_INDICES_PATH);
         String fileName = SERIALIZED_INDICES_PATH + index.getParentTable().getTableName() + index.getColumnName() + ".ser";
         serialize(index, fileName);
     }
@@ -69,7 +67,7 @@ public class FileManager implements Serializable {
     }
 
     public static void serializeTable(Table table) throws DBAppException{
-        createSerializedDirectory(SERIALIZED_TABLES_PATH);
+        createDirectory(SERIALIZED_TABLES_PATH);
         String fileName = SERIALIZED_TABLES_PATH + "/" + table.getTableName() + ".ser";
         serialize(table, fileName);
     }

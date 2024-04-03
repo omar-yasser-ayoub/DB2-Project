@@ -97,7 +97,8 @@ public class Table implements Serializable {
         newPage.save();
         String pageName = getTableName() + getPageCount();
         getPageNames().add(index + 1, pageName);
-        InsertionManager.insertTupleIntoPage(tuple, newPage);
+        InsertionManager.insertTupleIntoPage(tuple, this, newPage);
+        pageCount = getPageCount() + 1;
         return newPage;
     }
 

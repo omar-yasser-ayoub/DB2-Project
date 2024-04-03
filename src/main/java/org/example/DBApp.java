@@ -17,7 +17,7 @@ import java.util.*;
 
 public class DBApp {
 
-	public static final String METADATA_DIR = "data/table_metadata/metadata.csv";
+	public static final String METADATA_DIR = "data/table_metadata";
 	public static int maxRowCount;
 	static CSVWriter metadataWriter;
 
@@ -37,11 +37,11 @@ public class DBApp {
 	private static void initMetadataWriter() {
 		try {
 			FileManager.createDirectory(METADATA_DIR);
-			metadataWriter = new CSVWriter(new FileWriter(METADATA_DIR, true),
+			metadataWriter = new CSVWriter(new FileWriter(METADATA_DIR + "/metadata.csv", true),
 					CSVWriter.DEFAULT_SEPARATOR, CSVWriter.NO_QUOTE_CHARACTER,
 					CSVWriter.DEFAULT_ESCAPE_CHARACTER, CSVWriter.RFC4180_LINE_END);
 
-			CSVReader reader = new CSVReader(new FileReader(METADATA_DIR));
+			CSVReader reader = new CSVReader(new FileReader(METADATA_DIR + "/metadata.csv"));
 			String[] line = reader.readNext();
 
 			// adding headers to start of file
@@ -125,10 +125,16 @@ public class DBApp {
 	// htblColNameValue must include a value for the primary key
 	public void insertIntoTable(String strTableName, 
 								Hashtable<String,Object>  htblColNameValue) throws DBAppException{
-	
-		Tuple tuple = new Tuple(htblColNameValue);
-		//TODO: Load table from disk
-		//Table table = loadTableFromCSV(strTableName);
+		try{
+			Tuple tuple = new Tuple(htblColNameValue);
+			Table table = FileManager.deserializeTable(strTableName);
+			table.insert(tuple);
+			FileManager.serializeTable(table);
+		}
+		catch (Exception e){
+			System.out.println("Error while inserting into table");
+			e.printStackTrace();
+		}
 	}
 
 
@@ -150,8 +156,17 @@ public class DBApp {
 	// htblColNameValue enteries are ANDED together
 	public void deleteFromTable(String strTableName, 
 								Hashtable<String,Object> htblColNameValue) throws DBAppException{
-	
-		throw new DBAppException("not implemented yet");
+
+		try{
+			Tuple tuple = new Tuple(htblColNameValue);
+			Table table = FileManager.deserializeTable(strTableName);
+			table.delete(tuple);
+			FileManager.serializeTable(table);
+		}
+		catch (Exception e){
+			System.out.println("Error while inserting into table");
+			e.printStackTrace();
+		}
 	}
 
 

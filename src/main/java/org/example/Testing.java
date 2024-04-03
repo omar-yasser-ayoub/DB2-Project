@@ -8,7 +8,10 @@ import org.example.exceptions.DBAppException;
 import org.example.managers.FileManager;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Hashtable;
+import java.util.List;
 
 import static org.example.managers.FileManager.deserializePage;
 
@@ -68,38 +71,31 @@ public class Testing {
         System.out.println(t);
     }
 
-    private static Table insertIntoTableTest() throws DBAppException, IOException, CsvValidationException {
+    private static void insertIntoTableTest() throws DBAppException, IOException, CsvValidationException {
         DBApp dbApp = new DBApp();
         dbApp.init();
         Table table1 = createTestTable();
+        int numOfTestTuples = 50;
+        int numOfPages = numOfTestTuples / DBApp.maxRowCount;
 
-        //valid tuple
-        Tuple t = new Tuple();
-        t.insert("ID", 1);
-        t.insert("Name", "CityShop");
-        t.insert("Number", 123456);
-        t.insert("Specialisation", "Grocery");
-        t.insert("Address", "Cairo");
-        table1.insert(t);
-
-        Tuple t3 = new Tuple();
-        t3.insert("ID", 3);
-        t3.insert("Name", "CityShop2");
-        t3.insert("Number", 123456);
-        t3.insert("Specialisation", "Grocery");
-        t3.insert("Address", "Cairo");
-        table1.insert(t3);
-
-        Tuple t2 = new Tuple();
-        t2.insert("ID", 2);
-        t2.insert("Name", "CityShop3");
-        t2.insert("Number", 123456);
-        t2.insert("Specialisation", "Grocery");
-        t2.insert("Address", "Cairo");
-        table1.insert(t2);
-
-        System.out.println(deserializePage(table1.getPageNames().get(0)));
-        System.out.println(deserializePage(table1.getPageNames().get(1)));
+        List<Integer> numbers = new ArrayList<>();
+        for (int i = 1; i <= numOfTestTuples; i++) {
+            numbers.add(i);
+        }
+        Collections.shuffle(numbers);
+        for (int num : numbers) {
+            Tuple t = new Tuple();
+            t.insert("ID", num);
+            t.insert("Name", "City Shop");
+            t.insert("Number", num);
+            t.insert("Specialisation", "");
+            t.insert("Address", "");
+            System.out.println("Inserting tuple " + num);
+            table1.insert(t);
+        }
+        for (int i = 0; i < numOfPages; i++) {
+            System.out.println(deserializePage(table1.getPageNames().get(i)));
+        }
 
         try {
             //wrong key
@@ -138,7 +134,6 @@ public class Testing {
         } catch (DBAppException e) {
             System.out.println(e.getMessage());
         }
-        return table1;
     }
 
 //    public static void sqlTermTest() throws DBAppException, IOException, CsvValidationException {
@@ -364,7 +359,6 @@ public class Testing {
 
     }
     public static void main(String[] args) throws Exception {
-        serializingTest();
-        deserializingTest();
+        insertIntoTableTest();
     }
 }

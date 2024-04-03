@@ -21,10 +21,13 @@ public class InsertionManager{
 
         Page page = getCorrectPageForInsertion(tuple, table);
         int index = table.getPageNames().indexOf(page.getPageName());
-        Tuple overflowTuple = insertTupleIntoPage(tuple, page);
+        Tuple overflowTuple = insertTupleIntoPage(tuple, table, page);
 
-        if (overflowTuple != null) {
-            table.createPageInTable(overflowTuple, index);
+        while (overflowTuple != null) {
+            Page nextPage = FileManager.deserializePage(table.getPageNames().get(index + 1));
+            index++;
+            Tuple nextOverflowTuple = insertTupleIntoPage(overflowTuple, table, nextPage);
+            overflowTuple = nextOverflowTuple;
         }
     }
 
@@ -51,17 +54,22 @@ public class InsertionManager{
 
             Tuple firstTuple = tuples.get(0);
             Comparable<Object> firstClusteringKeyValue = (Comparable<Object>) firstTuple.getValues().get(table.getClusteringKey());
-            
+
+            //if tuple is smaller than first tuple in page, insert into previous page
+            if (clusteringKeyValue.compareTo(firstClusteringKeyValue) < 0) {
+                if (i == 0) {
+                    return page;
+                }
+                page = FileManager.deserializePage(table.getPageNames().get(i - 1));
+                return page;
+            }
+
             //if page is last page insert
             if (i == table.getPageNames().size() - 1) {
                 return page;
             }
 
-            //if tuple is greater than first tuple in page, insert into previous page
-            if (clusteringKeyValue.compareTo(firstClusteringKeyValue) > 0) {
-                page = FileManager.deserializePage(table.getPageNames().get(i - 1));
-                return page;
-            }
+
         }
         return null;
     }
@@ -71,8 +79,7 @@ public class InsertionManager{
      * @param tuple The tuple to be inserted into the page
      * @return Overflowing tuple if the page is full
      */
-    public static Tuple insertTupleIntoPage(Tuple tuple, Page page) throws DBAppException {
-        Table parentTable = page.getParentTable();
+    public static Tuple insertTupleIntoPage(Tuple tuple, Table parentTable, Page page) throws DBAppException {
         String clusteringKey = parentTable.getClusteringKey();
         Vector<Tuple> tuples = page.getTuples();
         Comparable<Object> clusteringKeyValue = (Comparable<Object>) tuple.getValues().get(clusteringKey);
@@ -100,12 +107,18 @@ public class InsertionManager{
                 }
             }
         }
-        //if page is greater than max size, return overflow tuple
+        //if page is greater than max size, create overflow page and insert tuple into it directly
         else {
-            return tuple;
+            int index = parentTable.getPageNames().indexOf(page.getPageName());
+            parentTable.createPageInTable(tuple,index);
+            return null;
         }
-        //if page became greater than max size after insertion, return overflow tuple
+        //if page overflowed after insertion, return overflow tuple to shift down
         if (tuples.size() > DBApp.maxRowCount){
+            //if page is last page, create new page
+            if(page.getPageNum() == parentTable.getPageCount() - 1){
+                parentTable.createPageInTable();
+            }
             Tuple overflowTuple = tuples.remove(tuples.size() - 1);
             page.save();
             return overflowTuple;
