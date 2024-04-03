@@ -88,6 +88,7 @@ public class DBApp {
 
 			Table newTable = new Table(strTableName, strClusteringKeyColumn, htblColNameType);
 			writeMetadata(newTable);
+			tables.add(newTable);
 		}
 		catch (Exception e){
 			System.out.println("Error while creating table");
@@ -129,7 +130,7 @@ public class DBApp {
 			Tuple tuple = new Tuple(htblColNameValue);
 			Table table = FileManager.deserializeTable(strTableName);
 			table.insert(tuple);
-			FileManager.serializeTable(table);
+			table.save();
 		}
 		catch (Exception e){
 			System.out.println("Error while inserting into table");
@@ -146,7 +147,8 @@ public class DBApp {
 							String strClusteringKeyValue,
 							Hashtable<String,Object> htblColNameValue   )  throws DBAppException{
 	
-		throw new DBAppException("not implemented yet");
+		deleteFromTable(strTableName, htblColNameValue);
+		insertIntoTable(strTableName, htblColNameValue);
 	}
 
 
@@ -161,7 +163,7 @@ public class DBApp {
 			Tuple tuple = new Tuple(htblColNameValue);
 			Table table = FileManager.deserializeTable(strTableName);
 			table.delete(tuple);
-			FileManager.serializeTable(table);
+			table.save();
 		}
 		catch (Exception e){
 			System.out.println("Error while inserting into table");
