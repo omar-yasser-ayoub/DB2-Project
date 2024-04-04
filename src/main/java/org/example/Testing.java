@@ -269,7 +269,7 @@ public class Testing {
         for (int i = 0; i < 50; i++) {
             index.insert(i, String.valueOf(i));
         }
-        System.out.println(index.search(40));
+
     }
     private static void BinarySearchTest() throws DBAppException, IOException, CsvValidationException {
         DBApp dbApp1 = new DBApp();

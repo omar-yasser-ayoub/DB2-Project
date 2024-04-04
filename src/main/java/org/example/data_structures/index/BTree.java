@@ -52,7 +52,73 @@ public class BTree<TKey extends Comparable<TKey>, TValue> implements Serializabl
 				this.root = n; 
 		}
 	}
-	
+	private void searchBigger(TKey value) {
+		BTreeNode x = this.findLeafNodeShouldContainKey(value);
+		while (x != null) {
+			if (x instanceof BTreeInnerNode<?>) {
+				System.out.println("problem");
+			}
+			else {
+				for (int i = 0 ; i < 5; i++) {
+					if (x.getKey(i) != null) {
+						System.out.println(x.getKey(i));
+					}
+					else {
+						break;
+					}
+				}
+			}
+			if (x.getRightSibling() == null) {
+				while (x.getRightSibling() == null) {
+					x = x.getParent();
+					if (x == this.root) {
+						return;
+					}
+				}
+				x = x.getRightSibling();
+				while (x instanceof BTreeInnerNode<?>) {
+					x = ((BTreeInnerNode<?>) x).getChild(0);
+				}
+			}
+			else {
+				x = x.getRightSibling();
+			}
+		}
+	}
+	private void searchSmaller(TKey value) {
+		BTreeNode x = this.findLeafNodeShouldContainKey(value);
+		while (x != null) {
+			if (x instanceof BTreeInnerNode<?>) {
+				System.out.println("problem");
+			} else {
+				for (int i = 0; i < 5; i++) {
+					if (x.getKey(i) != null) {
+						if (x.getKey(i).compareTo(value) < 0) {
+							System.out.println(x.getKey(i));
+						} else {
+							break; // No need to continue if we find a key greater than or equal to the given value
+						}
+					} else {
+						break;
+					}
+				}
+			}
+			if (x.getLeftSibling() == null) {
+				while (x.getLeftSibling() == null) {
+					x = x.getParent();
+					if (x == this.root) {
+						return;
+					}
+				}
+				x = x.getLeftSibling();
+				while (x instanceof BTreeInnerNode<?>) {
+					x = ((BTreeInnerNode<?>) x).getChild(((BTreeInnerNode<?>) x).getNumKeys());
+				}
+			} else {
+				x = x.getLeftSibling();
+			}
+		}
+	}
 	/**
 	 * Search the leaf node which should contain the specified key
 	 */
@@ -64,5 +130,13 @@ public class BTree<TKey extends Comparable<TKey>, TValue> implements Serializabl
 		}
 		
 		return (BTreeLeafNode<TKey, TValue>)node;
+	}
+
+	public static void main(String[] args) throws Exception {
+		BTree<Integer,Integer> test = new BTree<>();
+		for (int i = 0; i < 50; i++) {
+			test.insert(i , i);
+		}
+		test.searchSmaller(30);
 	}
 }

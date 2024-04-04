@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 class BTreeInnerNode<TKey extends Comparable<TKey>> extends BTreeNode<TKey> implements Serializable {
 	protected final static int INNERORDER = 4;
-	protected Object[] children; 
+	protected Object[] children;
 	
 	public BTreeInnerNode() {
 		this.keys = new Object[INNERORDER + 1];
@@ -215,4 +215,16 @@ class BTreeInnerNode<TKey extends Comparable<TKey>> extends BTreeNode<TKey> impl
 		
 		return upKey;
 	}
+	public int getNumKeys() {
+		int count = 0;
+		for (int i = 0; i < keys.length; i++) {
+			if (keys[i] != null) {
+				count++;
+			} else {
+				break; // Assuming keys are stored contiguously, stop counting if encountering a null value
+			}
+		}
+		return count;
+	}
+
 }
