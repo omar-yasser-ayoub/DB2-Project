@@ -141,8 +141,13 @@ public class SelectionManager implements Serializable {
         isValid(arrSQLTerms, strarrOperators);
         String tableName = arrSQLTerms[0].getStrTableName();
         Table table = FileManager.deserializeTable(tableName);
+        Vector<Vector<Tuple>> totalTuples = new Vector<>();
+        for (SQLTerm arrSQLTerm : arrSQLTerms) {
+            totalTuples.add(computeSQLTerm(arrSQLTerm, table));
+        }
+        for (String strarrOperator : strarrOperators) {
 
-        computeSQLTerm(arrSQLTerms[0], table);
+        }
         return null;
     }
 
