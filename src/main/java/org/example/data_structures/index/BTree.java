@@ -137,6 +137,13 @@ public class BTree<TKey extends Comparable<TKey>, TValue> implements Serializabl
 		for (int i = 0; i < 50; i++) {
 			test.insert(i , i);
 		}
-		test.searchSmaller(30);
+		BTreeLeafNode x = test.findLeafNodeShouldContainKey(0);
+
+		System.out.println("printing my stuff");
+		while (x != null) {
+			System.out.println(x.getValue(0));
+			System.out.println(x.getValue(1));
+			x = (BTreeLeafNode) x.getRightSibling();
+		}
 	}
 }
