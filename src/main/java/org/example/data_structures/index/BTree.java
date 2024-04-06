@@ -1,5 +1,7 @@
 package org.example.data_structures.index;
 
+import org.example.data_structures.Tuple;
+
 import java.io.Serializable;
 import java.util.Vector;
 
@@ -79,5 +81,61 @@ public class BTree<TKey extends Comparable<TKey>, TValue> implements Serializabl
 			}
 			leaf = (BTreeLeafNode<TKey, TValue>) leaf.getRightCousin();
 		}
+	}
+	public Vector<String> greaterThanSearch(TKey key) {
+		BTreeLeafNode<TKey, TValue> leaf = this.findLeafNodeShouldContainKey(key);
+		Vector<String> result = new Vector<>();
+
+		while(leaf.getRightCousin() != null) {
+			for (int i = 0; i < leaf.getKeyCount(); i++) {
+				if (leaf.getKey(i).compareTo(key) > 0) {
+					result.add(leaf.getValue(i).toString());
+				}
+			}
+			leaf = (BTreeLeafNode<TKey, TValue>) leaf.getRightCousin();
+		}
+		return result;
+	}
+
+	public Vector<String> greaterThanOrEqualSearch(TKey key) {
+		BTreeLeafNode<TKey, TValue> leaf = this.findLeafNodeShouldContainKey(key);
+		Vector<String> result = new Vector<>();
+		while(leaf.getRightCousin() != null) {
+			for (int i = 0; i < leaf.getKeyCount(); i++) {
+				result.add(leaf.getValue(i).toString());
+			}
+			leaf = (BTreeLeafNode<TKey, TValue>) leaf.getRightCousin();
+		}
+		return result;
+	}
+
+	public Vector<String> lessThanSearch(TKey key) {
+		BTreeLeafNode<TKey, TValue> leaf = this.findLeafNodeShouldContainKey(key);
+		Vector<String> result = new Vector<>();
+
+		while(leaf.getLeftCousin() != null) {
+			for (int i = 0; i < leaf.getKeyCount(); i++) {
+				if (leaf.getKey(i).compareTo(key) < 0) {
+					result.add(leaf.getValue(i).toString());
+				}
+			}
+			leaf = (BTreeLeafNode<TKey, TValue>) leaf.getLeftCousin();
+		}
+		return result;
+	}
+
+	public Vector<String> lessThanOrEqualSearch(TKey key) {
+		BTreeLeafNode<TKey, TValue> leaf = this.findLeafNodeShouldContainKey(key);
+		Vector<String> result = new Vector<>();
+
+		while(leaf.getLeftCousin() != null) {
+			for (int i = 0; i < leaf.getKeyCount(); i++) {
+				if (leaf.getKey(i).compareTo(key) <= 0) {
+					result.add(leaf.getValue(i).toString());
+				}
+			}
+			leaf = (BTreeLeafNode<TKey, TValue>) leaf.getLeftCousin();
+		}
+		return result;
 	}
 }
