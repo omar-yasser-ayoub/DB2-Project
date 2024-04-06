@@ -8,33 +8,12 @@ import java.util.Vector;
 
 import static org.example.managers.FileManager.deserializePage;
 
-public class DoubleIndex implements Index {
-
-    private final String columnType;
-    private final String columnName;
-    private final Table parentTable;
+public class DoubleIndex extends Index {
     private BTree<Double,String> bTree;
 
-
-    public DoubleIndex(Table parentTable, String columnType, String columnName) throws IllegalArgumentException {
-        this.columnType = columnType;
-        this.parentTable = parentTable;
-        this.columnName = columnName;
+    public DoubleIndex(String indexName, Table parentTable, String columnName){
+        super(indexName, parentTable, columnName);
         this.bTree = new BTree<>();
-    }
-
-    public String getColumnType() {
-        return columnType;
-    }
-
-    @Override
-    public String getColumnName() {
-        return columnName;
-    }
-
-    @Override
-    public Table getParentTable() {
-        return parentTable;
     }
 
     public BTree<Double, String> getbTree() {

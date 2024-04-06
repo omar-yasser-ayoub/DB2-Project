@@ -8,40 +8,18 @@ import java.util.Vector;
 
 import static org.example.managers.FileManager.deserializePage;
 
-public class IntegerIndex implements Index {
-
-    private String columnType;
-    private String columnName;
-    private Table parentTable;
+public class IntegerIndex extends Index {
     private BTree<Integer,String> bTree;
 
-
-    public IntegerIndex(Table parentTable, String columnType, String columnName) throws IllegalArgumentException {
-        this.columnType = columnType;
-        this.parentTable = parentTable;
-        this.columnName = columnName;
+    public IntegerIndex(String indexName, Table parentTable, String columnName){
+        super(indexName, parentTable, columnName);
         this.bTree = new BTree<>();
-    }
-
-    public String getColumnType() {
-        return columnType;
-    }
-
-    @Override
-    public String getColumnName() {
-        return columnName;
-    }
-
-    @Override
-    public Table getParentTable() {
-        return parentTable;
     }
 
     public BTree<Integer, String> getbTree() {
         return bTree;
     }
-    
-    
+
     public void populateIndex() throws DBAppException {
         Vector<String> pageNames = parentTable.getPageNames();
         for (String pageName : pageNames) {
