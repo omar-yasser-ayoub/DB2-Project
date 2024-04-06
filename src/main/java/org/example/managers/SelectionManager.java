@@ -22,6 +22,25 @@ public class SelectionManager implements Serializable {
         throw new IllegalStateException("Utility class");
     }
 
+    private static Vector<Tuple> indexSearchInTable(SQLTerm term, Index index, Table table) {
+        switch (term.getStrOperator()) {
+            case "=":
+                return index.getbTree().equalSearch(term.getObjValue());
+            case "!=":
+                return index.getbTree().notEqualSearch(term.getObjValue());
+            case ">":
+                return index.getbTree().greaterThanSearch(term.getObjValue());
+            case ">=":
+                return index.getbTree().greaterThanOrEqualSearch(term.getObjValue());
+            case "<":
+                return index.getbTree().lessThanSearch(term.getObjValue());
+            case "<=":
+                return index.getbTree().lessThanOrEqualSearch(term.getObjValue());
+            default:
+                return null;
+        }
+
+    }
     public static Vector<Tuple> linearSearchInTable(SQLTerm term, Table table) throws DBAppException {
         Vector<Tuple> finalList = new Vector<>();
         for (String pageName : table.getPageNames()) {
@@ -54,7 +73,7 @@ public class SelectionManager implements Serializable {
 
     public static boolean binarySearchInPage(Page page, String key, Object value){
         //key is column name
-        //"value" attribute is the value we wanna find , can be int,String or double
+        //"value" attribute is the value we want to find , can be int,String or double
         int startTupleNum = 0;
         int numberOfTuples = page.getTuples().size();
 
@@ -173,22 +192,25 @@ public class SelectionManager implements Serializable {
         isValid(arrSQLTerms, strarrOperators);
         String tableName = arrSQLTerms[0].getStrTableName();
         Table table = FileManager.deserializeTable(tableName);
+
+        computeSQLTerm(arrSQLTerms, table);
+        return null;
+    }
+
+    private static Vector<Tuple> computeSQLTerm(SQLTerm sqlTerm, Table table) throws DBAppException {
         if (table.getIndices().size() != 0) {
             for (Index index : table.getIndices()) {
-                if (index.getColumnName().equals(arrSQLTerms[0].getStrColumnName())) {
-                    //Use the index
-                    return null;
+                if (index.getColumnName().equals(sqlTerm.getStrColumnName())) {
+                    return indexSearchInTable(sqlTerm, index, table);
                 }
             }
         }
-        if (table.getClusteringKey().equals(arrSQLTerms[0].getStrColumnName())) {
-            //do binary search
+        if (table.getClusteringKey().equals(sqlTerm.getStrColumnName())) {
+            //binary search
         }
         else {
-            linearSearchInTable(arrSQLTerms[0], table);
+            return linearSearchInTable(sqlTerm, table);
         }
-
-        return null;
     }
 
     private static void isValid(SQLTerm[] arrSQLTerms, String[] strarrOperators) throws DBAppException {

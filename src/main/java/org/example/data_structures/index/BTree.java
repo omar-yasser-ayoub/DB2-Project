@@ -1,6 +1,7 @@
 package org.example.data_structures.index;
 
 import java.io.Serializable;
+import java.util.Vector;
 
 /**
  * A B+ tree
@@ -63,5 +64,20 @@ public class BTree<TKey extends Comparable<TKey>, TValue> implements Serializabl
 		}
 
 		return (BTreeLeafNode<TKey, TValue>)node;
+	}
+	public Vector<String> equalSearch(TKey key){
+		BTreeLeafNode<TKey, TValue> leaf = this.findLeafNodeShouldContainKey(key);
+		Vector<String> result = new Vector<>();
+
+		while(true) {
+			for (int i = 0; i < leaf.getKeyCount(); i++) {
+				if (leaf.getKey(i).compareTo(key) == 0) {
+					result.add(leaf.getValue(i).toString());
+				} else {
+					return result;
+				}
+			}
+			leaf = (BTreeLeafNode<TKey, TValue>) leaf.getRightCousin();
+		}
 	}
 }
