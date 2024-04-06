@@ -199,6 +199,7 @@ public class InsertionManager{
                 parentTable.createPageInTable();
             }
             Tuple overflowTuple = tuples.remove(tuples.size() - 1);
+            DeletionManager.updateIndexOnDeletion(overflowTuple, parentTable);
             page.save();
             return overflowTuple;
         }

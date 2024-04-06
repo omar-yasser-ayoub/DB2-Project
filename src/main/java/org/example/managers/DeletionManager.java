@@ -102,7 +102,7 @@ public class DeletionManager{
         throw new DBAppException("Tuple not Found"); //tuple not found
     }
 
-    private static void updateIndexOnDeletion(Tuple tuple, Table parentTable) throws DBAppException {
+    protected static void updateIndexOnDeletion(Tuple tuple, Table parentTable) throws DBAppException {
         Vector<Index> indices = parentTable.getIndices();
         for (Index index : indices) {
             index.delete(tuple.getValues().get(index.getColumnName()));
