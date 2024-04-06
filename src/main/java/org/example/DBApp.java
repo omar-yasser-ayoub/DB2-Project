@@ -118,7 +118,14 @@ public class DBApp {
 							String   strColName,
 							String   strIndexName) throws DBAppException{
 		
-		throw new DBAppException("not implemented yet");
+		try {
+			Table table = FileManager.deserializeTable(strTableName);
+			table.createIndex(strColName, strIndexName);
+			table.save();
+		}
+		catch (Exception e){
+			System.out.println("Error while creating index");
+		}
 	}
 
 

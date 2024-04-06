@@ -57,7 +57,7 @@ public class FileManager implements Serializable {
 
     public static void serializeIndex(Index index) throws DBAppException {
         createDirectory(SERIALIZED_INDICES_PATH);
-        String fileName = SERIALIZED_INDICES_PATH + index.getParentTable().getTableName() + index.getColumnName() + ".ser";
+        String fileName = SERIALIZED_INDICES_PATH + index.getIndexName() + ".ser";
         serialize(index, fileName);
     }
 

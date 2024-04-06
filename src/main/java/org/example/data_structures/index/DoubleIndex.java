@@ -1,5 +1,6 @@
 package org.example.data_structures.index;
 
+import org.example.data_structures.Tuple;
 import org.example.exceptions.DBAppException;
 import org.example.data_structures.Page;
 import org.example.data_structures.Table;
@@ -8,33 +9,12 @@ import java.util.Vector;
 
 import static org.example.managers.FileManager.deserializePage;
 
-public class DoubleIndex implements Index {
-
-    private final String columnType;
-    private final String columnName;
-    private final Table parentTable;
+public class DoubleIndex extends Index {
     private BTree<Double,String> bTree;
 
-
-    public DoubleIndex(Table parentTable, String columnType, String columnName) throws IllegalArgumentException {
-        this.columnType = columnType;
-        this.parentTable = parentTable;
-        this.columnName = columnName;
+    public DoubleIndex(Table parentTable, String columnName, String indexName){
+        super(parentTable, columnName, indexName);
         this.bTree = new BTree<>();
-    }
-
-    public String getColumnType() {
-        return columnType;
-    }
-
-    @Override
-    public String getColumnName() {
-        return columnName;
-    }
-
-    @Override
-    public Table getParentTable() {
-        return parentTable;
     }
 
     public BTree<Double, String> getbTree() {
@@ -49,7 +29,9 @@ public class DoubleIndex implements Index {
             if (page.getTuples().isEmpty()) {
                 continue;
             }
-            bTree.insert((Double) page.getTuples().get(0).getValues().get(columnName), pageName);
+            for (Tuple tuple : page.getTuples()) {
+                bTree.insert((Double) tuple.getValues().get(columnName), pageName);
+            }
         }
     }
 

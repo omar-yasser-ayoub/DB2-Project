@@ -1,5 +1,6 @@
 package org.example.data_structures.index;
 
+import org.example.data_structures.Tuple;
 import org.example.exceptions.DBAppException;
 import org.example.data_structures.Page;
 import org.example.data_structures.Table;
@@ -8,40 +9,18 @@ import java.util.Vector;
 
 import static org.example.managers.FileManager.deserializePage;
 
-public class IntegerIndex implements Index {
-
-    private String columnType;
-    private String columnName;
-    private Table parentTable;
+public class IntegerIndex extends Index {
     private BTree<Integer,String> bTree;
 
-
-    public IntegerIndex(Table parentTable, String columnType, String columnName) throws IllegalArgumentException {
-        this.columnType = columnType;
-        this.parentTable = parentTable;
-        this.columnName = columnName;
+    public IntegerIndex(Table parentTable, String columnName, String indexName){
+        super(parentTable, columnName, indexName);
         this.bTree = new BTree<>();
-    }
-
-    public String getColumnType() {
-        return columnType;
-    }
-
-    @Override
-    public String getColumnName() {
-        return columnName;
-    }
-
-    @Override
-    public Table getParentTable() {
-        return parentTable;
     }
 
     public BTree<Integer, String> getbTree() {
         return bTree;
     }
-    
-    
+
     public void populateIndex() throws DBAppException {
         Vector<String> pageNames = parentTable.getPageNames();
         for (String pageName : pageNames) {
@@ -49,7 +28,9 @@ public class IntegerIndex implements Index {
             if (page.getTuples().isEmpty()) {
                 continue;
             }
-            bTree.insert((Integer) page.getTuples().get(0).getValues().get(columnName), pageName);
+            for (Tuple tuple : page.getTuples()) {
+                bTree.insert((Integer) tuple.getValues().get(columnName), pageName);
+            }
         }
     }
 

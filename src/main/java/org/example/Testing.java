@@ -265,7 +265,7 @@ public class Testing {
         DBApp dbApp1 = new DBApp();
         dbApp1.init();
         Table table = createTestTable();
-        Index index = new IntegerIndex(table, "Integer", "Number" );
+        Index index = new IntegerIndex(table, "Number", "NumIndex");
         for (int i = 0; i < 50; i++) {
             index.insert(i, String.valueOf(i));
         }

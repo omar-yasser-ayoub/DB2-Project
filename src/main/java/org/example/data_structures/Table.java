@@ -1,4 +1,7 @@
 package org.example.data_structures;
+import org.example.data_structures.index.DoubleIndex;
+import org.example.data_structures.index.IntegerIndex;
+import org.example.data_structures.index.StringIndex;
 import org.example.exceptions.DBAppException;
 import org.example.managers.DeletionManager;
 import org.example.managers.FileManager;
@@ -9,14 +12,13 @@ import java.io.Serializable;
 import java.util.*;
 
 public class Table implements Serializable {
-    private String tableName;
-    private Hashtable<String,String> colNameType;
-    private String clusteringKey;
-    private Hashtable<String, String> indicesColNameType;
+    private final String tableName;
+    private final Hashtable<String,String> colNameType;
+    private final String clusteringKey;
     private Vector<String> pageNames;
     private int pageCount;
     private String keyType;
-    private Index index;
+    private Vector<Index> indices;
 
     public Table(String tableName, String clusteringKey, Hashtable<String,String> colNameType){
         this.tableName = tableName;
@@ -38,9 +40,6 @@ public class Table implements Serializable {
         return clusteringKey;
     }
 
-    public Hashtable<String, String> getIndicesColNameType() {
-        return indicesColNameType;
-    }
 
     public Vector<String> getPageNames() {
         return pageNames;
@@ -54,12 +53,20 @@ public class Table implements Serializable {
         return keyType;
     }
 
-    public Object getIndex() {
-        return index;
+    public Vector<Index> getIndices() {
+        return indices;
     }
 
-    public void setIndex(Index index) {
-        this.index = index;
+    public void createIndex(String columnName, String indexName) throws DBAppException {
+        String columnType = colNameType.get(columnName);
+        Index index = switch (columnType) {
+            case "java.lang.Integer" -> new IntegerIndex(this, columnName, indexName);
+            case "java.lang.String" -> new StringIndex(this, columnName, indexName);
+            case "java.lang.Double" -> new DoubleIndex(this, columnName, indexName);
+            default -> throw new IllegalArgumentException("Invalid column type");
+        };
+        index.populateIndex();
+        this.indices.add(index);
     }
 
     public void insert(Tuple tuple) throws DBAppException {
@@ -94,10 +101,11 @@ public class Table implements Serializable {
      */
     public Page createPageInTable(Tuple tuple, int index) throws DBAppException {
         Page newPage = new Page(this, getPageCount());
-        newPage.save();
         String pageName = getTableName() + getPageCount();
-        getPageNames().add(index + 1, pageName);
+        pageNames.add(index + 1, pageName);
+
         InsertionManager.insertTupleIntoPage(tuple, this, newPage);
+
         pageCount = getPageCount() + 1;
         return newPage;
     }
