@@ -1,6 +1,7 @@
 package org.example.managers;
 
 import org.example.DBApp;
+import org.example.data_structures.index.Index;
 import org.example.exceptions.DBAppException;
 import org.example.data_structures.Tuple;
 import org.example.data_structures.Page;
@@ -22,12 +23,12 @@ public class InsertionManager{
         }
 
         Page page = getCorrectPageForInsertion(tuple, table);
-        int index = table.getPageNames().indexOf(page.getPageName());
+        int i = table.getPageNames().indexOf(page.getPageName());
         Tuple overflowTuple = insertTupleIntoPage(tuple, table, page);
 
         while (overflowTuple != null) {
-            Page nextPage = FileManager.deserializePage(table.getPageNames().get(index + 1));
-            index++;
+            Page nextPage = FileManager.deserializePage(table.getPageNames().get(i + 1));
+            i++;
             Tuple nextOverflowTuple = insertTupleIntoPage(overflowTuple, table, nextPage);
             overflowTuple = nextOverflowTuple;
         }
@@ -70,10 +71,10 @@ public class InsertionManager{
 
             //Value of these Tuples
             Comparable<Object> firstClusteringKeyValue = (Comparable<Object>) firstTuple.getValues().get(table.getClusteringKey());
-            Comparable<Object> LastClusteringKeyValue = (Comparable<Object>) lastTuple.getValues().get(table.getClusteringKey());
+            Comparable<Object> lastClusteringKeyValue = (Comparable<Object>) lastTuple.getValues().get(table.getClusteringKey());
 
             //if tuple is smaller than first tuple in page, insert into previous page
-            if (clusteringKeyValue.compareTo(firstClusteringKeyValue) >= 0 && clusteringKeyValue.compareTo(LastClusteringKeyValue) <= 0) {
+            if (clusteringKeyValue.compareTo(firstClusteringKeyValue) >= 0 && clusteringKeyValue.compareTo(lastClusteringKeyValue) <= 0) {
 
                 return page;
             }
@@ -130,14 +131,8 @@ public class InsertionManager{
     }
     public static int tupleFoundInPage(Page page, Tuple tuple, String clusteringKey){
         Vector<Tuple> tuples = page.getTuples();
-        Comparator<Tuple> c = new Comparator<Tuple>() {
-            public int compare(Tuple u1, Tuple u2)
-            {
-                return SelectionManager.compareObjects(u1.getValues().get(clusteringKey),u2.getValues().get(clusteringKey));
-            }
-        };
-        int index = Collections.binarySearch(tuples, tuple, c);
-        return index;
+        Comparator<Tuple> c = (u1, u2) -> SelectionManager.compareObjects(u1.getValues().get(clusteringKey), u2.getValues().get(clusteringKey));
+        return Collections.binarySearch(tuples, tuple, c);
     }
     /**
      * Attempts to insert into the Page instance
@@ -148,27 +143,30 @@ public class InsertionManager{
         String clusteringKey = parentTable.getClusteringKey();
         Vector<Tuple> tuples = page.getTuples();
         Comparable<Object> clusteringKeyValue = (Comparable<Object>) tuple.getValues().get(clusteringKey);
-        int low = 0;
-        int high = parentTable.getPageNames().size();
 
         if (tuples.size() <= DBApp.maxRowCount) {
             //if page is empty, insert into page
             if(tuples.isEmpty()){
                 tuples.add(tuple);
                 page.save();
+                updateIndexOnInsertion(tuple, parentTable, page);
                 return null;
             }
             //[1,3,6,8,9] insert 5--> -3 (return value +1 then *-1)
 
-            int index = tupleFoundInPage(page,tuple,clusteringKey);
-            if(index<0){
-                index++;
-                index*=-1;
+            int i = tupleFoundInPage(page,tuple,clusteringKey);
+            if(i<0){
+                i++;
+                i*=-1;
             }
-            tuples.add(index, tuple);
+            tuples.add(i, tuple);
             page.save();
+            updateIndexOnInsertion(tuple, parentTable, page);
 
-            /*while (low <= high) {
+            //TODO: Remove commented out code after testing
+            /*int low = 0;
+            int high = parentTable.getPageNames().size();
+            while (low <= high) {
 
                 //current tuple's index and is value
                 int mid = low + (high - low) / 2;
@@ -206,5 +204,13 @@ public class InsertionManager{
         }
         //if page is still less than max size, return null because no overflow
         return null;
+    }
+
+    private static void updateIndexOnInsertion(Tuple tuple, Table parentTable, Page page) throws DBAppException {
+        Vector<Index> indices = parentTable.getIndices();
+        for (Index index : indices) {
+            index.insert(tuple.getValues().get(index.getColumnName()), page.getPageName());
+            index.save();
+        }
     }
 }

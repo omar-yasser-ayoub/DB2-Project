@@ -1,9 +1,12 @@
 package org.example.managers;
 
+import org.example.data_structures.index.Index;
 import org.example.exceptions.DBAppException;
 import org.example.data_structures.Tuple;
 import org.example.data_structures.Page;
 import org.example.data_structures.Table;
+
+import java.util.Vector;
 
 public class DeletionManager{
     private DeletionManager() {
@@ -76,6 +79,7 @@ public class DeletionManager{
             if (clusteringKeyValue.compareTo(currentClusteringKeyValue) == 0){
                 // Key-value pair found, return false
                 page.getTuples().remove(mid);
+                updateIndexOnDeletion(tuple, table);
 
                 if(page.getTuples().isEmpty()) {
                     FileManager.deleteFile(page.getPageName()); //delete from disk
@@ -96,5 +100,13 @@ public class DeletionManager{
             }
         }
         throw new DBAppException("Tuple not Found"); //tuple not found
+    }
+
+    private static void updateIndexOnDeletion(Tuple tuple, Table parentTable) throws DBAppException {
+        Vector<Index> indices = parentTable.getIndices();
+        for (Index index : indices) {
+            index.delete(tuple.getValues().get(index.getColumnName()));
+            index.save();
+        }
     }
 }
