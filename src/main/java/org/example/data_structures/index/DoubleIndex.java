@@ -1,5 +1,6 @@
 package org.example.data_structures.index;
 
+import org.example.data_structures.Tuple;
 import org.example.exceptions.DBAppException;
 import org.example.data_structures.Page;
 import org.example.data_structures.Table;
@@ -11,8 +12,8 @@ import static org.example.managers.FileManager.deserializePage;
 public class DoubleIndex extends Index {
     private BTree<Double,String> bTree;
 
-    public DoubleIndex(String indexName, Table parentTable, String columnName){
-        super(indexName, parentTable, columnName);
+    public DoubleIndex(Table parentTable, String columnName, String indexName){
+        super(parentTable, columnName, indexName);
         this.bTree = new BTree<>();
     }
 
@@ -28,7 +29,9 @@ public class DoubleIndex extends Index {
             if (page.getTuples().isEmpty()) {
                 continue;
             }
-            bTree.insert((Double) page.getTuples().get(0).getValues().get(columnName), pageName);
+            for (Tuple tuple : page.getTuples()) {
+                bTree.insert((Double) tuple.getValues().get(columnName), pageName);
+            }
         }
     }
 
