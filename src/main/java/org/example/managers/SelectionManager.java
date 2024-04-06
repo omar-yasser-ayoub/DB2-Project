@@ -2,6 +2,7 @@ package org.example.managers;
 
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvValidationException;
+import org.example.data_structures.index.Index;
 import org.example.exceptions.DBAppException;
 import org.example.data_structures.SQLTerm;
 import org.example.data_structures.Tuple;
@@ -21,7 +22,7 @@ public class SelectionManager implements Serializable {
         throw new IllegalStateException("Utility class");
     }
 
-    public Vector<Tuple> linearSearchInTable(SQLTerm term, Table table) throws DBAppException {
+    public static Vector<Tuple> linearSearchInTable(SQLTerm term, Table table) throws DBAppException {
         Vector<Tuple> finalList = new Vector<>();
         for (String pageName : table.getPageNames()) {
             Page page = FileManager.deserializePage(pageName);
@@ -169,6 +170,28 @@ public class SelectionManager implements Serializable {
 
     public static Iterator selectFromTable(SQLTerm[] arrSQLTerms,
                                     String[]  strarrOperators) throws DBAppException{
+        isValid(arrSQLTerms, strarrOperators);
+        String tableName = arrSQLTerms[0].getStrTableName();
+        Table table = FileManager.deserializeTable(tableName);
+        if (table.getIndices().size() != 0) {
+            for (Index index : table.getIndices()) {
+                if (index.getColumnName().equals(arrSQLTerms[0].getStrColumnName())) {
+                    //Use the index
+                    return null;
+                }
+            }
+        }
+        if (table.getClusteringKey().equals(arrSQLTerms[0].getStrColumnName())) {
+            //do binary search
+        }
+        else {
+            linearSearchInTable(arrSQLTerms[0], table);
+        }
+
+        return null;
+    }
+
+    private static void isValid(SQLTerm[] arrSQLTerms, String[] strarrOperators) throws DBAppException {
         if (arrSQLTerms.length == 0) {
             throw new DBAppException("Empty SQL Terms Array");
         }
@@ -232,10 +255,9 @@ public class SelectionManager implements Serializable {
             if (!(arrSQLTerm.getStrOperator().equals(">") || arrSQLTerm.getStrOperator().equals(">=") || arrSQLTerm.getStrOperator().equals("<") || arrSQLTerm.getStrOperator().equals("<=") || arrSQLTerm.getStrOperator().equals("!=") || arrSQLTerm.getStrOperator().equals("=")))
                 throw new DBAppException("Illegal operator");
         }
-        for (String strOperator : strarrOperators ) {
+        for (String strOperator : strarrOperators) {
             if (!(strOperator.equals("AND") || strOperator.equals("OR") || strOperator.equals("XOR")))
                 throw new DBAppException("Illegal operator");
         }
-        return null;
     }
 }

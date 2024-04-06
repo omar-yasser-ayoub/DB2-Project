@@ -103,7 +103,7 @@ abstract class BTreeNode<TKey extends Comparable<TKey>> implements Serializable 
 	}
 	
 	public BTreeNode<TKey> getLeftSibling() {
-		if (this.leftSibling != null)
+		if (this.leftSibling != null && this.getParent() == this.leftSibling.getParent())
 			return this.leftSibling;
 		return null;
 	}
@@ -111,9 +111,15 @@ abstract class BTreeNode<TKey extends Comparable<TKey>> implements Serializable 
 	public void setLeftSibling(BTreeNode<TKey> sibling) {
 		this.leftSibling = sibling;
 	}
+	public BTreeNode<TKey> getLeftCousin() {
+		return this.leftSibling;
+	}
+	public BTreeNode<TKey> getRightCousin() {
+		return this.rightSibling;
+	}
 
 	public BTreeNode<TKey> getRightSibling() {
-		if (this.rightSibling != null)
+		if (this.rightSibling != null && this.getParent() == this.rightSibling.getParent())
 			return this.rightSibling;
 		return null;
 	}
