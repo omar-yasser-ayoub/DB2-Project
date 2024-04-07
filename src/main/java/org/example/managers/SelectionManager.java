@@ -9,11 +9,12 @@ import org.example.data_structures.Tuple;
 import org.example.data_structures.Page;
 import org.example.data_structures.Table;
 
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.Iterator;
-import java.util.Vector;
+import java.lang.invoke.CallSite;
+import java.util.*;
 
 import static org.example.DBApp.METADATA_DIR;
 
@@ -22,24 +23,35 @@ public class SelectionManager implements Serializable {
         throw new IllegalStateException("Utility class");
     }
 
-    private static Vector<Tuple> indexSearchInTable(SQLTerm term, Index index, Table table) {
+    private static Vector<Tuple> indexSearchInTable(SQLTerm term, Index index, Table table) throws DBAppException {
+        Vector<String> pageNames = new Vector<>();
+        Vector<Tuple> finalList = new Vector<>();
         switch (term.getStrOperator()) {
             case "=":
-                return index.getbTree().equalSearch(term.getObjValue());
+                pageNames = index.getbTree().equalSearch((Comparable) term.getObjValue());
+                break;
             case "!=":
-                return index.getbTree().notEqualSearch(term.getObjValue());
+                return linearSearchInTable(term, table);
             case ">":
-                return index.getbTree().greaterThanSearch(term.getObjValue());
+                pageNames = index.getbTree().greaterThanSearch((Comparable) term.getObjValue());
+                break;
             case ">=":
-                return index.getbTree().greaterThanOrEqualSearch(term.getObjValue());
+                pageNames = index.getbTree().greaterThanOrEqualSearch((Comparable) term.getObjValue());
+                break;
             case "<":
-                return index.getbTree().lessThanSearch(term.getObjValue());
+                pageNames = index.getbTree().lessThanSearch((Comparable) term.getObjValue());
+                break;
             case "<=":
-                return index.getbTree().lessThanOrEqualSearch(term.getObjValue());
+                pageNames = index.getbTree().lessThanOrEqualSearch((Comparable) term.getObjValue());
+                break;
             default:
                 return null;
         }
-
+        for (String pageName : pageNames) {
+            Page page = FileManager.deserializePage(pageName);
+            linearSearchInPage(term, finalList, page);
+        }
+        return finalList;
     }
     public static Vector<Tuple> linearSearchInTable(SQLTerm term, Table table) throws DBAppException {
         Vector<Tuple> finalList = new Vector<>();
@@ -73,7 +85,7 @@ public class SelectionManager implements Serializable {
 
     public static boolean binarySearchInPage(Page page, String key, Object value){
         //key is column name
-        //"value" attribute is the value we want to find , can be int,String or double
+        //"value" attribute is the value we want to find, can be int, String or double
         int startTupleNum = 0;
         int numberOfTuples = page.getTuples().size();
 
@@ -100,73 +112,10 @@ public class SelectionManager implements Serializable {
             }
         }
         return false;
-
-//        public boolean tupleHasNoDuplicateClusteringKey(String key, Object value) throws DBAppException {
-//            //value here is the value itself: int, float, double
-//            int low = 0;
-//            int high = pageNames.size() -1;
-//            int numberOfTuplesInPage;
-//            boolean keyFound = false;
-//
-//            while (low <= high) {
-//
-//                //get current page number
-//                int mid = low + (high - low) / 2;
-//
-//                //get Page
-//                String pageName = pageNames.get(mid);
-//                Page page = deserializePage(pageName);
-//                numberOfTuplesInPage = page.getNumOfTuples();
-//                Tuple min = page.tuples.get(0);
-//                Tuple max = page.tuples.get(numberOfTuplesInPage -1);
-//
-//                //is page empty
-//                if (page.tuples.isEmpty()) {
-//                    // Assuming if page is empty then go left
-//                    high = mid-1;
-//                    continue;
-//
-//                }
-//                //1 tuple in page and theyre similar
-//                if(numberOfTuplesInPage ==1 && Page.compareObjects(value,min.getValues().get(key)) == 0){
-//                    System.out.println("Duplicate found and number of tuples in page was 1");
-//                    return false;
-//                }
-//                //one tuple in page and theyre not similar
-//                if(numberOfTuplesInPage ==1 && Page.compareObjects(value,min.getValues().get(key)) != 0){
-//                    System.out.println("Duplicate not found and number of tuples in page was 1");
-//                    return true;
-//                }
-//                //Search in a page
-//                if( Page.compareObjects(value,min.getValues().get(key)) >= 0 &&
-//                        Page.compareObjects(max.getValues().get(key),value) >= 0){
-//                    //value is in between 0 and last record
-//                    keyFound = Page.binarySearch(page, key, value); //if found , true was returned
-//
-//                    if(keyFound == true){
-//                        System.out.println("Duplicate found");
-//                        return false;
-//                    }
-//                }
-//                else if(Page.compareObjects(value,min.getValues().get(key)) < 0){
-//                    //look in left side of pages
-//                    high = mid-1;
-//                }
-//                else{
-//                    //look in right side of pages
-//                    high = mid+1;
-//                }
-//                if(pageNames.size()==1){
-//                    break;
-//                }
-//
-//            }
-//            System.out.println("Duplicate not found");
-//            return true;
-//        }
     }
 
     public static int compareObjects(Object obj1 , Object obj2){
+        // ((Comparable) Object).compareTo((Comparable) otherObject)); lol
         if(  obj1 instanceof Integer && obj2 instanceof Integer){
             Integer currI = (Integer)(obj1);
             Integer valI = (Integer)(obj2);
@@ -187,14 +136,18 @@ public class SelectionManager implements Serializable {
         }
     }
 
-    public static Iterator selectFromTable(SQLTerm[] arrSQLTerms,
-                                    String[]  strarrOperators) throws DBAppException{
+    public static Iterator selectFromTable(SQLTerm[] arrSQLTerms, String[] strarrOperators) throws DBAppException{
         isValid(arrSQLTerms, strarrOperators);
         String tableName = arrSQLTerms[0].getStrTableName();
         Table table = FileManager.deserializeTable(tableName);
+        Vector<Vector<Tuple>> totalTuples = new Vector<>();
+        for (SQLTerm arrSQLTerm : arrSQLTerms) {
+            totalTuples.add(computeSQLTerm(arrSQLTerm, table));
+        }
 
-        computeSQLTerm(arrSQLTerms, table);
-        return null;
+        Vector<Tuple> result = evalQuery(totalTuples, strarrOperators);
+
+        return result != null ? result.iterator() : null;
     }
 
     private static Vector<Tuple> computeSQLTerm(SQLTerm sqlTerm, Table table) throws DBAppException {
@@ -206,7 +159,7 @@ public class SelectionManager implements Serializable {
             }
         }
         if (table.getClusteringKey().equals(sqlTerm.getStrColumnName())) {
-            //binary search
+            return null;
         }
         else {
             return linearSearchInTable(sqlTerm, table);
@@ -282,4 +235,104 @@ public class SelectionManager implements Serializable {
                 throw new DBAppException("Illegal operator");
         }
     }
+
+    private static int precedence(String op) {
+        // 1 = lowest precedence
+        switch (op) {
+            case "OR" -> {
+                return 1;
+            }
+            case "XOR" -> {
+                return 2;
+            }
+            case "AND" -> {
+                return 3;
+            }
+        }
+        return -1;
+    }
+
+//    private static boolean tuplesEqual(Tuple tuple1, Tuple tuple2) {
+//        // check later if this actually works
+//        return tuple1.getValues().equals(tuple2.getValues());
+//    }
+
+    private static Vector<Tuple> logicalAnd(Vector<Tuple> tuples1, Vector<Tuple> tuples2) {
+        Vector<Tuple> result = new Vector<>();
+        for (Tuple tuple1 : tuples1) {
+            if (tuples2.contains(tuple1)) {
+                result.add(tuple1);
+            }
+        }
+        return result;
+    }
+
+    private static Vector<Tuple> logicalOr(Vector<Tuple> tuples1, Vector<Tuple> tuples2) {
+        Vector<Tuple> result = new Vector<>(tuples1);
+        for (Tuple tuple : tuples2) {
+            if (!result.contains(tuple)) {
+                result.add(tuple);
+            }
+        }
+        return result;
+    }
+
+    private static Vector<Tuple> logicalXor(Vector<Tuple> tuples1, Vector<Tuple> tuples2) {
+        Vector<Tuple> result = new Vector<>();
+        for (Tuple tuple1 : tuples1) {
+            if (!tuples2.contains(tuple1)) {
+                result.add(tuple1);
+            }
+        }
+        for (Tuple tuple2 : tuples2) {
+            if (!tuples1.contains(tuple2)) {
+                result.add(tuple2);
+            }
+        }
+        return result;
+    }
+
+    public static Vector<Tuple> evalQuery(Vector<Vector<Tuple>> allTuples, String[] strarrOperators) {
+        int j = 1;
+        Stack<String> opStack = new Stack<>();
+        Stack<Vector<Tuple>> tupleStack = new Stack<>();
+        tupleStack.push(allTuples.get(0));
+
+        for (String strOperator : strarrOperators) {
+            tupleStack.push(allTuples.get(j));
+            Vector<Tuple> tmp = null;
+            while (!opStack.isEmpty() && precedence(strOperator) < precedence(opStack.peek())) {
+                if(tmp == null){
+                    tmp = tupleStack.pop();
+                }
+                switch (opStack.pop()) {
+                    case "AND" -> tupleStack.push(logicalAnd(tupleStack.pop(), tupleStack.pop()));
+                    case "XOR" -> tupleStack.push(logicalXor(tupleStack.pop(), tupleStack.pop()));
+                    case "OR" -> tupleStack.push(logicalOr(tupleStack.pop(), tupleStack.pop()));
+                }
+            }
+
+            if(tmp != null){
+                tupleStack.push(tmp);
+            }
+            opStack.push(strOperator);
+            j++;
+        }
+
+        while(!opStack.isEmpty()) {
+            String strOperator = opStack.pop();
+            switch (strOperator) {
+                case "AND" -> tupleStack.push(logicalAnd(tupleStack.pop(), tupleStack.pop()));
+                case "XOR" -> tupleStack.push(logicalXor(tupleStack.pop(), tupleStack.pop()));
+                case "OR" -> tupleStack.push(logicalOr(tupleStack.pop(), tupleStack.pop()));
+            }
+        }
+
+        return !tupleStack.isEmpty() ? tupleStack.pop() : null;
+    }
+
+    public static void main(String[] args) throws DBAppException {
+
+    }
+
 }
