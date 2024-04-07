@@ -104,9 +104,11 @@ public class DeletionManager{
 
     protected static void updateIndexOnDeletion(Tuple tuple, Table parentTable) throws DBAppException {
         Vector<Index> indices = parentTable.getIndices();
-        for (Index index : indices) {
-            index.delete(tuple.getValues().get(index.getColumnName()));
-            index.save();
+        if (indices != null) {
+            for (Index index : indices) {
+                index.delete(tuple.getValues().get(index.getColumnName()));
+                index.save();
+            }
         }
     }
 }

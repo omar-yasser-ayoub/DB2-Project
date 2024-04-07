@@ -75,9 +75,9 @@ public class InsertionManager{
 
             //if tuple is smaller than first tuple in page, insert into previous page
             if (clusteringKeyValue.compareTo(firstClusteringKeyValue) >= 0 && clusteringKeyValue.compareTo(lastClusteringKeyValue) <= 0) {
-
                 return page;
             }
+
             else if(clusteringKeyValue.compareTo(firstClusteringKeyValue) < 0){
                 if ( mid == 0) {
                     return page;
@@ -209,9 +209,11 @@ public class InsertionManager{
 
     private static void updateIndexOnInsertion(Tuple tuple, Table parentTable, Page page) throws DBAppException {
         Vector<Index> indices = parentTable.getIndices();
-        for (Index index : indices) {
-            index.insert(tuple.getValues().get(index.getColumnName()), page.getPageName());
-            index.save();
+        if (indices != null) {
+            for (Index index : indices) {
+                index.insert(tuple.getValues().get(index.getColumnName()), page.getPageName());
+                index.save();
+            }
         }
     }
 }
