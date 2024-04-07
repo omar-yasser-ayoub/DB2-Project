@@ -252,25 +252,31 @@ public class SelectionManager implements Serializable {
         return -1;
     }
 
-//    private static boolean tuplesEqual(Tuple tuple1, Tuple tuple2) {
-//        // check later if this actually works
-//        return tuple1.getValues().equals(tuple2.getValues());
-//    }
-
     private static Vector<Tuple> logicalAnd(Vector<Tuple> tuples1, Vector<Tuple> tuples2) {
+        Vector<Hashtable<String, Object>> htv = new Vector<>();
+        for(Tuple t : tuples2) {
+            htv.add(t.getValues());
+        }
+
         Vector<Tuple> result = new Vector<>();
-        for (Tuple tuple1 : tuples1) {
-            if (tuples2.contains(tuple1)) {
-                result.add(tuple1);
+        for (Tuple tuple : tuples1) {
+            if (htv.contains(tuple.getValues())) {
+                result.add(tuple);
             }
         }
         return result;
     }
 
     private static Vector<Tuple> logicalOr(Vector<Tuple> tuples1, Vector<Tuple> tuples2) {
+        Vector<Hashtable<String, Object>> htv = new Vector<>();
+        for(Tuple t : tuples1) {
+            htv.add(t.getValues());
+        }
+
         Vector<Tuple> result = new Vector<>(tuples1);
         for (Tuple tuple : tuples2) {
-            if (!result.contains(tuple)) {
+            if (!htv.contains(tuple.getValues())) {
+                htv.add(tuple.getValues());
                 result.add(tuple);
             }
         }
@@ -278,14 +284,23 @@ public class SelectionManager implements Serializable {
     }
 
     private static Vector<Tuple> logicalXor(Vector<Tuple> tuples1, Vector<Tuple> tuples2) {
+        Vector<Hashtable<String, Object>> htv1 = new Vector<>();
+        for(Tuple t : tuples1) {
+            htv1.add(t.getValues());
+        }
+        Vector<Hashtable<String, Object>> htv2 = new Vector<>();
+        for(Tuple t : tuples2) {
+            htv2.add(t.getValues());
+        }
+
         Vector<Tuple> result = new Vector<>();
         for (Tuple tuple1 : tuples1) {
-            if (!tuples2.contains(tuple1)) {
+            if (!htv2.contains(tuple1.getValues())) {
                 result.add(tuple1);
             }
         }
         for (Tuple tuple2 : tuples2) {
-            if (!tuples1.contains(tuple2)) {
+            if (!htv1.contains(tuple2.getValues())) {
                 result.add(tuple2);
             }
         }

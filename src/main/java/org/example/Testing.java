@@ -10,10 +10,13 @@ import org.example.exceptions.DBAppException;
 import org.example.managers.FileManager;
 import org.example.managers.SelectionManager;
 
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.util.*;
 
 import static org.example.managers.FileManager.deserializePage;
+import static org.example.managers.FileManager.deserializeTable;
 
 public class Testing {
     public static void serializingTest() throws DBAppException, IOException, CsvValidationException {
@@ -96,31 +99,31 @@ public class Testing {
             System.out.println(deserializePage(pageName));
         }
 
-        try {
-            //wrong key
-            Tuple x1 = new Tuple();
-            x1.insert("ID", 2);
-            x1.insert("ShopName", "CityShop");
-            x1.insert("Number", 123456);
-            x1.insert("Specialisation", "Grocery");
-            x1.insert("Address", "Cairo");
-            table1.insert(x1);
-        } catch (DBAppException e) {
-            System.out.println(e.getMessage());
-        }
+//        try {
+//            //wrong key
+//            Tuple x1 = new Tuple();
+//            x1.insert("ID", 2);
+//            x1.insert("ShopName", "CityShop");
+//            x1.insert("Number", 123456);
+//            x1.insert("Specialisation", "Grocery");
+//            x1.insert("Address", "Cairo");
+//            table1.insert(x1);
+//        } catch (DBAppException e) {
+//            System.out.println(e.getMessage());
+//        }
 
-        try {
-            //wrong type
-            Tuple x2 = new Tuple();
-            x2.insert("ID", 2);
-            x2.insert("Name", 123);
-            x2.insert("Number", 123456);
-            x2.insert("Specialisation", "Grocery");
-            x2.insert("Address", "Cairo");
-            table1.insert(x2);
-        } catch (DBAppException e) {
-            System.out.println(e.getMessage());
-        }
+//        try {
+//            //wrong type
+//            Tuple x2 = new Tuple();
+//            x2.insert("ID", 2);
+//            x2.insert("Name", 123);
+//            x2.insert("Number", 123456);
+//            x2.insert("Specialisation", "Grocery");
+//            x2.insert("Address", "Cairo");
+//            table1.insert(x2);
+//        } catch (DBAppException e) {
+//            System.out.println(e.getMessage());
+//        }
         return table1;
     }
 
@@ -184,7 +187,6 @@ public class Testing {
         for (String pageName : table1.getPageNames()) {
             System.out.println(deserializePage(pageName));
         }
-
     }
 
     /**private static void BinarySearchTest() throws DBAppException, IOException, CsvValidationException {
@@ -215,9 +217,6 @@ public class Testing {
         //System.out.println(deserializePage(tableBin.pageNames.get(0)));
 
         try {
-
-
-
             Tuple x1 = new Tuple();
             x1.insert("ID", 4);
             x1.insert("Name", "Shop");
@@ -227,7 +226,6 @@ public class Testing {
             tableBin.insert(x1);
             System.out.println("Done inserting");
 
-
             Tuple x2 = new Tuple();
             x2.insert("ID", 3);
             x2.insert("Name", "CityShop");
@@ -236,7 +234,6 @@ public class Testing {
             x2.insert("Address", "Cairo");
             tableBin.insert(x2);
             System.out.println("Done inserting");
-
 
             //boolean b = tableBin.tupleHasNoDuplicateClusteringKey("Number",(Object)x1);
 
@@ -256,9 +253,8 @@ public class Testing {
         } catch (DBAppException e) {
             System.out.println(e.getMessage());
         }
-
-
     }*/
+
     private static void IndexTest() throws DBAppException, CsvValidationException, IOException {
         DBApp dbApp1 = new DBApp();
         dbApp1.init();
@@ -267,8 +263,8 @@ public class Testing {
         for (int i = 0; i < 50; i++) {
             index.insert(i, String.valueOf(i));
         }
-
     }
+
     private static void BinarySearchTest() throws DBAppException, IOException, CsvValidationException {
         DBApp dbApp1 = new DBApp();
         dbApp1.init();
@@ -293,11 +289,9 @@ public class Testing {
         tableBin.insert(t2);
         System.out.println("Done inserting");
 
-
         //System.out.println(deserializePage(tableBin.pageNames.get(0)));
 
         try {
-
             Tuple x1 = new Tuple();
             x1.insert("ID", 4);
             x1.insert("Name", "Shop");
@@ -315,11 +309,6 @@ public class Testing {
             x2.insert("Address", "Cairo");
             tableBin.insert(x2);
             System.out.println("Done inserting");
-
-
-
-
-
 
             for (String pageName : tableBin.getPageNames()) {
                 System.out.println(deserializePage(pageName));
@@ -346,8 +335,6 @@ public class Testing {
         } catch (DBAppException e) {
             System.out.println(e.getMessage());
         }
-
-
     }
 
     private static void selectEvalTest() throws DBAppException {
@@ -404,7 +391,6 @@ public class Testing {
         allTuples.add(tuples4);
         allTuples.add(tuples5);
 
-
         // Operators
         String[] strarrOperators = {"OR", "AND", "XOR", "AND"};
 
@@ -415,6 +401,43 @@ public class Testing {
         for(Tuple tuple : result) {
             System.out.println(tuple);
         }
+    }
+
+    public static void deserializeEqCheck() throws DBAppException, CsvValidationException, IOException {
+//        Table t = createTestTable();
+//        Tuple t1 = new Tuple();
+//        t1.insert("ID", 1); t1.insert("Name", "Farah"); t1.insert("Number", 21);
+//        t1.insert("Specialisation", "MET"); t1.insert("Address", "123s");
+//        Tuple t2 = new Tuple();
+//        t2.insert("ID", 2); t2.insert("Name", "Ahmad"); t2.insert("Number", 30);
+//        t2.insert("Specialisation", "ENG"); t2.insert("Address", "456b");
+//        Tuple t3 = new Tuple();
+//        t3.insert("ID", 3); t3.insert("Name", "Mohamed"); t3.insert("Number", 38);
+//        t3.insert("Specialisation", "BI"); t3.insert("Address", "789v");
+//        t.insert(t1); t.insert(t2); t.insert(t3);
+//        t.save();
+
+        Table newT = deserializeTable("CityShop");
+        Page p1 = deserializePage(newT.getPageNames().get(0));
+        Page p2 = deserializePage(newT.getPageNames().get(0));
+
+        Vector<Tuple> p1Tuples = p1.getTuples();
+
+        Hashtable<String, Object> ht1 = p1.getTuples().get(0).getValues();
+        Hashtable<String, Object> ht2 = p2.getTuples().get(0).getValues();
+
+        Vector<Hashtable<String, Object>> htVector = new Vector<>();
+
+        for(Tuple t : p1Tuples) {
+            htVector.add(t.getValues());
+        }
+
+        System.out.println(p1.getTuples().contains(p2.getTuples().get(0)));
+        // ^ prints false
+        System.out.println(ht1.equals(ht2));
+        // ^ prints true
+        System.out.println(htVector.contains(p2.getTuples().get(0).getValues()));
+        // ^ also prints true
     }
 
     public static void main(String[] args) throws Exception {
