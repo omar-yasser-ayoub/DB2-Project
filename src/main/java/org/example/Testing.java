@@ -8,12 +8,10 @@ import org.example.data_structures.index.Index;
 import org.example.data_structures.index.IntegerIndex;
 import org.example.exceptions.DBAppException;
 import org.example.managers.FileManager;
+import org.example.managers.SelectionManager;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Hashtable;
-import java.util.List;
+import java.util.*;
 
 import static org.example.managers.FileManager.deserializePage;
 
@@ -351,8 +349,75 @@ public class Testing {
 
 
     }
-    public static void main(String[] args) throws Exception {
-        IndexTest();
 
+    private static void selectEvalTest() throws DBAppException {
+        Tuple t1 = new Tuple();
+        t1.insert("ID", 1); t1.insert("Name", "Farah"); t1.insert("Number", 70);
+        Tuple t2 = new Tuple();
+        t2.insert("ID", 2); t2.insert("Name", "Reeka"); t2.insert("Number", 99);
+        Tuple t3 = new Tuple();
+        t3.insert("ID", 3); t3.insert("Name", "Ziad"); t3.insert("Number", 46);
+        Tuple t4 = new Tuple();
+        t4.insert("ID", 4); t4.insert("Name", "Yara"); t4.insert("Number", 31);
+        Tuple t5 = new Tuple();
+        t5.insert("ID", 5); t5.insert("Name", "Jana"); t5.insert("Number", 14);
+        Tuple t6 = new Tuple();
+        t6.insert("ID", 6); t6.insert("Name", "Amgad"); t6.insert("Number", 90);
+        Tuple t7 = new Tuple();
+        t7.insert("ID", 7); t7.insert("Name", "Fofo"); t7.insert("Number", 85);
+        Tuple t8 = new Tuple();
+        t8.insert("ID", 8); t8.insert("Name", "Salma"); t8.insert("Number", 83);
+        Tuple t9 = new Tuple();
+        t9.insert("ID", 9); t9.insert("Name", "Wael"); t9.insert("Number", 61);
+        Tuple t10 = new Tuple();
+        t10.insert("ID", 10); t10.insert("Name", "Fatima"); t10.insert("Number", 94);
+
+        // Sample data
+        Vector<Tuple> tuples1 = new Vector<>();
+        tuples1.add(t1);
+        tuples1.add(t3);
+        Vector<Tuple> tuples2 = new Vector<>();
+        tuples2.add(t1);
+        tuples2.add(t3);
+        tuples2.add(t4);
+        tuples2.add(t9);
+        Vector<Tuple> tuples3 = new Vector<>();
+        tuples3.add(t1);
+        tuples3.add(t3);
+        tuples3.add(t5);
+        tuples3.add(t9);
+        Vector<Tuple> tuples4 = new Vector<>();
+        tuples4.add(t1);
+        tuples4.add(t2);
+        tuples4.add(t4);
+        tuples4.add(t6);
+        tuples4.add(t9);
+        Vector<Tuple> tuples5 = new Vector<>();
+        tuples5.add(t1);
+        tuples5.add(t4);
+
+        // List of all tuples
+        Vector<Vector<Tuple>> allTuples = new Vector<>();
+        allTuples.add(tuples1);
+        allTuples.add(tuples2);
+        allTuples.add(tuples3);
+        allTuples.add(tuples4);
+        allTuples.add(tuples5);
+
+
+        // Operators
+        String[] strarrOperators = {"OR", "AND", "XOR", "AND"};
+
+        // Evaluate query
+        Vector<Tuple> result = SelectionManager.evalQuery(allTuples, strarrOperators);
+
+        // Output the result
+        for(Tuple tuple : result) {
+            System.out.println(tuple);
+        }
+    }
+
+    public static void main(String[] args) throws Exception {
+        selectEvalTest();
     }
 }

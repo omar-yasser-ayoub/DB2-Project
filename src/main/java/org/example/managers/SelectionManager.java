@@ -13,8 +13,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.Iterator;
-import java.util.Vector;
+import java.lang.invoke.CallSite;
+import java.util.*;
 
 import static org.example.DBApp.METADATA_DIR;
 
@@ -136,8 +136,7 @@ public class SelectionManager implements Serializable {
         }
     }
 
-    public static Iterator selectFromTable(SQLTerm[] arrSQLTerms,
-                                    String[]  strarrOperators) throws DBAppException{
+    public static Iterator selectFromTable(SQLTerm[] arrSQLTerms, String[] strarrOperators) throws DBAppException{
         isValid(arrSQLTerms, strarrOperators);
         String tableName = arrSQLTerms[0].getStrTableName();
         Table table = FileManager.deserializeTable(tableName);
@@ -145,10 +144,10 @@ public class SelectionManager implements Serializable {
         for (SQLTerm arrSQLTerm : arrSQLTerms) {
             totalTuples.add(computeSQLTerm(arrSQLTerm, table));
         }
-        for (String strarrOperator : strarrOperators) {
 
-        }
-        return null;
+        Vector<Tuple> result = evalQuery(totalTuples, strarrOperators);
+
+        return result != null ? result.iterator() : null;
     }
 
     private static Vector<Tuple> computeSQLTerm(SQLTerm sqlTerm, Table table) throws DBAppException {
@@ -236,4 +235,104 @@ public class SelectionManager implements Serializable {
                 throw new DBAppException("Illegal operator");
         }
     }
+
+    private static int precedence(String op) {
+        // 1 = lowest precedence
+        switch (op) {
+            case "OR" -> {
+                return 1;
+            }
+            case "XOR" -> {
+                return 2;
+            }
+            case "AND" -> {
+                return 3;
+            }
+        }
+        return -1;
+    }
+
+//    private static boolean tuplesEqual(Tuple tuple1, Tuple tuple2) {
+//        // check later if this actually works
+//        return tuple1.getValues().equals(tuple2.getValues());
+//    }
+
+    private static Vector<Tuple> logicalAnd(Vector<Tuple> tuples1, Vector<Tuple> tuples2) {
+        Vector<Tuple> result = new Vector<>();
+        for (Tuple tuple1 : tuples1) {
+            if (tuples2.contains(tuple1)) {
+                result.add(tuple1);
+            }
+        }
+        return result;
+    }
+
+    private static Vector<Tuple> logicalOr(Vector<Tuple> tuples1, Vector<Tuple> tuples2) {
+        Vector<Tuple> result = new Vector<>(tuples1);
+        for (Tuple tuple : tuples2) {
+            if (!result.contains(tuple)) {
+                result.add(tuple);
+            }
+        }
+        return result;
+    }
+
+    private static Vector<Tuple> logicalXor(Vector<Tuple> tuples1, Vector<Tuple> tuples2) {
+        Vector<Tuple> result = new Vector<>();
+        for (Tuple tuple1 : tuples1) {
+            if (!tuples2.contains(tuple1)) {
+                result.add(tuple1);
+            }
+        }
+        for (Tuple tuple2 : tuples2) {
+            if (!tuples1.contains(tuple2)) {
+                result.add(tuple2);
+            }
+        }
+        return result;
+    }
+
+    public static Vector<Tuple> evalQuery(Vector<Vector<Tuple>> allTuples, String[] strarrOperators) {
+        int j = 1;
+        Stack<String> opStack = new Stack<>();
+        Stack<Vector<Tuple>> tupleStack = new Stack<>();
+        tupleStack.push(allTuples.get(0));
+
+        for (String strOperator : strarrOperators) {
+            tupleStack.push(allTuples.get(j));
+            Vector<Tuple> tmp = null;
+            while (!opStack.isEmpty() && precedence(strOperator) < precedence(opStack.peek())) {
+                if(tmp == null){
+                    tmp = tupleStack.pop();
+                }
+                switch (opStack.pop()) {
+                    case "AND" -> tupleStack.push(logicalAnd(tupleStack.pop(), tupleStack.pop()));
+                    case "XOR" -> tupleStack.push(logicalXor(tupleStack.pop(), tupleStack.pop()));
+                    case "OR" -> tupleStack.push(logicalOr(tupleStack.pop(), tupleStack.pop()));
+                }
+            }
+
+            if(tmp != null){
+                tupleStack.push(tmp);
+            }
+            opStack.push(strOperator);
+            j++;
+        }
+
+        while(!opStack.isEmpty()) {
+            String strOperator = opStack.pop();
+            switch (strOperator) {
+                case "AND" -> tupleStack.push(logicalAnd(tupleStack.pop(), tupleStack.pop()));
+                case "XOR" -> tupleStack.push(logicalXor(tupleStack.pop(), tupleStack.pop()));
+                case "OR" -> tupleStack.push(logicalOr(tupleStack.pop(), tupleStack.pop()));
+            }
+        }
+
+        return !tupleStack.isEmpty() ? tupleStack.pop() : null;
+    }
+
+    public static void main(String[] args) throws DBAppException {
+
+    }
+
 }
