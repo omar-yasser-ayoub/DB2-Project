@@ -2,6 +2,7 @@ package org.example;
 
 import com.opencsv.exceptions.CsvValidationException;
 import org.example.data_structures.Page;
+import org.example.data_structures.SQLTerm;
 import org.example.data_structures.Table;
 import org.example.data_structures.Tuple;
 import org.example.data_structures.index.Index;
@@ -78,13 +79,20 @@ public class Testing {
         DBApp dbApp = new DBApp();
         dbApp.init();
         Table table1 = createTestTable();
-        int numOfTestTuples = 50;
+        int numOfTestTuples = 500;
 
         List<Integer> numbers = new ArrayList<>();
         for (int i = 1; i <= numOfTestTuples; i++) {
             numbers.add(i);
         }
         Collections.shuffle(numbers);
+
+//        numbers.clear();
+//        numbers.add(45);
+//        numbers.add(14);
+//        numbers.add(30);
+//        numbers.add(36);
+
         for (int num : numbers) {
             Tuple t = new Tuple();
             t.insert("ID", num);
@@ -93,74 +101,75 @@ public class Testing {
             t.insert("Specialisation", "");
             t.insert("Address", "");
             System.out.println("Inserting tuple " + num);
+            //System.out.println("Index " + numbers.indexOf(num));
             table1.insert(t);
         }
         for (String pageName : table1.getPageNames()) {
             System.out.println(deserializePage(pageName));
         }
 
-//        try {
-//            //wrong key
-//            Tuple x1 = new Tuple();
-//            x1.insert("ID", 2);
-//            x1.insert("ShopName", "CityShop");
-//            x1.insert("Number", 123456);
-//            x1.insert("Specialisation", "Grocery");
-//            x1.insert("Address", "Cairo");
-//            table1.insert(x1);
-//        } catch (DBAppException e) {
-//            System.out.println(e.getMessage());
-//        }
+        try {
+            //wrong key
+            Tuple x1 = new Tuple();
+            x1.insert("ID", 2);
+            x1.insert("ShopName", "CityShop");
+            x1.insert("Number", 123456);
+            x1.insert("Specialisation", "Grocery");
+            x1.insert("Address", "Cairo");
+            table1.insert(x1);
+        } catch (DBAppException e) {
+            System.out.println(e.getMessage());
+        }
 
-//        try {
-//            //wrong type
-//            Tuple x2 = new Tuple();
-//            x2.insert("ID", 2);
-//            x2.insert("Name", 123);
-//            x2.insert("Number", 123456);
-//            x2.insert("Specialisation", "Grocery");
-//            x2.insert("Address", "Cairo");
-//            table1.insert(x2);
-//        } catch (DBAppException e) {
-//            System.out.println(e.getMessage());
-//        }
+        try {
+            //wrong type
+            Tuple x2 = new Tuple();
+            x2.insert("ID", 2);
+            x2.insert("Name", 123);
+            x2.insert("Number", 123456);
+            x2.insert("Specialisation", "Grocery");
+            x2.insert("Address", "Cairo");
+            table1.insert(x2);
+        } catch (DBAppException e) {
+            System.out.println(e.getMessage());
+        }
         return table1;
     }
 
-//    public static void sqlTermTest() throws DBAppException, IOException, CsvValidationException {
-//        SQLTerm[] arrSQLTerms = new SQLTerm[5];
-//
-//        // valid
-//        arrSQLTerms[0] = new SQLTerm("CityShop", "Name", "=", "John Noor");
-//
-//        // table doesn't exist
-//        try {
-//            arrSQLTerms[1] = new SQLTerm("Something", "Name", "=", "John Noor");
-//        } catch (DBAppException e) {
-//            System.out.println(e.getMessage());
-//        }
-//
-//        // column doesn't exist
-//        try {
-//            arrSQLTerms[2] = new SQLTerm("CityShop", "Something", "=", "John Noor");
-//        } catch (DBAppException e) {
-//            System.out.println(e.getMessage());
-//        }
-//
-//        // object datatype doesn't match column datatype
-//        try {
-//            arrSQLTerms[3] = new SQLTerm("CityShop", "Name", "=", Integer.valueOf(2));
-//        } catch (DBAppException e) {
-//            System.out.println(e.getMessage());
-//        }
-//
-//        // illegal operator
-//        try {
-//            arrSQLTerms[4] = new SQLTerm("CityShop", "Name", "=>", "John Noor");
-//        } catch (DBAppException e) {
-//            System.out.println(e.getMessage());
-//        }
-//    }
+    public static void sqlTermTest() throws DBAppException, IOException, CsvValidationException {
+        SQLTerm[] arrSQLTerms = new SQLTerm[5];
+
+        // valid
+        arrSQLTerms[0] = new SQLTerm("CityShop", "Name", "=", "John Noor");
+
+        // table doesn't exist
+        try {
+            arrSQLTerms[1] = new SQLTerm("Something", "Name", "=", "John Noor");
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+
+        // column doesn't exist
+        try {
+            arrSQLTerms[2] = new SQLTerm("CityShop", "Something", "=", "John Noor");
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+
+        // object datatype doesn't match column datatype
+        try {
+            arrSQLTerms[3] = new SQLTerm("CityShop", "Name", "=", Integer.valueOf(2));
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+
+        // illegal operator
+        try {
+            arrSQLTerms[4] = new SQLTerm("CityShop", "Name", "=>", "John Noor");
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+    }
     private static void deleteFromTableTest() throws DBAppException, CsvValidationException, IOException {
         DBApp dbApp = new DBApp();
         dbApp.init();
@@ -441,6 +450,6 @@ public class Testing {
     }
 
     public static void main(String[] args) throws Exception {
-        selectEvalTest();
+        insertIntoTableTest();
     }
 }
