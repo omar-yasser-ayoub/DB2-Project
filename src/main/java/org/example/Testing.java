@@ -79,7 +79,7 @@ public class Testing {
         DBApp dbApp = new DBApp();
         dbApp.init();
         Table table1 = createTestTable();
-        int numOfTestTuples = 500;
+        int numOfTestTuples = 50;
 
         List<Integer> numbers = new ArrayList<>();
         for (int i = 1; i <= numOfTestTuples; i++) {

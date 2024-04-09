@@ -64,8 +64,7 @@ public class InsertionManager{
             }
 
             Tuple firstTuple = page.getTuples().get(0);
-            int numberOfTuplesInPage = page.getTuples().size();
-            Tuple lastTuple = page.getTuples().get(numberOfTuplesInPage -1);
+            Tuple lastTuple = page.getTuples().get(page.getTuples().size() -1);
 
             Comparable<Object> firstClusteringKeyValue = (Comparable<Object>) firstTuple.getValues().get(table.getClusteringKey());
             Comparable<Object> lastClusteringKeyValue = (Comparable<Object>) lastTuple.getValues().get(table.getClusteringKey());
@@ -95,46 +94,8 @@ public class InsertionManager{
 
         String pageName = table.getPageNames().get(lastfound);
         return FileManager.deserializePage(table.getPageNames().get(lastfound));
+        }
 
-//        for (String pageName : pageNames) {
-//
-//            Page page = FileManager.deserializePage(pageName);
-//            Vector<Tuple> tuples = page.getTuples();
-//
-//            int i = pageNames.indexOf(pageName);
-//
-//            //if page is empty, insert into page
-//            if (tuples.isEmpty()) {
-//                return page;
-//            }
-//
-//            Tuple firstTuple = tuples.get(0);
-//            Comparable<Object> firstClusteringKeyValue = (Comparable<Object>) firstTuple.getValues().get(table.getClusteringKey());
-//
-//            //if tuple is smaller than first tuple in page, insert into previous page
-//            if (clusteringKeyValue.compareTo(firstClusteringKeyValue) < 0) {
-//                if (i == 0) {
-//                    return page;
-//                }
-//                page = FileManager.deserializePage(table.getPageNames().get(i - 1));
-//                return page;
-//            }
-//
-//            //if page is last page insert
-//            if (i == table.getPageNames().size() - 1) {
-//                return page;
-//            }
-        }
-    public static int getCorrectIndexOfTupleinPage(Page page, Tuple tuple, String clusteringKey){
-        Vector<Tuple> tuples = page.getTuples();
-        Comparator<Tuple> c = (u1, u2) -> SelectionManager.compareObjects(u1.getValues().get(clusteringKey), u2.getValues().get(clusteringKey));
-        int i = Collections.binarySearch(tuples, tuple, c); //returns index of tuple if found, otherwise returns -(insertion point) - 1
-        if(i<0){
-            i++;
-            i*=-1;
-        }
-        return i;
-    }
     /**
      * Attempts to insert into the Page instance
      * @param tuple The tuple to be inserted into the page
@@ -179,7 +140,22 @@ public class InsertionManager{
         //if page is still less than max size, return null because no overflow
         return null;
     }
-
+    private static int getCorrectIndexOfTupleinPage(Page page, Tuple tuple, String clusteringKey){
+        Vector<Tuple> tuples = page.getTuples();
+        Comparator<Tuple> c = Comparator.comparing(u -> ((Comparable<Object>) u.getValues().get(clusteringKey)));
+        int i = Collections.binarySearch(tuples, tuple, c); //returns index of tuple if found, otherwise returns -(insertion point) - 1
+        if(i<0){
+            i++;
+            i*=-1;
+        }
+        return i;
+    }
+   /**
+     * Updates the index of the parent table after a tuple is inserted
+     * @param tuple The tuple that was inserted
+     * @param parentTable The table that the tuple was inserted into
+     * @param page The page that the tuple was inserted into
+     */
     private static void updateIndexOnInsertion(Tuple tuple, Table parentTable, Page page) throws DBAppException {
         Vector<Index> indices = parentTable.getIndices();
         if (indices != null) {

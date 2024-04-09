@@ -9,11 +9,9 @@ import org.example.data_structures.Tuple;
 import org.example.data_structures.Page;
 import org.example.data_structures.Table;
 
-import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Serializable;
-import java.lang.invoke.CallSite;
 import java.util.*;
 
 import static org.example.DBApp.METADATA_DIR;
@@ -24,7 +22,7 @@ public class SelectionManager implements Serializable {
     }
 
     private static Vector<Tuple> indexSearchInTable(SQLTerm term, Index index, Table table) throws DBAppException {
-        Vector<String> pageNames = new Vector<>();
+        Vector<String> pageNames;
         Vector<Tuple> finalList = new Vector<>();
         switch (term.getStrOperator()) {
             case "=":
@@ -49,10 +47,128 @@ public class SelectionManager implements Serializable {
         }
         for (String pageName : pageNames) {
             Page page = FileManager.deserializePage(pageName);
+            //TODO: Binary Search
             linearSearchInPage(term, finalList, page);
         }
         return finalList;
     }
+
+    private static Vector<Tuple> binarySearchInTable(SQLTerm term, Table table) throws DBAppException {
+        Vector<String> pageNames;
+        Vector<Tuple> finalList = new Vector<>();
+
+        int pageIndex = getCorrectPageForSelection(term, table);
+        Page page = FileManager.deserializePage(table.getPageNames().get(pageIndex));
+        Vector<Tuple> tuples = page.getTuples();
+        int tupleIndex;
+
+        switch (term.getStrOperator()) {
+            case "=" -> {
+                tupleIndex = binarySearchInPage(term, page);
+                finalList.add(tuples.get(tupleIndex));
+            }
+            case "!=" -> {
+                return linearSearchInTable(term, table);
+            }
+            case ">" -> {
+                tupleIndex = binarySearchInPage(term, page);
+                for (int i = tupleIndex + 1; i < tuples.size(); i++) {
+                    finalList.add(tuples.get(i));
+                }
+                for (int i = pageIndex + 1; i < table.getPageNames().size(); i++) {
+                    Page nextPage = FileManager.deserializePage(table.getPageNames().get(i));
+                    finalList.addAll(nextPage.getTuples());
+                }
+            }
+            case ">=" -> {
+                tupleIndex = binarySearchInPage(term, page);
+                for (int i = tupleIndex; i < tuples.size(); i++) {
+                    finalList.add(tuples.get(i));
+                }
+                for (int i = pageIndex + 1; i < table.getPageNames().size(); i++) {
+                    Page nextPage = FileManager.deserializePage(table.getPageNames().get(i));
+                    finalList.addAll(nextPage.getTuples());
+                }
+            }
+            case "<" -> {
+                tupleIndex = binarySearchInPage(term, page);
+                for (int i = 0; i < tupleIndex; i++) {
+                    finalList.add(tuples.get(i));
+                }
+                for (int i = 0; i < pageIndex; i++) {
+                    Page nextPage = FileManager.deserializePage(table.getPageNames().get(i));
+                    finalList.addAll(nextPage.getTuples());
+                }
+            }
+            case "<=" -> {
+                tupleIndex = binarySearchInPage(term, page);
+                for (int i = 0; i <= tupleIndex; i++) {
+                    finalList.add(tuples.get(i));
+                }
+                for (int i = 0; i < pageIndex; i++) {
+                    Page nextPage = FileManager.deserializePage(table.getPageNames().get(i));
+                    finalList.addAll(nextPage.getTuples());
+                }
+            }
+            default -> {
+                return null;
+            }
+        }
+        return finalList;
+    }
+    private static int getCorrectPageForSelection(SQLTerm term, Table table) throws DBAppException {
+        Comparable<Object> clusteringKeyValue = (Comparable<Object>) term.getObjValue();
+
+        int low = 0;
+        int high = table.getPageNames().size();
+
+        while (low <= high) {
+
+            int mid = low + (high - low) / 2;
+
+            //get Page
+            String pageName = table.getPageNames().get(mid);
+            Page page = FileManager.deserializePage(pageName);
+            Vector<Tuple> tuples = page.getTuples();
+
+            Tuple firstTuple = page.getTuples().get(0);
+            Tuple lastTuple = page.getTuples().get(page.getTuples().size() - 1);
+
+            Comparable<Object> firstClusteringKeyValue = (Comparable<Object>) firstTuple.getValues().get(table.getClusteringKey());
+            Comparable<Object> lastClusteringKeyValue = (Comparable<Object>) lastTuple.getValues().get(table.getClusteringKey());
+
+            if (clusteringKeyValue.compareTo(firstClusteringKeyValue) >= 0 && clusteringKeyValue.compareTo(lastClusteringKeyValue) <= 0) {
+                return mid;
+            } else if (clusteringKeyValue.compareTo(firstClusteringKeyValue) < 0) {
+                high = mid - 1;
+            } else {
+                low = mid + 1;
+            }
+        }
+        throw new DBAppException("Tuple not found while binary searching table");
+    }
+
+    private static int binarySearchInPage(SQLTerm term, Page page) throws DBAppException {
+        Vector<Tuple> tuples = page.getTuples();
+        int low = 0;
+        int high = tuples.size() - 1;
+        while (low <= high) {
+            int mid = low + (high - low) / 2;
+            Tuple tuple = tuples.get(mid);
+            Comparable<Object> columnValue = (Comparable<Object>)tuple.getValues().get(term.getStrColumnName());
+            Comparable<Object> termValue = (Comparable<Object>)term.getObjValue();
+            int comparison = columnValue.compareTo(termValue);
+            if (comparison == 0) {
+                return mid;
+            } else if (comparison < 0) {
+                low = mid + 1;
+            } else {
+                high = mid - 1;
+            }
+        }
+        throw new DBAppException("Tuple not found while binary searching page");
+    }
+
     public static Vector<Tuple> linearSearchInTable(SQLTerm term, Table table) throws DBAppException {
         Vector<Tuple> finalList = new Vector<>();
         for (String pageName : table.getPageNames()) {
@@ -64,7 +180,6 @@ public class SelectionManager implements Serializable {
         }
         return finalList;
     }
-
     private static void linearSearchInPage(SQLTerm term, Vector<Tuple> finalList, Page page) {
         for (Tuple tuple : page.getTuples()) {
             String columnName = term.getStrColumnName();
@@ -83,61 +198,8 @@ public class SelectionManager implements Serializable {
         }
     }
 
-    public static boolean binarySearchInPage(Page page, String key, Object value){
-        //key is column name
-        //"value" attribute is the value we want to find, can be int, String or double
-        int startTupleNum = 0;
-        int numberOfTuples = page.getTuples().size();
-
-        // Binary search within the current page
-        int low = startTupleNum;
-        int high = numberOfTuples - 1;
-        while (low <= high) {
-            int mid = low + (high - low) / 2;
-            Tuple tuple = page.getTuples().get(mid);
-
-            // Compare the key value with the target value
-            int comparisonResult = compareObjects(tuple.getValues().get(key), value);
-
-
-            if (comparisonResult == 0) {
-                // Key-value pair found, return false
-                return true;
-            } else if (comparisonResult < 0) {
-                // If our value is greater than current value, search in the right half
-                low = mid + 1;
-            } else {
-                // If our value is less than current value, search in the left half
-                high = mid - 1;
-            }
-        }
-        return false;
-    }
-
-    public static int compareObjects(Object obj1 , Object obj2){
-        // ((Comparable) Object).compareTo((Comparable) otherObject)); lol
-        if(  obj1 instanceof Integer && obj2 instanceof Integer){
-            Integer currI = (Integer)(obj1);
-            Integer valI = (Integer)(obj2);
-            return currI.compareTo(valI);
-        }
-        else if( obj1 instanceof Double && obj2 instanceof Double){
-            Double currD = (Double)(obj1);
-            Double valD = (Double)(obj2);
-            return currD.compareTo(valD) ;
-        }
-        else if(  obj1 instanceof String && obj2 instanceof String) {
-            String currS = (String) (obj1);
-            String valS = (String) (obj2);
-            return currS.compareTo(valS);       //if first>second then positive
-        }
-        else{
-            throw new IllegalArgumentException("Objects must be of type Integer, Double, or String");
-        }
-    }
-
     public static Iterator selectFromTable(SQLTerm[] arrSQLTerms, String[] strarrOperators) throws DBAppException{
-        isValid(arrSQLTerms, strarrOperators);
+        isValidSQLTerm(arrSQLTerms, strarrOperators);
         String tableName = arrSQLTerms[0].getStrTableName();
         Table table = FileManager.deserializeTable(tableName);
         Vector<Vector<Tuple>> totalTuples = new Vector<>();
@@ -151,7 +213,7 @@ public class SelectionManager implements Serializable {
     }
 
     private static Vector<Tuple> computeSQLTerm(SQLTerm sqlTerm, Table table) throws DBAppException {
-        if (table.getIndices().size() != 0) {
+        if (!table.getIndices().isEmpty()) {
             for (Index index : table.getIndices()) {
                 if (index.getColumnName().equals(sqlTerm.getStrColumnName())) {
                     return indexSearchInTable(sqlTerm, index, table);
@@ -159,14 +221,14 @@ public class SelectionManager implements Serializable {
             }
         }
         if (table.getClusteringKey().equals(sqlTerm.getStrColumnName())) {
-            return null;
+            return binarySearchInTable(sqlTerm, table);
         }
         else {
             return linearSearchInTable(sqlTerm, table);
         }
     }
 
-    private static void isValid(SQLTerm[] arrSQLTerms, String[] strarrOperators) throws DBAppException {
+    private static void isValidSQLTerm(SQLTerm[] arrSQLTerms, String[] strarrOperators) throws DBAppException {
         if (arrSQLTerms.length == 0) {
             throw new DBAppException("Empty SQL Terms Array");
         }
@@ -196,8 +258,8 @@ public class SelectionManager implements Serializable {
 
                 // exception message stuff
                 String exceptionMsg = "exceptionMsg";
-                Boolean colInTable = false;
-                Boolean tableExists = false;
+                boolean colInTable = false;
+                boolean tableExists = false;
                 boolean flag = true;
 
                 while ((line = reader.readNext()) != null) {
@@ -236,7 +298,7 @@ public class SelectionManager implements Serializable {
         }
     }
 
-    private static int precedence(String op) {
+    private static int getPrecedence(String op) {
         // 1 = lowest precedence
         switch (op) {
             case "OR" -> {
@@ -316,7 +378,7 @@ public class SelectionManager implements Serializable {
         for (String strOperator : strarrOperators) {
             tupleStack.push(allTuples.get(j));
             Vector<Tuple> tmp = null;
-            while (!opStack.isEmpty() && precedence(strOperator) < precedence(opStack.peek())) {
+            while (!opStack.isEmpty() && getPrecedence(strOperator) < getPrecedence(opStack.peek())) {
                 if(tmp == null){
                     tmp = tupleStack.pop();
                 }
@@ -344,10 +406,6 @@ public class SelectionManager implements Serializable {
         }
 
         return !tupleStack.isEmpty() ? tupleStack.pop() : null;
-    }
-
-    public static void main(String[] args) throws DBAppException {
-
     }
 
 }
