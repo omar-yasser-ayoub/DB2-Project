@@ -47,31 +47,30 @@ public class SelectionManager implements Serializable {
         }
         for (String pageName : pageNames) {
             Page page = FileManager.deserializePage(pageName);
-            //TODO: Binary Search
+            //TODO: Binary Search?
             linearSearchInPage(term, finalList, page);
         }
         return finalList;
     }
 
-    private static Vector<Tuple> binarySearchInTable(SQLTerm term, Table table) throws DBAppException {
-        Vector<String> pageNames;
+    private static Vector<Tuple> binarySearchInTable(SQLTerm term,  Table table) throws DBAppException {
         Vector<Tuple> finalList = new Vector<>();
-
-        int pageIndex = getCorrectPageForSelection(term, table);
+        Comparable<Object> value = (Comparable<Object>) term.getObjValue();
+        int pageIndex = getIndexOfPage(value, table);
         Page page = FileManager.deserializePage(table.getPageNames().get(pageIndex));
         Vector<Tuple> tuples = page.getTuples();
         int tupleIndex;
 
         switch (term.getStrOperator()) {
             case "=" -> {
-                tupleIndex = binarySearchInPage(term, page);
+                tupleIndex = getIndexOfTuple(value, page);
                 finalList.add(tuples.get(tupleIndex));
             }
             case "!=" -> {
                 return linearSearchInTable(term, table);
             }
             case ">" -> {
-                tupleIndex = binarySearchInPage(term, page);
+                tupleIndex = getIndexOfTuple(value, page);
                 for (int i = tupleIndex + 1; i < tuples.size(); i++) {
                     finalList.add(tuples.get(i));
                 }
@@ -81,7 +80,7 @@ public class SelectionManager implements Serializable {
                 }
             }
             case ">=" -> {
-                tupleIndex = binarySearchInPage(term, page);
+                tupleIndex = getIndexOfTuple(value, page);
                 for (int i = tupleIndex; i < tuples.size(); i++) {
                     finalList.add(tuples.get(i));
                 }
@@ -91,7 +90,7 @@ public class SelectionManager implements Serializable {
                 }
             }
             case "<" -> {
-                tupleIndex = binarySearchInPage(term, page);
+                tupleIndex = getIndexOfTuple(value, page);
                 for (int i = 0; i < tupleIndex; i++) {
                     finalList.add(tuples.get(i));
                 }
@@ -101,7 +100,7 @@ public class SelectionManager implements Serializable {
                 }
             }
             case "<=" -> {
-                tupleIndex = binarySearchInPage(term, page);
+                tupleIndex = getIndexOfTuple(value, page);
                 for (int i = 0; i <= tupleIndex; i++) {
                     finalList.add(tuples.get(i));
                 }
@@ -116,9 +115,7 @@ public class SelectionManager implements Serializable {
         }
         return finalList;
     }
-    private static int getCorrectPageForSelection(SQLTerm term, Table table) throws DBAppException {
-        Comparable<Object> clusteringKeyValue = (Comparable<Object>) term.getObjValue();
-
+    protected static int getIndexOfPage(Comparable<Object> value, Table table) throws DBAppException {
         int low = 0;
         int high = table.getPageNames().size();
 
@@ -137,9 +134,9 @@ public class SelectionManager implements Serializable {
             Comparable<Object> firstClusteringKeyValue = (Comparable<Object>) firstTuple.getValues().get(table.getClusteringKey());
             Comparable<Object> lastClusteringKeyValue = (Comparable<Object>) lastTuple.getValues().get(table.getClusteringKey());
 
-            if (clusteringKeyValue.compareTo(firstClusteringKeyValue) >= 0 && clusteringKeyValue.compareTo(lastClusteringKeyValue) <= 0) {
+            if (value.compareTo(firstClusteringKeyValue) >= 0 && value.compareTo(lastClusteringKeyValue) <= 0) {
                 return mid;
-            } else if (clusteringKeyValue.compareTo(firstClusteringKeyValue) < 0) {
+            } else if (value.compareTo(firstClusteringKeyValue) < 0) {
                 high = mid - 1;
             } else {
                 low = mid + 1;
@@ -148,16 +145,16 @@ public class SelectionManager implements Serializable {
         throw new DBAppException("Tuple not found while binary searching table");
     }
 
-    private static int binarySearchInPage(SQLTerm term, Page page) throws DBAppException {
+    protected static int getIndexOfTuple(Comparable<Object> value, Page page) throws DBAppException {
         Vector<Tuple> tuples = page.getTuples();
+        String clusteringKey = page.getParentTable().getClusteringKey();
         int low = 0;
         int high = tuples.size() - 1;
         while (low <= high) {
             int mid = low + (high - low) / 2;
             Tuple tuple = tuples.get(mid);
-            Comparable<Object> columnValue = (Comparable<Object>)tuple.getValues().get(term.getStrColumnName());
-            Comparable<Object> termValue = (Comparable<Object>)term.getObjValue();
-            int comparison = columnValue.compareTo(termValue);
+            Comparable<Object> columnValue = (Comparable<Object>)tuple.getValues().get(clusteringKey);
+            int comparison = columnValue.compareTo(value);
             if (comparison == 0) {
                 return mid;
             } else if (comparison < 0) {
