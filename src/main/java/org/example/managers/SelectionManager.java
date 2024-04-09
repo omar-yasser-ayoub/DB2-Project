@@ -56,21 +56,21 @@ public class SelectionManager implements Serializable {
     private static Vector<Tuple> binarySearchInTable(SQLTerm term,  Table table) throws DBAppException {
         Vector<Tuple> finalList = new Vector<>();
         Comparable<Object> value = (Comparable<Object>) term.getObjValue();
-        int pageIndex = getIndexOfPage(value, table);
+        int pageIndex = getIndexOfPageFromClusteringValue(value, table);
         Page page = FileManager.deserializePage(table.getPageNames().get(pageIndex));
         Vector<Tuple> tuples = page.getTuples();
         int tupleIndex;
 
         switch (term.getStrOperator()) {
             case "=" -> {
-                tupleIndex = getIndexOfTuple(value, page);
+                tupleIndex = getIndexOfTupleFromClusteringValue(value, page);
                 finalList.add(tuples.get(tupleIndex));
             }
             case "!=" -> {
                 return linearSearchInTable(term, table);
             }
             case ">" -> {
-                tupleIndex = getIndexOfTuple(value, page);
+                tupleIndex = getIndexOfTupleFromClusteringValue(value, page);
                 for (int i = tupleIndex + 1; i < tuples.size(); i++) {
                     finalList.add(tuples.get(i));
                 }
@@ -80,7 +80,7 @@ public class SelectionManager implements Serializable {
                 }
             }
             case ">=" -> {
-                tupleIndex = getIndexOfTuple(value, page);
+                tupleIndex = getIndexOfTupleFromClusteringValue(value, page);
                 for (int i = tupleIndex; i < tuples.size(); i++) {
                     finalList.add(tuples.get(i));
                 }
@@ -90,7 +90,7 @@ public class SelectionManager implements Serializable {
                 }
             }
             case "<" -> {
-                tupleIndex = getIndexOfTuple(value, page);
+                tupleIndex = getIndexOfTupleFromClusteringValue(value, page);
                 for (int i = 0; i < tupleIndex; i++) {
                     finalList.add(tuples.get(i));
                 }
@@ -100,7 +100,7 @@ public class SelectionManager implements Serializable {
                 }
             }
             case "<=" -> {
-                tupleIndex = getIndexOfTuple(value, page);
+                tupleIndex = getIndexOfTupleFromClusteringValue(value, page);
                 for (int i = 0; i <= tupleIndex; i++) {
                     finalList.add(tuples.get(i));
                 }
@@ -115,7 +115,15 @@ public class SelectionManager implements Serializable {
         }
         return finalList;
     }
-    protected static int getIndexOfPage(Comparable<Object> value, Table table) throws DBAppException {
+
+    /**
+     * Returns the index of the page that contains the tuple with the given clustering value
+     * @param value The clustering value of the tuple
+     * @param table The table to search in
+     * @return The index of the page that contains the tuple with the given clustering value
+     * @throws DBAppException If the tuple is not found
+     */
+    protected static int getIndexOfPageFromClusteringValue(Comparable<Object> value, Table table) throws DBAppException {
         int low = 0;
         int high = table.getPageNames().size();
 
@@ -144,8 +152,14 @@ public class SelectionManager implements Serializable {
         }
         throw new DBAppException("Tuple not found while binary searching table");
     }
-
-    protected static int getIndexOfTuple(Comparable<Object> value, Page page) throws DBAppException {
+    /**
+     * Returns the index of the tuple with the given clustering value in the given page
+     * @param value The clustering value of the tuple
+     * @param page The page to search in
+     * @return The index of the tuple with the given clustering value in the given page
+     * @throws DBAppException If the tuple is not found
+     */
+    protected static int getIndexOfTupleFromClusteringValue(Comparable<Object> value, Page page) throws DBAppException {
         Vector<Tuple> tuples = page.getTuples();
         String clusteringKey = page.getParentTable().getClusteringKey();
         int low = 0;

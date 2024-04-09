@@ -18,10 +18,10 @@ public class DeletionManager{
 
         Comparable<Object> clusteringKeyValue = (Comparable<Object>) tuple.getValues().get(table.getClusteringKey());
 
-        int pageIndex = SelectionManager.getIndexOfPage(clusteringKeyValue, table);
+        int pageIndex = SelectionManager.getIndexOfPageFromClusteringValue(clusteringKeyValue, table);
         Page page = FileManager.deserializePage(table.getPageNames().get(pageIndex));
 
-        int tupleIndex = SelectionManager.getIndexOfTuple(clusteringKeyValue, page);
+        int tupleIndex = SelectionManager.getIndexOfTupleFromClusteringValue(clusteringKeyValue, page);
         tuple = page.getTuples().get(tupleIndex);
 
         page.getTuples().remove(tupleIndex);
