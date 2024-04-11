@@ -21,7 +21,7 @@ public class DBApp {
 	public static int maxRowCount;
 	static CSVWriter metadataWriter;
 
-	static Vector<Table> tables = new Vector<Table>();
+	static Vector<String> tables = new Vector<String>();
 	public DBApp( ){
 		
 	}
@@ -88,7 +88,7 @@ public class DBApp {
 
 			Table newTable = new Table(strTableName, strClusteringKeyColumn, htblColNameType);
 			writeMetadata(newTable);
-			tables.add(newTable);
+			tables.add(newTable.getTableName());
 		}
 		catch (Exception e){
 			System.out.println("Error while creating table");
@@ -191,8 +191,11 @@ public class DBApp {
 		return null;
 	}
 
+	public static Vector<String> getMyTables() {
+		return tables;
+	}
 
-	public static void main( String[] args ){
+	public static void main(String[] args ){
 	try{
 			DBApp dbApp = new DBApp();
 			dbApp.init();

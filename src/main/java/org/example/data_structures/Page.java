@@ -58,4 +58,12 @@ public class Page implements Serializable {
         returnString.deleteCharAt(returnString.length() - 1);
         return returnString.toString();
     }
+
+    public int getSize() {
+        return tuples.size();
+    }
+
+    public boolean isFull() {
+        return false;
+    }
 }

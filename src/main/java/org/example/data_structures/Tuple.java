@@ -46,4 +46,8 @@ public class Tuple implements java.io.Serializable {
         returnString.deleteCharAt(returnString.length() - 1);
         return returnString.toString();
     }
+
+    public int getPrimaryKeyValue() {
+        return 1;
+    }
 }

@@ -39,8 +39,9 @@ public class Table implements Serializable {
     public String getClusteringKey() {
         return clusteringKey;
     }
-
-
+    public boolean isEmpty() {
+        return pageCount == 0;
+    }
     public Vector<String> getPageNames() {
         return pageNames;
     }
@@ -129,4 +130,16 @@ public class Table implements Serializable {
         return true;
     }
 
+    public Page getPageAtPosition(int i) throws DBAppException {
+        String currentPage = pageNames.get(i);
+        return FileManager.deserializePage(currentPage);
+    }
+
+    public int getSize() throws DBAppException {
+        int total = 0;
+        for (String pageName : pageNames) {
+            total += FileManager.deserializePage(pageName).getSize();
+        }
+        return total;
+    }
 }
