@@ -25,8 +25,8 @@ public class Testing {
         dbApp.init();
 
         Table table1 = createTestTable();
-        Page page1 = new Page(table1, 0);
-        Page page2 = new Page(table1, 1);
+        Page page1 = new Page("table1", 0);
+        Page page2 = new Page("table1", 1);
 
         page1.save();
         System.out.println("Page 1 serialized");
@@ -60,7 +60,9 @@ public class Testing {
             ht.put(colNames[i], colTypes[i]);
         }
         String clusteringKey = "ID";
-        return new Table("CityShop", clusteringKey, ht);
+        Table table = new Table("CityShop", clusteringKey, ht);
+        table.save();
+        return table;
     }
 
     private static void tupleTest() throws DBAppException {
@@ -104,9 +106,6 @@ public class Testing {
             //System.out.println("Index " + numbers.indexOf(num));
             table1.insert(t);
         }
-        for (String pageName : table1.getPageNames()) {
-            System.out.println(deserializePage(pageName));
-        }
 
         try {
             //wrong key
@@ -132,6 +131,23 @@ public class Testing {
             table1.insert(x2);
         } catch (DBAppException e) {
             System.out.println(e.getMessage());
+        }
+
+        try {
+            //duplicate key
+            Tuple x1 = new Tuple();
+            x1.insert("ID", 2);
+            x1.insert("Name", "CityShop");
+            x1.insert("Number", 2);
+            x1.insert("Specialisation", "");
+            x1.insert("Address", "");
+            table1.insert(x1);
+        } catch (DBAppException e) {
+            System.out.println(e.getMessage());
+        }
+
+        for (String pageName : table1.getPageNames()) {
+            System.out.println(deserializePage(pageName));
         }
         return table1;
     }
@@ -395,6 +411,6 @@ public class Testing {
     }
 
     public static void main(String[] args) throws Exception {
-        deleteFromTableTest();
+        insertIntoTableTest();
     }
 }

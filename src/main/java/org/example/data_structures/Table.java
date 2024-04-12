@@ -87,11 +87,14 @@ public class Table implements Serializable {
      * @return The newly created page
      */
     public Page createPageInTable() throws DBAppException {
-        Page newPage = new Page(this, getPageCount());
+        Page newPage = new Page(tableName, getPageCount());
         newPage.save();
+
         String pageName = getTableName() + getPageCount();
         getPageNames().add(pageName);
         pageCount = getPageCount() + 1;
+
+        this.save();
         return newPage;
     }
     /**
@@ -101,13 +104,14 @@ public class Table implements Serializable {
      * @return The newly created page
      */
     public Page createPageInTable(Tuple tuple, int index) throws DBAppException {
-        Page newPage = new Page(this, getPageCount());
+        Page newPage = new Page(tableName, getPageCount());
         String pageName = getTableName() + getPageCount();
-        pageNames.add(index + 1, pageName);
 
+        pageNames.add(index + 1, pageName);
         InsertionManager.insertTupleIntoPage(tuple, this, newPage);
 
-        pageCount = getPageCount() + 1;
+
+        this.save();
         return newPage;
     }
 

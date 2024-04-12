@@ -14,10 +14,10 @@ public class Page implements Serializable {
 
     /**
      * Constructor for the Page class
-     * @param parentTable The table that the page is a part of
+     * @param parentTableName The table that the page is a part of
      * @param pageNum The identifying number of the page
      */
-    public Page(Table parentTable, int pageNum){
+    public Page(String parentTableName, int pageNum) throws DBAppException {
         this.parentTableName = parentTableName;
         this.pageNum = pageNum;
         this.tuples = new Vector<>();
@@ -32,8 +32,11 @@ public class Page implements Serializable {
     }
 
     public Table getParentTable() throws DBAppException {
-        Table parentTable = FileManager.deserializeTable(parentTableName);
-        return parentTable;
+        return FileManager.deserializeTable(parentTableName);
+    }
+
+    public String getParentTableName() throws DBAppException {
+        return parentTableName;
     }
 
     public String getPageName() {

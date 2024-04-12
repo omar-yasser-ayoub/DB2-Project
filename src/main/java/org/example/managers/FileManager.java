@@ -46,7 +46,7 @@ public class FileManager implements Serializable {
 
     public static void serializePage(Page page) throws DBAppException {
         createDirectory(SERIALIZED_PAGES_PATH);
-        String fileName = SERIALIZED_PAGES_PATH + "/" + page.getParentTable().getTableName() + page.getPageNum() + ".ser";
+        String fileName = SERIALIZED_PAGES_PATH + "/" + page.getPageName() + ".ser";
         serialize(page, fileName);
     }
 

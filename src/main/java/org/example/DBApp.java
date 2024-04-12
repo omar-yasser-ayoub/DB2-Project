@@ -87,6 +87,7 @@ public class DBApp {
 			}
 
 			Table newTable = new Table(strTableName, strClusteringKeyColumn, htblColNameType);
+			newTable.save();
 			writeMetadata(newTable);
 			tables.add(newTable.getTableName());
 		}

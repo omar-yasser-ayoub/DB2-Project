@@ -17,6 +17,7 @@ public class InsertionManager{
     }
     public static void insertTupleIntoTable(Tuple tuple, Table table) throws DBAppException {
         table.isValidTuple(tuple);
+        checkDuplicatePrimaryKey(tuple, table);
 
         if (table.getPageNames().isEmpty()) {
             table.createPageInTable();
@@ -45,7 +46,7 @@ public class InsertionManager{
         Comparable<Object> clusteringKeyValue = (Comparable<Object>) tuple.getValues().get(table.getClusteringKey());
 
         int low = 0;
-        int high = table.getPageNames().size();
+        int high = table.getPageNames().size() -1;
         int lastfound = 0;
 
         while (low <= high) {
@@ -165,5 +166,20 @@ public class InsertionManager{
                 index.save();
             }
         }
+    }
+    private static void checkDuplicatePrimaryKey(Tuple tuple, Table table) throws DBAppException {
+        if(table.getPageNames().isEmpty()){return;}
+
+        Comparable<Object> clusteringKeyValue = (Comparable<Object>) tuple.getValues().get(table.getClusteringKey());
+
+        try {
+            int pageIndex = SelectionManager.getIndexOfPageFromClusteringValue(clusteringKeyValue, table);
+            Page page = FileManager.deserializePage(table.getPageNames().get(pageIndex));
+            SelectionManager.getIndexOfTupleFromClusteringValue(clusteringKeyValue, page);
+        } catch (DBAppException e) {
+            return;
+        }
+
+        throw new DBAppException("Primary key already exists in table");
     }
 }

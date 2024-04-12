@@ -125,7 +125,7 @@ public class SelectionManager implements Serializable {
      */
     protected static int getIndexOfPageFromClusteringValue(Comparable<Object> value, Table table) throws DBAppException {
         int low = 0;
-        int high = table.getPageNames().size();
+        int high = table.getPageNames().size() - 1;
 
         while (low <= high) {
 
@@ -161,7 +161,8 @@ public class SelectionManager implements Serializable {
      */
     protected static int getIndexOfTupleFromClusteringValue(Comparable<Object> value, Page page) throws DBAppException {
         Vector<Tuple> tuples = page.getTuples();
-        String clusteringKey = page.getParentTable().getClusteringKey();
+        Table parentTable = page.getParentTable();
+        String clusteringKey = parentTable.getClusteringKey();
         int low = 0;
         int high = tuples.size() - 1;
         while (low <= high) {
