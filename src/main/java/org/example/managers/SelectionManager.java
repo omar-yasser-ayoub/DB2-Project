@@ -210,7 +210,7 @@ public class SelectionManager implements Serializable {
         }
     }
 
-    public static Iterator selectFromTable(SQLTerm[] arrSQLTerms, String[] strarrOperators) throws DBAppException{
+    public static Iterator<Tuple> selectFromTable(SQLTerm[] arrSQLTerms, String[] strarrOperators) throws DBAppException{
         isValidSQLTerm(arrSQLTerms, strarrOperators);
         String tableName = arrSQLTerms[0].getStrTableName();
         Table table = FileManager.deserializeTable(tableName);
@@ -266,7 +266,7 @@ public class SelectionManager implements Serializable {
 
             try {
                 // create a reader
-                CSVReader reader = new CSVReader(new FileReader(METADATA_DIR));
+                CSVReader reader = new CSVReader(new FileReader(METADATA_DIR + "/metadata.csv"));
                 String[] line = reader.readNext();
 
                 // exception message stuff

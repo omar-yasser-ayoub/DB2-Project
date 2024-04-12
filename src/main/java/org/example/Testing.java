@@ -11,6 +11,7 @@ import org.example.exceptions.DBAppException;
 import org.example.managers.FileManager;
 import org.example.managers.SelectionManager;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -21,19 +22,19 @@ import static org.example.managers.FileManager.deserializeTable;
 
 public class Testing {
     public static void serializingTest() throws DBAppException, IOException, CsvValidationException {
-        DBApp dbApp = new DBApp();
-        dbApp.init();
-
-        Table table1 = createTestTable();
-        Page page1 = new Page("table1", 0);
-        Page page2 = new Page("table1", 1);
-
-        page1.save();
-        System.out.println("Page 1 serialized");
-        page2.save();
-        System.out.println("Page 2 serialized");
-        table1.save();
-        System.out.println("Table1 serialized");
+//        DBApp dbApp = new DBApp();
+//        dbApp.init();
+//
+//        Table table1 = createTestTable();
+//        Page page1 = new Page("table1", 0);
+//        Page page2 = new Page("table1", 1);
+//
+//        page1.save();
+//        System.out.println("Page 1 serialized");
+//        page2.save();
+//        System.out.println("Page 2 serialized");
+//        table1.save();
+//        System.out.println("Table1 serialized");
     }
 
     private static void deserializingTest() throws DBAppException {
@@ -50,7 +51,7 @@ public class Testing {
 
     }
 
-    private static Table createTestTable() throws IOException, CsvValidationException, DBAppException {
+    private static void createTestTable() throws IOException, CsvValidationException, DBAppException {
         DBApp dbApp = new DBApp();
         dbApp.init();
         String[] colNames = {"ID", "Name", "Number", "Specialisation", "Address"};
@@ -60,9 +61,8 @@ public class Testing {
             ht.put(colNames[i], colTypes[i]);
         }
         String clusteringKey = "ID";
-        Table table = new Table("CityShop", clusteringKey, ht);
-        table.save();
-        return table;
+
+        dbApp.createTable("CityShop",clusteringKey,ht);
     }
 
     private static void tupleTest() throws DBAppException {
@@ -80,7 +80,8 @@ public class Testing {
     private static Table insertIntoTableTest() throws DBAppException, IOException, CsvValidationException {
         DBApp dbApp = new DBApp();
         dbApp.init();
-        Table table1 = createTestTable();
+        createTestTable();
+        Table table1 = FileManager.deserializeTable("CityShop");
         int numOfTestTuples = 50;
 
         List<Integer> numbers = new ArrayList<>();
@@ -228,7 +229,8 @@ public class Testing {
     private static void IndexTest() throws DBAppException, CsvValidationException, IOException {
         DBApp dbApp1 = new DBApp();
         dbApp1.init();
-        Table table = createTestTable();
+        createTestTable();
+        Table table = FileManager.deserializeTable("CityShop");
         Index index = new IntegerIndex(table, "Number", "NumIndex");
         for (int i = 0; i < 50; i++) {
             index.insert(i, String.valueOf(i));
@@ -238,7 +240,8 @@ public class Testing {
     private static void BinarySearchTest() throws DBAppException, IOException, CsvValidationException {
         DBApp dbApp1 = new DBApp();
         dbApp1.init();
-        Table tableBin = createTestTable();
+        createTestTable();
+        Table tableBin = FileManager.deserializeTable("CityShop");
 
         //valid tuple
         Tuple t = new Tuple();
@@ -409,8 +412,19 @@ public class Testing {
         System.out.println(htVector.contains(p2.getTuples().get(0).getValues()));
         // ^ also prints true
     }
+    public static void deleteFromTableTest2() throws DBAppException, CsvValidationException, IOException {
+        DBApp dbApp = new DBApp();
+        dbApp.init();
 
+        Hashtable htblColNameValue = new Hashtable( );
+        htblColNameValue.put("ID", 11);
+        htblColNameValue.put("Name", "City Shop");
+        htblColNameValue.put("Number", 11);
+        htblColNameValue.put("Specialisation", "");
+        htblColNameValue.put("Address", "");
+        dbApp.deleteFromTable("CityShop", htblColNameValue);
+    }
     public static void main(String[] args) throws Exception {
-        insertIntoTableTest();
+        deleteFromTableTest2();
     }
 }

@@ -77,7 +77,7 @@ public class DBApp {
 							String strClusteringKeyColumn,  
 							Hashtable<String,String> htblColNameType) throws IOException, CsvValidationException, DBAppException {
 		try {
-			CSVReader reader = new CSVReader(new FileReader(METADATA_DIR));
+			CSVReader reader = new CSVReader(new FileReader(METADATA_DIR + "/metadata.csv"));
 			String[] line = reader.readNext();
 
 			while ((line = reader.readNext()) != null) {
@@ -93,6 +93,7 @@ public class DBApp {
 		}
 		catch (Exception e){
 			System.out.println("Error while creating table");
+			System.out.println(e.getMessage());
 		}
 	}
 
@@ -168,19 +169,39 @@ public class DBApp {
 								Hashtable<String,Object> htblColNameValue) throws DBAppException{
 
 		try{
-			Tuple tuple = new Tuple(htblColNameValue);
+			CSVReader reader = new CSVReader(new FileReader(METADATA_DIR + "/metadata.csv"));
+			String[] line = reader.readNext();
+			Vector<String> colNames = new Vector<>();
+			while ((line = reader.readNext()) != null) {
+				if (strTableName.equals(line[0])) {
+					colNames.add(line[1]);
+				}
+			}
+			Vector<SQLTerm> SQLTerms = new Vector<>();
+			for (String colName: colNames) {
+				if (htblColNameValue.get(colName) != null) {
+					SQLTerms.add(new SQLTerm(strTableName, colName, "=", htblColNameValue.get(colName)));
+				}
+			}
+			String[] strOperators = new String[SQLTerms.size() - 1];
+			Arrays.fill(strOperators, "AND");
+			SQLTerm[] SQLTermArray = SQLTerms.toArray(new SQLTerm[0]);
+			Iterator<Tuple> resultSet = selectFromTable(SQLTermArray, strOperators);
 			Table table = FileManager.deserializeTable(strTableName);
-			table.delete(tuple);
+			while (resultSet.hasNext()) {
+				Tuple element = resultSet.next();
+				table.delete(element);
+			}
 			table.save();
 		}
 		catch (Exception e){
-			System.out.println("Error while inserting into table");
+			System.out.println("Error while deleting into table");
 			e.printStackTrace();
 		}
 	}
 
 
-	public Iterator selectFromTable(SQLTerm[] arrSQLTerms,
+	public Iterator<Tuple> selectFromTable(SQLTerm[] arrSQLTerms,
 									String[]  strarrOperators) throws DBAppException{
 		try {
 			Iterator resultSet = SelectionManager.selectFromTable(arrSQLTerms, strarrOperators);
@@ -188,6 +209,7 @@ public class DBApp {
 		}
 		catch (Exception e){
 			System.out.println("Error while selecting from table");
+			e.printStackTrace();
 		}
 		return null;
 	}
