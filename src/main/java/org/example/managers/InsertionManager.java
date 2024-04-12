@@ -157,9 +157,10 @@ public class InsertionManager{
      * @param page The page that the tuple was inserted into
      */
     private static void updateIndexOnInsertion(Tuple tuple, Table parentTable, Page page) throws DBAppException {
-        Vector<Index> indices = parentTable.getIndices();
-        if (indices != null) {
-            for (Index index : indices) {
+        Vector<String> indexNames = parentTable.getIndices();
+        if (indexNames != null) {
+            for (String indexName : indexNames) {
+                Index index = FileManager.deserializeIndex(indexName);
                 index.insert(tuple.getValues().get(index.getColumnName()), page.getPageName());
                 index.save();
             }

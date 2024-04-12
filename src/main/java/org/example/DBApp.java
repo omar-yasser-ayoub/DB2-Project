@@ -21,7 +21,7 @@ public class DBApp {
 	public static int maxRowCount;
 	static CSVWriter metadataWriter;
 
-	static Vector<String> tables = new Vector<String>();
+	static Vector<String> tables = new Vector<>();
 	public DBApp( ){
 		
 	}

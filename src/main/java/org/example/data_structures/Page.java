@@ -1,5 +1,6 @@
 package org.example.data_structures;
 
+import org.example.DBApp;
 import org.example.exceptions.DBAppException;
 import org.example.managers.FileManager;
 
@@ -9,7 +10,7 @@ import java.util.Vector;
 public class Page implements Serializable {
     private int pageNum;
     private Vector<Tuple> tuples;
-    private Table parentTable;
+    private String parentTableName;
 
     /**
      * Constructor for the Page class
@@ -17,7 +18,7 @@ public class Page implements Serializable {
      * @param pageNum The identifying number of the page
      */
     public Page(Table parentTable, int pageNum){
-        this.parentTable = parentTable;
+        this.parentTableName = parentTableName;
         this.pageNum = pageNum;
         this.tuples = new Vector<>();
     }
@@ -30,12 +31,13 @@ public class Page implements Serializable {
         return tuples;
     }
 
-    public Table getParentTable() {
+    public Table getParentTable() throws DBAppException {
+        Table parentTable = FileManager.deserializeTable(parentTableName);
         return parentTable;
     }
 
     public String getPageName() {
-        return getParentTable().getTableName() + getPageNum();
+        return parentTableName + getPageNum();
     }
 
     /**
@@ -64,6 +66,6 @@ public class Page implements Serializable {
     }
 
     public boolean isFull() {
-        return false;
+        return tuples.size() == DBApp.maxRowCount;
     }
 }

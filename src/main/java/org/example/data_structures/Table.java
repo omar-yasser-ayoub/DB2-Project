@@ -18,7 +18,7 @@ public class Table implements Serializable {
     private Vector<String> pageNames;
     private int pageCount;
     private String keyType;
-    private Vector<Index> indices;
+    private Vector<String> indexNames;
 
     public Table(String tableName, String clusteringKey, Hashtable<String,String> colNameType){
         this.tableName = tableName;
@@ -54,8 +54,8 @@ public class Table implements Serializable {
         return keyType;
     }
 
-    public Vector<Index> getIndices() {
-        return indices;
+    public Vector<String> getIndices() {
+        return indexNames;
     }
 
     public void createIndex(String columnName, String indexName) throws DBAppException {
@@ -67,7 +67,7 @@ public class Table implements Serializable {
             default -> throw new IllegalArgumentException("Invalid column type");
         };
         index.populateIndex();
-        this.indices.add(index);
+        this.indexNames.add(indexName);
     }
 
     public void insert(Tuple tuple) throws DBAppException {
