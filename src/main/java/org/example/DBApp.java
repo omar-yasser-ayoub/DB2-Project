@@ -91,6 +91,16 @@ public class DBApp {
 				throw new DBAppException("Clustering key not found in table");
 			}
 
+			Enumeration<String> keys = htblColNameType.keys();
+			while (keys.hasMoreElements()) {
+				String key = keys.nextElement();
+				if(htblColNameType.get(key).equals("java.lang.String")
+						|| htblColNameType.get(key).equals("java.lang.Integer")
+						|| htblColNameType.get(key).equals("java.lang.Double")) {
+					throw new DBAppException("Invalid column type");
+				}
+			}
+
 			Table newTable = new Table(strTableName, strClusteringKeyColumn, htblColNameType);
 			newTable.save();
 			writeMetadata(newTable);
