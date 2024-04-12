@@ -76,7 +76,7 @@ public class DBApp {
 	// htblColNameValue will have the column name as key and the data type as value
 	public void createTable(String strTableName, 
 							String strClusteringKeyColumn,  
-							Hashtable<String,String> htblColNameType) throws IOException, CsvValidationException, DBAppException {
+							Hashtable<String,String> htblColNameType) throws DBAppException {
 		try {
 			CSVReader reader = new CSVReader(new FileReader(METADATA_DIR + "/metadata.csv"));
 			String[] line = reader.readNext();
@@ -91,6 +91,16 @@ public class DBApp {
 				throw new DBAppException("Clustering key not found in table");
 			}
 
+			Enumeration<String> keys = htblColNameType.keys();
+			while (keys.hasMoreElements()) {
+				String key = keys.nextElement();
+				if(htblColNameType.get(key).equals("java.lang.String")
+						|| htblColNameType.get(key).equals("java.lang.Integer")
+						|| htblColNameType.get(key).equals("java.lang.Double")) {
+					throw new DBAppException("Invalid column type");
+				}
+			}
+
 			Table newTable = new Table(strTableName, strClusteringKeyColumn, htblColNameType);
 			newTable.save();
 			writeMetadata(newTable);
@@ -98,7 +108,7 @@ public class DBApp {
 		}
 		catch (Exception e){
 			System.out.println("Error while creating table");
-			System.out.println(e.getMessage());
+			throw new DBAppException(e.getMessage());
 		}
 	}
 
@@ -132,6 +142,7 @@ public class DBApp {
 		}
 		catch (Exception e){
 			System.out.println("Error while creating index");
+			throw new DBAppException(e.getMessage());
 		}
 	}
 
@@ -148,7 +159,7 @@ public class DBApp {
 		}
 		catch (Exception e){
 			System.out.println("Error while inserting into table");
-			e.printStackTrace();
+			throw new DBAppException(e.getMessage());
 		}
 	}
 
@@ -160,8 +171,13 @@ public class DBApp {
 	public void updateTable(String strTableName, 
 							String strClusteringKeyValue,
 							Hashtable<String,Object> htblColNameValue)  throws DBAppException{
-
-		UpdateManager.updateTable(strTableName, strClusteringKeyValue, htblColNameValue);
+		try {
+			UpdateManager.updateTable(strTableName, strClusteringKeyValue, htblColNameValue);
+		}
+		catch (Exception e){
+			System.out.println("Error while updating table");
+			throw new DBAppException(e.getMessage());
+		}
 	}
 
 
@@ -200,7 +216,7 @@ public class DBApp {
 		}
 		catch (Exception e){
 			System.out.println("Error while deleting into table");
-			e.printStackTrace();
+			throw new DBAppException(e.getMessage());
 		}
 	}
 
@@ -213,9 +229,8 @@ public class DBApp {
 		}
 		catch (Exception e){
 			System.out.println("Error while selecting from table");
-			e.printStackTrace();
+			throw new DBAppException(e.getMessage());
 		}
-		return null;
 	}
 
 	public static Vector<String> getMyTables() {

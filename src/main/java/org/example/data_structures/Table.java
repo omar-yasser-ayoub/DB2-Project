@@ -1,4 +1,6 @@
 package org.example.data_structures;
+import com.opencsv.CSVReader;
+import com.opencsv.exceptions.CsvValidationException;
 import org.example.data_structures.index.DoubleIndex;
 import org.example.data_structures.index.IntegerIndex;
 import org.example.data_structures.index.StringIndex;
@@ -8,8 +10,13 @@ import org.example.managers.FileManager;
 import org.example.managers.InsertionManager;
 import org.example.data_structures.index.Index;
 
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
+
+import static org.example.DBApp.METADATA_DIR;
 
 public class Table implements Serializable {
     private final String tableName;
@@ -116,21 +123,42 @@ public class Table implements Serializable {
     }
 
     public boolean isValidTuple(Tuple tuple) throws DBAppException {
-        Hashtable<String, Object> values = tuple.getValues();
-        for (String key : values.keySet()){
-            //check if key is in colNameType
-            if (!getColNameType().containsKey(key)){
-                throw new DBAppException("Key not found in table");
+        Hashtable<String, Object> values = new Hashtable<>();
+        Enumeration<String> keys = tuple.getValues().keys();
+        while (keys.hasMoreElements()) {
+            String key = keys.nextElement();
+            values.put(key, tuple.getValues().get(key));
+        }
+
+        try {
+            CSVReader reader = new CSVReader(new FileReader(METADATA_DIR + "/metadata.csv"));
+            String[] line = reader.readNext();
+
+            while ((line = reader.readNext()) != null) {
+                if(line[0].equals(tableName)) {
+                    if(!values.containsKey(line[1])){
+                        throw new DBAppException("Incomplete tuple");
+                    }
+                    else {
+                        String type = line[2];
+                        if(!((line[2].equals("java.lang.String") && values.get(line[1]) instanceof String)
+                            || (line[2].equals("java.lang.Integer") && values.get(line[1]) instanceof Integer)
+                            || (line[2].equals("java.lang.Double") && values.get(line[1]) instanceof Double))) {
+                            throw new DBAppException("Value is not of the correct type");
+                        }
+                        values.remove(line[1]);
+                    }
+                }
             }
 
-            //check if value is of the correct type
-            try {
-                Class<?> expectedClass = Class.forName(getColNameType().get(key));
-                expectedClass.cast(values.get(key));
-            } catch (ClassNotFoundException | ClassCastException ex) {
-                throw new DBAppException("Key is not of the correct type");
+            if(values.size() > 0) {
+                throw new DBAppException("Key is not found in table");
             }
+
+        } catch (CsvValidationException | IOException e) {
+            throw new RuntimeException(e);
         }
+
         return true;
     }
 

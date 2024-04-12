@@ -104,7 +104,7 @@ public class Testing {
             t.insert("Number", num);
             t.insert("Specialisation", "");
             t.insert("Address", "");
-            System.out.println("Inserting tuple " + num);
+//            System.out.println("Inserting tuple " + num);
             //System.out.println("Index " + numbers.indexOf(num));
             try {
                 table1.insert(t);
