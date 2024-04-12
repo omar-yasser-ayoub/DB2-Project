@@ -266,7 +266,7 @@ public class SelectionManager implements Serializable {
 
             try {
                 // create a reader
-                CSVReader reader = new CSVReader(new FileReader(METADATA_DIR));
+                CSVReader reader = new CSVReader(new FileReader(METADATA_DIR + "/metadata.csv"));
                 String[] line = reader.readNext();
 
                 // exception message stuff

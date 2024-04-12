@@ -10,6 +10,7 @@ import org.example.data_structures.Tuple;
 import org.example.exceptions.DBAppException;
 import org.example.managers.FileManager;
 import org.example.managers.SelectionManager;
+import org.example.managers.UpdateManager;
 
 import java.io.*;
 import java.util.*;
@@ -77,7 +78,7 @@ public class DBApp {
 							String strClusteringKeyColumn,  
 							Hashtable<String,String> htblColNameType) throws IOException, CsvValidationException, DBAppException {
 		try {
-			CSVReader reader = new CSVReader(new FileReader(METADATA_DIR));
+			CSVReader reader = new CSVReader(new FileReader(METADATA_DIR + "/metadata.csv"));
 			String[] line = reader.readNext();
 
 			while ((line = reader.readNext()) != null) {
@@ -153,10 +154,9 @@ public class DBApp {
 	// strClusteringKeyValue is the value to look for to find the row to update.
 	public void updateTable(String strTableName, 
 							String strClusteringKeyValue,
-							Hashtable<String,Object> htblColNameValue   )  throws DBAppException{
-	
-		deleteFromTable(strTableName, htblColNameValue);
-		insertIntoTable(strTableName, htblColNameValue);
+							Hashtable<String,Object> htblColNameValue)  throws DBAppException{
+
+		UpdateManager.updateTable(strTableName, strClusteringKeyValue, htblColNameValue);
 	}
 
 
