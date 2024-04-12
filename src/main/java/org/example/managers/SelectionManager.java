@@ -57,6 +57,7 @@ public class SelectionManager implements Serializable {
         Vector<Tuple> finalList = new Vector<>();
         Comparable<Object> value = (Comparable<Object>) term.getObjValue();
         int pageIndex = getIndexOfPageFromClusteringValue(value, table);
+        //TODO: What if tuple not found?
         Page page = FileManager.deserializePage(table.getPageNames().get(pageIndex));
         Vector<Tuple> tuples = page.getTuples();
         int tupleIndex;
@@ -133,14 +134,11 @@ public class SelectionManager implements Serializable {
 
             //get Page
             String pageName = table.getPageNames().get(mid);
-            Page page = FileManager.deserializePage(pageName);
-            Vector<Tuple> tuples = page.getTuples();
+            Tuple minTuple = FileManager.deserializePageMin(pageName);
+            Tuple maxTuple = FileManager.deserializePageMax(pageName);
 
-            Tuple firstTuple = page.getTuples().get(0);
-            Tuple lastTuple = page.getTuples().get(page.getTuples().size() - 1);
-
-            Comparable<Object> firstClusteringKeyValue = (Comparable<Object>) firstTuple.getValues().get(table.getClusteringKey());
-            Comparable<Object> lastClusteringKeyValue = (Comparable<Object>) lastTuple.getValues().get(table.getClusteringKey());
+            Comparable<Object> firstClusteringKeyValue = (Comparable<Object>) minTuple.getValues().get(table.getClusteringKey());
+            Comparable<Object> lastClusteringKeyValue = (Comparable<Object>) maxTuple.getValues().get(table.getClusteringKey());
 
             if (value.compareTo(firstClusteringKeyValue) >= 0 && value.compareTo(lastClusteringKeyValue) <= 0) {
                 return mid;
