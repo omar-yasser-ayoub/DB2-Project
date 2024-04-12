@@ -103,7 +103,7 @@ public class Testing {
             t.insert("Number", num);
             t.insert("Specialisation", "");
             t.insert("Address", "");
-            System.out.println("Inserting tuple " + num);
+//            System.out.println("Inserting tuple " + num);
             //System.out.println("Index " + numbers.indexOf(num));
             table1.insert(t);
         }
@@ -147,9 +147,35 @@ public class Testing {
             System.out.println(e.getMessage());
         }
 
-        for (String pageName : table1.getPageNames()) {
-            System.out.println(deserializePage(pageName));
+        try {
+            // missing key
+            Tuple x1 = new Tuple();
+            x1.insert("ID", 2);
+            x1.insert("Name", "CityShop");
+            x1.insert("Number", 2);
+            x1.insert("Specialisation", "");
+            table1.insert(x1);
+        } catch (DBAppException e) {
+            System.out.println(e.getMessage());
         }
+
+        try {
+            // extra key
+            Tuple x1 = new Tuple();
+            x1.insert("ID", 2);
+            x1.insert("Name", "CityShop");
+            x1.insert("ShopName", "City Shop");
+            x1.insert("Number", 2);
+            x1.insert("Specialisation", "");
+            x1.insert("Address", "");
+            table1.insert(x1);
+        } catch (DBAppException e) {
+            System.out.println(e.getMessage());
+        }
+
+//        for (String pageName : table1.getPageNames()) {
+//            System.out.println(deserializePage(pageName));
+//        }
         return table1;
     }
     public static void sqlTermTest() throws DBAppException, IOException, CsvValidationException {
@@ -441,6 +467,6 @@ public class Testing {
         System.out.println(FileManager.deserializePage(t.getPageNames().get(2)).toString());
     }
     public static void main(String[] args) throws Exception {
-        updateTableTest();
+        insertIntoTableTest();
     }
 }
