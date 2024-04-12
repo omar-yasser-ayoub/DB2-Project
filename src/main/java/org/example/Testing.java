@@ -415,7 +415,7 @@ public class Testing {
     public static void deleteFromTableTest2() throws DBAppException, CsvValidationException, IOException {
         DBApp dbApp = new DBApp();
         dbApp.init();
-
+        createTestTable();
         Hashtable htblColNameValue = new Hashtable( );
         htblColNameValue.put("ID", 11);
         htblColNameValue.put("Name", "City Shop");
@@ -424,7 +424,23 @@ public class Testing {
         htblColNameValue.put("Address", "");
         dbApp.deleteFromTable("CityShop", htblColNameValue);
     }
+
+
+    public static void updateTableTest() throws DBAppException {
+//      createTestTable();
+//      insertIntoTableTest();
+        Hashtable<String, Object> ht = new Hashtable<>();
+        ht.put("Name", "City Shop");
+        ht.put("Number", 14);
+        ht.put("Specialisation", "");
+        ht.put("Address", "");
+        Table t = FileManager.deserializeTable("CityShop");
+        System.out.println(FileManager.deserializePage(t.getPageNames().get(2)).toString());
+        DBApp dbApp = new DBApp();
+        dbApp.updateTable("CityShop", "12", ht);
+        System.out.println(FileManager.deserializePage(t.getPageNames().get(2)).toString());
+    }
     public static void main(String[] args) throws Exception {
-        deleteFromTableTest2();
+        updateTableTest();
     }
 }
