@@ -78,6 +78,7 @@ public class Testing {
     }
 
     private static Table insertIntoTableTest() throws DBAppException, IOException, CsvValidationException {
+        clearAllData();
         DBApp dbApp = new DBApp();
         dbApp.init();
         createTestTable();
@@ -105,7 +106,11 @@ public class Testing {
             t.insert("Address", "");
 //            System.out.println("Inserting tuple " + num);
             //System.out.println("Index " + numbers.indexOf(num));
-            table1.insert(t);
+            try {
+                table1.insert(t);
+            } catch (DBAppException e) {
+                System.out.println(e.getMessage());
+            }
         }
 
         try {
@@ -147,37 +152,16 @@ public class Testing {
             System.out.println(e.getMessage());
         }
 
-        try {
-            // missing key
-            Tuple x1 = new Tuple();
-            x1.insert("ID", 2);
-            x1.insert("Name", "CityShop");
-            x1.insert("Number", 2);
-            x1.insert("Specialisation", "");
-            table1.insert(x1);
-        } catch (DBAppException e) {
-            System.out.println(e.getMessage());
-        }
-
-        try {
-            // extra key
-            Tuple x1 = new Tuple();
-            x1.insert("ID", 2);
-            x1.insert("Name", "CityShop");
-            x1.insert("ShopName", "City Shop");
-            x1.insert("Number", 2);
-            x1.insert("Specialisation", "");
-            x1.insert("Address", "");
-            table1.insert(x1);
-        } catch (DBAppException e) {
-            System.out.println(e.getMessage());
-        }
-
-//        for (String pageName : table1.getPageNames()) {
-//            System.out.println(deserializePage(pageName));
-//        }
+        printTable(table1);
         return table1;
     }
+
+    private static void printTable(Table table1) throws DBAppException {
+        for (String pageName : table1.getPageNames()) {
+            System.out.println(deserializePage(pageName));
+        }
+    }
+
     public static void sqlTermTest() throws DBAppException, IOException, CsvValidationException {
         SQLTerm[] arrSQLTerms = new SQLTerm[5];
 
@@ -213,6 +197,7 @@ public class Testing {
         }
     }
     private static void deleteFromTableTest() throws DBAppException, CsvValidationException, IOException {
+        clearAllData();
         DBApp dbApp = new DBApp();
         dbApp.init();
         Table table1 = insertIntoTableTest();
@@ -248,9 +233,7 @@ public class Testing {
 //                System.out.println(deserializePage(pageName));
 //            }
         }
-        for (String pageName : table1.getPageNames()) {
-            System.out.println(deserializePage(pageName));
-        }
+        printTable(table1);
     }
     private static void IndexTest() throws DBAppException, CsvValidationException, IOException {
         DBApp dbApp1 = new DBApp();
@@ -309,13 +292,9 @@ public class Testing {
             tableBin.insert(x2);
             System.out.println("Done inserting");
 
-            for (String pageName : tableBin.getPageNames()) {
-                System.out.println(deserializePage(pageName));
-            }
+            printTable(tableBin);
             tableBin.delete(x2);
-            for (String pageName : tableBin.getPageNames()) {
-                System.out.println(deserializePage(pageName));
-            }
+            printTable(tableBin);
             //boolean b = tableBin.tupleHasNoDuplicateClusteringKey("Number",(Object)x1);
 
             /*Tuple x2 = new Tuple();
@@ -441,16 +420,31 @@ public class Testing {
     public static void deleteFromTableTest2() throws DBAppException, CsvValidationException, IOException {
         DBApp dbApp = new DBApp();
         dbApp.init();
-        createTestTable();
+        printTable(FileManager.deserializeTable("CityShop"));
+        //createTestTable();
         Hashtable htblColNameValue = new Hashtable( );
         htblColNameValue.put("ID", 11);
+        printTable(FileManager.deserializeTable("CityShop"));
         htblColNameValue.put("Name", "City Shop");
-        htblColNameValue.put("Number", 11);
-        htblColNameValue.put("Specialisation", "");
-        htblColNameValue.put("Address", "");
         dbApp.deleteFromTable("CityShop", htblColNameValue);
+        printTable(FileManager.deserializeTable("CityShop"));
     }
 
+    public static void clearAllData() {
+        File dir = new File("data");
+        deleteDirectoryRecursively(dir);
+    }
+
+    private static void deleteDirectoryRecursively(File file) {
+        for (File childFile : file.listFiles()) {
+            if (childFile.isDirectory()) {
+                deleteDirectoryRecursively(childFile);
+            } else {
+                childFile.delete();
+            }
+        }
+        file.delete();
+    }
 
     public static void updateTableTest() throws DBAppException {
 //      createTestTable();
@@ -467,6 +461,6 @@ public class Testing {
         System.out.println(FileManager.deserializePage(t.getPageNames().get(2)).toString());
     }
     public static void main(String[] args) throws Exception {
-        insertIntoTableTest();
+        deleteFromTableTest2();
     }
 }

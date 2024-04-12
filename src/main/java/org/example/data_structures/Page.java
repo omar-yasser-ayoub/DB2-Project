@@ -49,6 +49,11 @@ public class Page implements Serializable {
      */
     public void save() throws DBAppException {
         FileManager.serializePage(this);
+        if(!tuples.isEmpty()) {
+            Tuple minTuple = tuples.get(0);
+            Tuple maxTuple = tuples.get(tuples.size() - 1);
+            FileManager.serializePageMinMax(this, minTuple, maxTuple);
+        }
     }
 
     public String toString() {

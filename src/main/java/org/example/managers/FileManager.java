@@ -1,5 +1,6 @@
 package org.example.managers;
 
+import org.example.data_structures.Tuple;
 import org.example.exceptions.DBAppException;
 import org.example.data_structures.Page;
 import org.example.data_structures.Table;
@@ -9,10 +10,10 @@ import java.io.*;
 
 public class FileManager implements Serializable {
 
-    public static final String SERIALIZED_PAGES_PATH = "data/serialized_pages";
-    public static final String SERIALIZED_INDICES_PATH = "data/serialized_indices";
-
-    public static final String SERIALIZED_TABLES_PATH = "data/serialized_tables";
+    private static final String SERIALIZED_PAGES_PATH = "data/serialized_pages";
+    private static final String SERIALIZED_PAGES_MINMAX_PATH = "data/serialized_pages_minmax";
+    private static final String SERIALIZED_INDICES_PATH = "data/serialized_indices";
+    private static final String SERIALIZED_TABLES_PATH = "data/serialized_tables";
 
     private FileManager() {
         throw new IllegalStateException("Utility class");
@@ -59,6 +60,25 @@ public class FileManager implements Serializable {
         createDirectory(SERIALIZED_INDICES_PATH);
         String fileName = SERIALIZED_INDICES_PATH + index.getIndexName() + ".ser";
         serialize(index, fileName);
+    }
+
+    public static void serializePageMinMax(Page page, Tuple min, Tuple max) throws DBAppException {
+        createDirectory(SERIALIZED_PAGES_MINMAX_PATH);
+
+        String minFileName = SERIALIZED_PAGES_MINMAX_PATH + "/" + page.getPageName() + "MIN" + ".ser";
+        serialize(min, minFileName);
+        String maxFileName = SERIALIZED_PAGES_MINMAX_PATH + "/" + page.getPageName() + "MAX" + ".ser";
+        serialize(max, maxFileName);
+    }
+
+    public static Tuple deserializePageMin(String pageName) throws DBAppException {
+        String minFileName = SERIALIZED_PAGES_MINMAX_PATH + "/" + pageName + "MIN" + ".ser";
+        return (Tuple)deserialize(minFileName);
+    }
+
+    public static Tuple deserializePageMax(String pageName) throws DBAppException {
+        String maxFileName = SERIALIZED_PAGES_MINMAX_PATH + "/" + pageName + "MAX" + ".ser";
+        return (Tuple)deserialize(maxFileName);
     }
 
     public static Index deserializeIndex(String indexName) throws DBAppException {

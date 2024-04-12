@@ -55,41 +55,37 @@ public class InsertionManager{
 
             //get Page
             String pageName = table.getPageNames().get(mid);
-            Page page = FileManager.deserializePage(pageName);
-            Vector<Tuple> tuples = page.getTuples();
 
+            try {
+                Tuple minTuple = FileManager.deserializePageMin(pageName);
+                Tuple maxTuple = FileManager.deserializePageMax(pageName);
 
-            //if page is empty, insert into page
-            if (tuples.isEmpty()) {
-                return page;
-            }
+                Comparable<Object> firstClusteringKeyValue = (Comparable<Object>) minTuple.getValues().get(table.getClusteringKey());
+                Comparable<Object> lastClusteringKeyValue = (Comparable<Object>) maxTuple.getValues().get(table.getClusteringKey());
 
-            Tuple firstTuple = page.getTuples().get(0);
-            Tuple lastTuple = page.getTuples().get(page.getTuples().size() -1);
-
-            Comparable<Object> firstClusteringKeyValue = (Comparable<Object>) firstTuple.getValues().get(table.getClusteringKey());
-            Comparable<Object> lastClusteringKeyValue = (Comparable<Object>) lastTuple.getValues().get(table.getClusteringKey());
-
-            if (clusteringKeyValue.compareTo(firstClusteringKeyValue) >= 0 && clusteringKeyValue.compareTo(lastClusteringKeyValue) <= 0) {
-                return page;
-            }
-
-            else if(clusteringKeyValue.compareTo(firstClusteringKeyValue) < 0){
-                //if tuple is smaller and page is first page insert
-                if (mid == 0) {
-                    return page;
+                if (clusteringKeyValue.compareTo(firstClusteringKeyValue) >= 0 && clusteringKeyValue.compareTo(lastClusteringKeyValue) <= 0) {
+                    return FileManager.deserializePage(pageName);
                 }
-                lastfound = mid;
-                high = mid - 1;
-            }
 
-            else{
-                //if tuple is greater and page is last page insert
-                if (mid == table.getPageNames().size() - 1) {
-                    return page;
+                else if(clusteringKeyValue.compareTo(firstClusteringKeyValue) < 0){
+                    //if tuple is smaller and page is first page insert
+                    if (mid == 0) {
+                        return FileManager.deserializePage(pageName);
+                    }
+                    lastfound = mid;
+                    high = mid - 1;
                 }
-                lastfound = mid;
-                low = mid + 1;
+
+                else{
+                    //if tuple is greater and page is last page insert
+                    if (mid == table.getPageNames().size() - 1) {
+                        return FileManager.deserializePage(pageName);
+                    }
+                    lastfound = mid;
+                    low = mid + 1;
+                }
+            } catch (DBAppException e) {
+                return FileManager.deserializePage(pageName); //if min/max files don't exist, page is empty, insert into page
             }
         }
 
