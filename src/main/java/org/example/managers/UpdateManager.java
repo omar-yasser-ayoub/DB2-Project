@@ -56,9 +56,11 @@ public class UpdateManager implements Serializable {
             String clusteringKeyName = "";
             String clusteringKeyType = "";
             Vector<String> colNames = new Vector<>();
+            boolean tableFound = false;
 
             while ((line = reader.readNext()) != null) {
                 if(line[0].equals(strTableName)) {
+                    tableFound = true;
                     // gets the name and type of the clustering key column
                     if(line[3].equals("True")) {
                         clusteringKeyName = line[1];
@@ -80,6 +82,11 @@ public class UpdateManager implements Serializable {
                         }
                     }
                 }
+            }
+
+            // throws error if table doesn't exist
+            if(!tableFound) {
+                throw new DBAppException("Table does not exist");
             }
 
             // checks if all columns in hashtable are in the table

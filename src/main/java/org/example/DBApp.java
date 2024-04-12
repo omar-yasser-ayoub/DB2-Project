@@ -94,10 +94,10 @@ public class DBApp {
 			Enumeration<String> keys = htblColNameType.keys();
 			while (keys.hasMoreElements()) {
 				String key = keys.nextElement();
-				if(htblColNameType.get(key).equals("java.lang.String")
+				if(!(htblColNameType.get(key).equals("java.lang.String")
 						|| htblColNameType.get(key).equals("java.lang.Integer")
-						|| htblColNameType.get(key).equals("java.lang.Double")) {
-					throw new DBAppException("Invalid column type");
+						|| htblColNameType.get(key).equals("java.lang.Double"))) {
+					throw new DBAppException("Invalid column datatype");
 				}
 			}
 

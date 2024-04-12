@@ -82,7 +82,7 @@ public class UnitTest {
                 engine.createTable(newTableName, "id", htblColNameType)
         );
         // Then
-        assertEquals("Table name already exists", exception.getMessage());
+        assertEquals("Table already exists", exception.getMessage());
     }
     @Test
     void testCreateTable_InvalidPrimaryKeyColumn_ShouldFailCreation() throws DBAppException {
@@ -95,7 +95,7 @@ public class UnitTest {
                 engine.createTable("newTable", "price", htblColNameType)
         );
         // Then
-        assertEquals("Clustering key is invalid", exception.getMessage());
+        assertEquals("Clustering key not found in table", exception.getMessage());
     }
 
     @Test
@@ -109,7 +109,7 @@ public class UnitTest {
                 engine.createTable("newTable", "id", htblColNameType)
         );
         // Then
-        assertEquals("Data type not supported", exception.getMessage());
+        assertEquals("Invalid column datatype", exception.getMessage());
     }
 
 
@@ -224,7 +224,7 @@ public class UnitTest {
         });
 
         // Then
-        String expectedMessage = "Primary key already exists";
+        String expectedMessage = "Primary key already exists in table";
         String outputMessage = exception.getMessage();
         assertEquals(expectedMessage,outputMessage);
     }
@@ -243,7 +243,7 @@ public class UnitTest {
         });
 
         // Then
-        String expectedMessage = "Tuple's data type doesn't match the column's data type";
+        String expectedMessage = "Value is not of the correct type";
         String outputMessage = exception.getMessage();
         assertEquals(expectedMessage,outputMessage);
     }
@@ -261,7 +261,7 @@ public class UnitTest {
         });
 
         // Then
-        String expectedMessage = "Primary key is not found";
+        String expectedMessage = "Incomplete tuple";
         String outputMessage = exception.getMessage();
         assertEquals(expectedMessage,outputMessage);
     }
@@ -300,7 +300,7 @@ public class UnitTest {
         });
 
         // Then
-        String expectedMessage = "Tuple contains columns that aren't in the table";
+        String expectedMessage = "Key is not found in table";
         String outputMessage = exception.getMessage();
         assertEquals(expectedMessage,outputMessage);
     }
@@ -358,7 +358,7 @@ public class UnitTest {
         });
 
         // Then
-        String expectedMessage = "The Tuple has more columns than the table's columns";
+        String expectedMessage = "Hashtable contains extra column(s)";
         String outputMessage = exception.getMessage();
         assertEquals(expectedMessage, outputMessage);
     }
@@ -376,7 +376,7 @@ public class UnitTest {
         });
 
         // Then
-        String expectedMessage = "Tuple's data type doesn't match the column's data type";
+        String expectedMessage = "Column value doesn't match datatype";
         String outputMessage = exception.getMessage();
         assertEquals(expectedMessage, outputMessage);
     }
@@ -483,7 +483,7 @@ public class UnitTest {
         });
 
         // Then
-        String expectedMessage = "Tuple's data type doesn't match the column's data type";
+        String expectedMessage = "Object datatype doesn't match column datatype";
         String outputMessage = exception.getMessage();
         assertEquals(expectedMessage, outputMessage);
     }
@@ -738,7 +738,7 @@ public class UnitTest {
         });
 
         // Then
-        String expectedMessage = "Num of operators must be = SQLTerms -1";
+        String expectedMessage = "Incompatible Array Lengths (arrSQLTerms should have a length bigger than strarrOperators by 1)";
         String outputMessage = exception.getMessage();
         assertEquals(expectedMessage,outputMessage);
     }
@@ -760,7 +760,7 @@ public class UnitTest {
         });
 
         // Then
-        String expectedMessage = "The only supported array operators are AND,OR,XOR";
+        String expectedMessage = "Illegal operator";
         String outputMessage = exception.getMessage();
         assertEquals(expectedMessage,outputMessage);
     }
@@ -782,7 +782,7 @@ public class UnitTest {
         });
 
         // Then
-        String expectedMessage = "The only supported operators are <,<=,>,>=,!=,=";
+        String expectedMessage = "Illegal operator";
         String outputMessage = exception.getMessage();
         assertEquals(expectedMessage,outputMessage);
     }
@@ -804,7 +804,7 @@ public class UnitTest {
         });
 
         // Then
-        String expectedMessage = "The Table doesn't contain a salary column";
+        String expectedMessage = "Column does not exist in table";
         String outputMessage = exception.getMessage();
         assertEquals(expectedMessage,outputMessage);
     }
