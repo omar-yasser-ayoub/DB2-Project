@@ -8,7 +8,9 @@ import org.example.data_structures.Tuple;
 import org.example.exceptions.DBAppException;
 
 import java.io.*;
+import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Vector;
 
 import static org.example.DBApp.METADATA_DIR;
 
@@ -18,7 +20,7 @@ public class UpdateManager implements Serializable {
     }
 
     public static void updateTable(String strTableName, String strClusteringKeyValue, Hashtable<String,Object> htblColNameValue) throws DBAppException {
-        String[] nameAndType = isValidUpdate(strTableName, strClusteringKeyValue);
+        String[] nameAndType = isValidUpdate(strTableName, strClusteringKeyValue, htblColNameValue);
 
         Comparable value = null;
         switch (nameAndType[1]) {
@@ -45,7 +47,7 @@ public class UpdateManager implements Serializable {
         table.save();
     }
 
-    private static String[] isValidUpdate(String strTableName, String strClusteringKeyValue) throws DBAppException {
+    private static String[] isValidUpdate(String strTableName, String strClusteringKeyValue, Hashtable<String,Object> htblColNameValues) throws DBAppException {
         try {
             // create a reader
             CSVReader reader = new CSVReader(new FileReader(METADATA_DIR + "/metadata.csv"));
@@ -53,15 +55,39 @@ public class UpdateManager implements Serializable {
 
             String clusteringKeyName = "";
             String clusteringKeyType = "";
+            Vector<String> colNames = new Vector<>();
 
-            // gets the name and type of the clustering key column
             while ((line = reader.readNext()) != null) {
                 if(line[0].equals(strTableName)) {
+                    // gets the name and type of the clustering key column
                     if(line[3].equals("True")) {
                         clusteringKeyName = line[1];
                         clusteringKeyType = line[2];
-                        break;
                     }
+                    else { // checks if all other columns are in hashtable and if datatypes match
+                        if(!htblColNameValues.containsKey(line[1])) {
+                            throw new DBAppException("Missing columns in hashtable");
+                        }
+                        else {
+                            String type = line[2];
+                            Object val = htblColNameValues.get(line[1]);
+                            if((type.equals("java.lang.Integer") && !(val instanceof Integer))
+                                || (type.equals("java.lang.Double") && !(val instanceof Double))
+                                || (type.equals("java.lang.String") && !(val instanceof String))) {
+                                throw new DBAppException("Column value doesn't match datatype");
+                            }
+                            colNames.add(line[1]);
+                        }
+                    }
+                }
+            }
+
+            // checks if all columns in hashtable are in the table
+            Enumeration<String> keys = htblColNameValues.keys();
+            while (keys.hasMoreElements()) {
+                String key = keys.nextElement();
+                if(!colNames.contains(key)) {
+                    throw new DBAppException("Hashtable contains extra column(s)");
                 }
             }
 
@@ -80,12 +106,10 @@ public class UpdateManager implements Serializable {
             }
 
             return(new String[]{clusteringKeyName, clusteringKeyType});
-        } catch (CsvValidationException e) {
+        } catch (CsvValidationException | IOException e) {
             throw new RuntimeException(e);
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        } catch (NumberFormatException e) {
+            throw new DBAppException("Clustering key value is of incorrect datatype");
         }
     }
 }

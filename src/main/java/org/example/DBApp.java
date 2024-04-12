@@ -87,6 +87,10 @@ public class DBApp {
 				}
 			}
 
+			if(!htblColNameType.containsKey(strClusteringKeyColumn)) {
+				throw new DBAppException("Clustering key not found in table");
+			}
+
 			Table newTable = new Table(strTableName, strClusteringKeyColumn, htblColNameType);
 			newTable.save();
 			writeMetadata(newTable);
