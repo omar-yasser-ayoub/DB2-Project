@@ -36,4 +36,13 @@ public class SQLTerm {
 	public Object getObjValue() {
 		return objValue;
 	}
+	@Override
+	public String toString() {
+		return "SQLTerm{" +
+				"strTableName='" + strTableName + '\'' +
+				", strColumnName='" + strColumnName + '\'' +
+				", strOperator='" + strOperator + '\'' +
+				", objValue=" + objValue +
+				'}';
+	}
 }

@@ -18,7 +18,7 @@ public class Table implements Serializable {
     private Vector<String> pageNames;
     private int pageCount;
     private String keyType;
-    private Vector<String> indexNames;
+    private Vector<String> indexNames = new Vector<>();
 
     public Table(String tableName, String clusteringKey, Hashtable<String,String> colNameType){
         this.tableName = tableName;

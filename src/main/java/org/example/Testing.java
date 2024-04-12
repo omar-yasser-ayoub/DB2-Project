@@ -417,12 +417,14 @@ public class Testing {
         dbApp.init();
         createTestTable();
         Hashtable htblColNameValue = new Hashtable( );
-        htblColNameValue.put("ID", Integer.valueOf(2343432));
-        htblColNameValue.put("Name", new String("Ahmed Noor" ) );
-        htblColNameValue.put("GPA", Double.valueOf( 0.95 ) );
+        htblColNameValue.put("ID", 11);
+        htblColNameValue.put("Name", "City Shop");
+        htblColNameValue.put("Number", 11);
+        htblColNameValue.put("Specialisation", "");
+        htblColNameValue.put("Address", "");
         dbApp.deleteFromTable("CityShop", htblColNameValue);
-
     }
+
 
     public static void updateTableTest() throws DBAppException {
 //      createTestTable();
@@ -438,7 +440,6 @@ public class Testing {
         dbApp.updateTable("CityShop", "12", ht);
         System.out.println(FileManager.deserializePage(t.getPageNames().get(2)).toString());
     }
-
     public static void main(String[] args) throws Exception {
         updateTableTest();
     }
