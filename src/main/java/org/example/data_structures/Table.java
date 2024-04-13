@@ -79,6 +79,7 @@ public class Table implements Serializable {
         };
         index.populateIndex();
         this.indexNames.add(indexName);
+        FileManager.serializeIndex(index);
         this.isIndexCreatedOnColumn.put(columnName, indexName);
     }
 
