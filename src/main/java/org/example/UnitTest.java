@@ -611,6 +611,53 @@ public class UnitTest {
     }
 
     @Test
+    void testSelectFromTable_InitialValueNotFound_ShouldSelectTenTuples() throws DBAppException {
+        // Given
+        for (int i = 1; i <= 10; i++)
+            insertRow(i);
+
+        // When
+        SQLTerm[] sqlTerms = new SQLTerm[1];
+        sqlTerms[0] = new SQLTerm(newTableName, id, "<", 14);
+        String[] strArrOperator = new String[] {};
+
+        // Then
+        Iterator it = engine.selectFromTable(sqlTerms, strArrOperator);
+        assertEquals(10,getIteratorSize(it));
+    }
+    @Test
+    void testSelectFromTable_OneANDTerm_InitialValuesNotFound_ShouldSelectSevenTuples() throws DBAppException {
+        // Given
+        for (int i = 1; i <= 10; i++)
+            insertRow(i);
+
+        // When
+        SQLTerm[] sqlTerms = new SQLTerm[2];
+        sqlTerms[0] = new SQLTerm(newTableName, id, "<", 14);
+        sqlTerms[1] = new SQLTerm(newTableName, id, ">=", 4);
+        String[] strArrOperator = new String[] {"AND"};
+
+        // Then
+        Iterator it = engine.selectFromTable(sqlTerms, strArrOperator);
+        assertEquals(7,getIteratorSize(it));
+    }
+    @Test
+    void testSelectFromTable_LinearSearch_ShouldSelectOneTuple() throws DBAppException {
+        // Given
+        for (int i = 1; i <= 10; i++)
+            insertRow(i);
+
+        // When
+        SQLTerm[] sqlTerms = new SQLTerm[1];
+        sqlTerms[0] = new SQLTerm(newTableName, name, "=", TEST_NAME);
+        String[] strArrOperator = new String[] {};
+
+        // Then
+        Iterator it = engine.selectFromTable(sqlTerms, strArrOperator);
+        assertEquals(10,getIteratorSize(it));
+    }
+
+    @Test
     void testSelectFromTable_TwoANDTerms_ShouldSelectZeroTuples() throws DBAppException {
         // Given
         for (int i = 1; i <= 10; i++)
