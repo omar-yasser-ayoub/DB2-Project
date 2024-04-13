@@ -41,7 +41,7 @@ public class FileManager implements Serializable {
         try (FileInputStream fileIn = new FileInputStream(fileName); ObjectInputStream objIn = new ObjectInputStream(fileIn)) {
             return objIn.readObject();
         } catch (IOException | ClassNotFoundException e) {
-            throw new DBAppException(e.getMessage());
+            throw new DBAppException("Table does not exist");
         }
     }
 
