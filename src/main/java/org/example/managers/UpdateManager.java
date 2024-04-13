@@ -40,8 +40,14 @@ public class UpdateManager implements Serializable {
 
         Table table = FileManager.deserializeTable(strTableName);
         int pageIndex = SelectionManager.getIndexOfPageFromClusteringValue(value, table);
+        if(pageIndex < 0) {
+            return;
+        }
         Page page = FileManager.deserializePage(table.getPageNames().get(pageIndex));
         int tupleIndex = SelectionManager.getIndexOfTupleFromClusteringValue(value, page);
+        if(tupleIndex < 0) {
+            return;
+        }
         Hashtable<String, Object> tupleValues = page.getTuples().get(tupleIndex).getValues();
 
         Enumeration<String> keys = tupleValues.keys();
