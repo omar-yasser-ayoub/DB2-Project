@@ -26,6 +26,7 @@ public class Table implements Serializable {
     private int pageCount;
     private String keyType;
     private Vector<String> indexNames = new Vector<>();
+    public Hashtable <String, String> isIndexCreatedOnColumn = new Hashtable<>();
 
     public Table(String tableName, String clusteringKey, Hashtable<String,String> colNameType){
         this.tableName = tableName;
@@ -66,6 +67,9 @@ public class Table implements Serializable {
     }
 
     public void createIndex(String columnName, String indexName) throws DBAppException {
+        if (this.isIndexCreatedOnColumn.get(columnName) != null || indexNames.contains(indexName)) {
+            throw new DBAppException("The index was already created on one of the columns");
+        }
         String columnType = colNameType.get(columnName);
         Index index = switch (columnType) {
             case "java.lang.Integer" -> new IntegerIndex(this, columnName, indexName);
@@ -76,6 +80,7 @@ public class Table implements Serializable {
         index.populateIndex();
         this.indexNames.add(indexName);
         FileManager.serializeIndex(index);
+        this.isIndexCreatedOnColumn.put(columnName, indexName);
     }
 
     public void insert(Tuple tuple) throws DBAppException {
