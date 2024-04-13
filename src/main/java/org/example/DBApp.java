@@ -107,7 +107,6 @@ public class DBApp {
 			tables.add(newTable.getTableName());
 		}
 		catch (Exception e){
-			System.out.println("Error while creating table");
 			throw new DBAppException(e.getMessage());
 		}
 	}
@@ -141,7 +140,6 @@ public class DBApp {
 			table.save();
 		}
 		catch (Exception e){
-			System.out.println("Error while creating index");
 			throw new DBAppException(e.getMessage());
 		}
 	}
@@ -158,7 +156,6 @@ public class DBApp {
 			table.save();
 		}
 		catch (Exception e){
-			System.out.println("Error while inserting into table");
 			throw new DBAppException(e.getMessage());
 		}
 	}
@@ -175,7 +172,6 @@ public class DBApp {
 			UpdateManager.updateTable(strTableName, strClusteringKeyValue, htblColNameValue);
 		}
 		catch (Exception e){
-			System.out.println("Error while updating table");
 			throw new DBAppException(e.getMessage());
 		}
 	}
@@ -223,7 +219,6 @@ public class DBApp {
 			table.save();
 		}
 		catch (Exception e){
-			System.out.println("Error while deleting into table");
 			throw new DBAppException(e.getMessage());
 		}
 	}
@@ -236,7 +231,6 @@ public class DBApp {
 			return resultSet;
 		}
 		catch (Exception e){
-			System.out.println("Error while selecting from table");
 			throw new DBAppException(e.getMessage());
 		}
 	}
