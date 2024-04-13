@@ -14,6 +14,10 @@ import java.util.Vector;
  */
 public class BTree<TKey extends Comparable<TKey>, TValue> implements Serializable {
 	private BTreeNode<TKey> root;
+
+	public BTreeNode<TKey> getRoot() {
+		return this.root;
+	}
 	
 	public BTree() {
 		this.root = new BTreeLeafNode<TKey, TValue>();

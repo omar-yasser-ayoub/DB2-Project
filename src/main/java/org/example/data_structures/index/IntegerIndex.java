@@ -20,7 +20,10 @@ public class IntegerIndex extends Index {
     public BTree<Integer, String> getbTree() {
         return bTree;
     }
-
+    @Override
+    public boolean checkKeyExists(Object key) {
+        return bTree.search((Integer) key) != null;
+    }
     public void populateIndex() throws DBAppException {
         Vector<String> pageNames = parentTable.getPageNames();
         for (String pageName : pageNames) {

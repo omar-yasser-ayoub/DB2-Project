@@ -507,19 +507,19 @@ public class UnitTest {
         assertEquals(expectedMessage, outputMessage);
     }
 
-//	@Test
-//	void testCreateIndex_ValidInput_ShouldCreateSuccessfully() throws DBAppException {
-//		// Given
-//		insertRow(1);
-//
-//		// When
-//		engine.createIndex(newTableName, gpa, gpa+"Index");
-//
-//		// Then
-//		Table table = FileManager.deserializeTable(newTableName);
-//		assertEquals(1,table.getBTrees().get(0).getRootKeyCount());
-//		assertEquals(1, table.getIndices().size());
-//	}
+	@Test
+	void testCreateIndex_ValidInput_ShouldCreateSuccessfully() throws DBAppException {
+		// Given
+		insertRow(1);
+
+		// When
+		engine.createIndex(newTableName, gpa, gpa+"Index");
+
+		// Then
+		Table table = FileManager.deserializeTable(newTableName);
+		assertEquals(1,FileManager.deserializeIndex(table.getIndices().get(0)).getRootKeyCount());
+		assertEquals(1, table.getIndices().size());
+	}
 
     @Test
     void testCreateIndex_RepeatedIndex_ShouldFailCreation() throws DBAppException {
@@ -554,44 +554,44 @@ public class UnitTest {
         assertEquals(expectedMessage, outputMessage);
     }
 
-//	@Test
-//	void testInsertionIntoIndex_ValidInput_ShouldInsertIntoIndex() throws DBAppException {
-//		// Given
-//		engine.createIndex(newTableName, gpa, gpa+"Index.ser");
-//		Table table = FileManager.deserializeTable(newTableName);
-//		int oldSize = table.getBTrees().get(0).getRootKeyCount();
-//
-//		// When
-//		insertRow(1);
-//
-//		// Then
-//		table = FileManager.deserializeTable(newTableName);
-//		int newSize = table.getBTrees().get(0).getRootKeyCount();
-//		assertEquals(oldSize+1, newSize);
-//	}
+	@Test
+	void testInsertionIntoIndex_ValidInput_ShouldInsertIntoIndex() throws DBAppException {
+		// Given
+		engine.createIndex(newTableName, gpa, gpa+"Index.ser");
+		Table table = FileManager.deserializeTable(newTableName);
+		int oldSize = FileManager.deserializeIndex(table.getIndices().get(0)).getRootKeyCount();
 
-    //Comment if your btree doesn't contain these functions/add them to yours
-//	@Test
-//	void testUpdateTable_ValidInput_ShouldUpdateIndex() throws DBAppException {
-//		// Given
-//		engine.createIndex(newTableName, gpa, gpa+"Index.ser");
-//		insertRow(3);
-//		Table table = FileManager.deserializeTable(newTableName);
-//		boolean oldValue = ((BTree<Double, String>)table.getBTrees().get(0)).checkKeyExists(TEST_GPA);
-//
-//		// When
-//		Hashtable<String, Object> updateTable = new Hashtable<>();
-//		updateTable.put("gpa", 0.7);
-//		engine.updateTable(newTableName, "3", updateTable);
-//
-//		// Then
-//		table = FileManager.deserializeTable(newTableName);
-//		boolean oldValueCheck = ((BTree<Double, String>)table.getBTrees().get(0)).checkKeyExists(TEST_GPA);
-//		boolean newValueCheck = ((BTree<Double, String>)table.getBTrees().get(0)).checkKeyExists(0.7);
-//		assertTrue(oldValue);
-//		assertFalse(oldValueCheck);
-//		assertTrue(newValueCheck);
-//	}
+		// When
+		insertRow(1);
+
+		// Then
+		table = FileManager.deserializeTable(newTableName);
+		int newSize = FileManager.deserializeIndex(table.getIndices().get(0)).getRootKeyCount();
+		assertEquals(oldSize+1, newSize);
+	}
+
+//    Comment if your btree doesn't contain these functions/add them to yours
+	@Test
+	void testUpdateTable_ValidInput_ShouldUpdateIndex() throws DBAppException {
+		// Given
+		engine.createIndex(newTableName, gpa, gpa+"Index.ser");
+		insertRow(3);
+		Table table = FileManager.deserializeTable(newTableName);
+		boolean oldValue = (FileManager.deserializeIndex(table.getIndices().get(0))).checkKeyExists(TEST_GPA);
+
+		// When
+		Hashtable<String, Object> updateTable = new Hashtable<>();
+		updateTable.put("gpa", 0.7);
+		engine.updateTable(newTableName, "3", updateTable);
+
+		// Then
+		table = FileManager.deserializeTable(newTableName);
+		boolean oldValueCheck = (FileManager.deserializeIndex(table.getIndices().get(0))).checkKeyExists(TEST_GPA);
+		boolean newValueCheck = (FileManager.deserializeIndex(table.getIndices().get(0))).checkKeyExists(0.7);
+		assertTrue(oldValue);
+		assertFalse(oldValueCheck);
+		assertTrue(newValueCheck);
+	}
 
     @Test
     void testSelectFromTable_TwoORTerms_ShouldSelectSixTuples() throws DBAppException {

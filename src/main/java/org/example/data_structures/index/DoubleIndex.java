@@ -21,6 +21,10 @@ public class DoubleIndex extends Index {
         return bTree;
     }
 
+    @Override
+    public boolean checkKeyExists(Object key) {
+        return bTree.search((Double) key) != null;
+    }
 
     public void populateIndex() throws DBAppException {
         Vector<String> pageNames = parentTable.getPageNames();

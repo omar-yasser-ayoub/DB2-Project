@@ -152,8 +152,8 @@ public class DBApp {
 	public void insertIntoTable(String strTableName, 
 								Hashtable<String,Object>  htblColNameValue) throws DBAppException{
 		try{
-			Tuple tuple = new Tuple(htblColNameValue);
 			Table table = FileManager.deserializeTable(strTableName);
+			Tuple tuple = new Tuple(htblColNameValue, table.getClusteringKey());
 			table.insert(tuple);
 			table.save();
 		}
