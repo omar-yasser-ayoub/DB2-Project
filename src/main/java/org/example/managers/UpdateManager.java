@@ -41,6 +41,16 @@ public class UpdateManager implements Serializable {
         int pageIndex = SelectionManager.getIndexOfPageFromClusteringValue(value, table);
         Page page = FileManager.deserializePage(table.getPageNames().get(pageIndex));
         int tupleIndex = SelectionManager.getIndexOfTupleFromClusteringValue(value, page);
+        Hashtable<String, Object> tupleValues = page.getTuples().get(tupleIndex).getValues();
+
+        Enumeration<String> keys = tupleValues.keys();
+        while (keys.hasMoreElements()) {
+            String key = keys.nextElement();
+            if(!htblColNameValue.containsKey(key)) {
+                htblColNameValue.put(key, tupleValues.get(key));
+            }
+        }
+
         page.getTuples().set(tupleIndex, new Tuple(htblColNameValue));
 
         page.save();
@@ -65,12 +75,14 @@ public class UpdateManager implements Serializable {
                     if(line[3].equals("True")) {
                         clusteringKeyName = line[1];
                         clusteringKeyType = line[2];
-                    }
-                    else { // checks if all other columns are in hashtable and if datatypes match
-                        if(!htblColNameValues.containsKey(line[1])) {
-                            throw new DBAppException("Missing columns in hashtable");
+
+                        // throw error if user tries changing the primary key
+                        if(htblColNameValues.containsKey(clusteringKeyName)) {
+                            throw new DBAppException("Cannot change primary key");
                         }
-                        else {
+                    }
+                    else { // checks if datatypes match in case column is in hashtable
+                        if(htblColNameValues.containsKey(line[1])) {
                             String type = line[2];
                             Object val = htblColNameValues.get(line[1]);
                             if((type.equals("java.lang.Integer") && !(val instanceof Integer))
@@ -78,13 +90,13 @@ public class UpdateManager implements Serializable {
                                 || (type.equals("java.lang.String") && !(val instanceof String))) {
                                 throw new DBAppException("Column value doesn't match datatype");
                             }
-                            colNames.add(line[1]);
                         }
+                        colNames.add(line[1]);
                     }
                 }
             }
 
-            // throws error if table doesn't exist
+            // throw error if table doesn't exist
             if(!tableFound) {
                 throw new DBAppException("Table does not exist");
             }

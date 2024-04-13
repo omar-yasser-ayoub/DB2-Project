@@ -338,7 +338,7 @@ public class UnitTest {
         });
 
         // Then
-        String expectedMessage = "The input row wants to change the primary key";
+        String expectedMessage = "Cannot change primary key";
         String outputMessage = exception.getMessage();
         assertEquals(expectedMessage, outputMessage);
     }
