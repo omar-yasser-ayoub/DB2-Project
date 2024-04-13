@@ -58,7 +58,7 @@ public class FileManager implements Serializable {
 
     public static void serializeIndex(Index index) throws DBAppException {
         createDirectory(SERIALIZED_INDICES_PATH);
-        String fileName = SERIALIZED_INDICES_PATH + index.getIndexName() + ".ser";
+        String fileName = SERIALIZED_INDICES_PATH  + "/" + index.getIndexName() + ".ser";
         serialize(index, fileName);
     }
 
@@ -82,7 +82,7 @@ public class FileManager implements Serializable {
     }
 
     public static Index deserializeIndex(String indexName) throws DBAppException {
-        String fileName = SERIALIZED_INDICES_PATH + indexName + ".ser";
+        String fileName = SERIALIZED_INDICES_PATH + "/" + indexName + ".ser";
         return (Index)deserialize(fileName);
     }
 
