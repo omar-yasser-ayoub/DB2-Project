@@ -5,6 +5,7 @@ import com.opencsv.exceptions.CsvValidationException;
 import org.example.data_structures.Page;
 import org.example.data_structures.Table;
 import org.example.data_structures.Tuple;
+import org.example.data_structures.index.Index;
 import org.example.exceptions.DBAppException;
 
 import java.io.*;
@@ -50,11 +51,26 @@ public class UpdateManager implements Serializable {
                 htblColNameValue.put(key, tupleValues.get(key));
             }
         }
-
+        updateIndex(table, new Tuple(htblColNameValue), page.getTuples().get(tupleIndex));
         page.getTuples().set(tupleIndex, new Tuple(htblColNameValue));
-
         page.save();
         table.save();
+    }
+    private static void updateIndex(Table parentTable, Tuple newTuple, Tuple oldTuple) throws DBAppException {
+        Vector<String> indexNames = parentTable.getIndices();
+        if (indexNames != null) {
+            for (String indexName : indexNames) {
+                Index index = FileManager.deserializeIndex(indexName);
+                String oldValue = (String) index.getbTree().search((Comparable) oldTuple.getValues().get(index.getColumnName()));
+                if (oldTuple.getValues().get(index.getColumnName()) != null) {
+                    index.delete(oldTuple.getValues().get(index.getColumnName()));
+                }
+                if (newTuple.getValues().get(index.getColumnName()) != null) {
+                    index.insert(newTuple.getValues().get(index.getColumnName()), oldValue);
+                }
+                index.save();
+            }
+        }
     }
 
     private static String[] isValidUpdate(String strTableName, String strClusteringKeyValue, Hashtable<String,Object> htblColNameValues) throws DBAppException {

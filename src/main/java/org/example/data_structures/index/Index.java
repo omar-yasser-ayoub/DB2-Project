@@ -32,4 +32,9 @@ public abstract class Index implements Serializable {
     public abstract void insert(Object key, String value);
     public abstract String search(Object key);
     public abstract void delete(Object key);
+    public abstract boolean checkKeyExists(Object key);
+
+    public int getRootKeyCount() {
+        return getbTree().getRoot().getKeyCount();
+    }
 }

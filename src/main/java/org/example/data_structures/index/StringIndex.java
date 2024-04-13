@@ -20,6 +20,9 @@ public class StringIndex extends Index {
     public BTree<String, String> getbTree() {
         return bTree;
     }
+    public boolean checkKeyExists(Object key) {
+        return bTree.search((String) key) != null;
+    }
 
     public void populateIndex() throws DBAppException {
         Vector<String> pageNames = parentTable.getPageNames();
