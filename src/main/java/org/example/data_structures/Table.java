@@ -47,8 +47,8 @@ public class Table implements Serializable {
     public String getClusteringKey() {
         return clusteringKey;
     }
-    public boolean isEmpty() {
-        return pageCount == 0;
+    public boolean isEmpty() throws DBAppException {
+        return this.getSize() == 0;
     }
     public Vector<String> getPageNames() {
         return pageNames;
