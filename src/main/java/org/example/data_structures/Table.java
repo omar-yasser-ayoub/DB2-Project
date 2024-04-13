@@ -75,6 +75,7 @@ public class Table implements Serializable {
         };
         index.populateIndex();
         this.indexNames.add(indexName);
+        FileManager.serializeIndex(index);
     }
 
     public void insert(Tuple tuple) throws DBAppException {

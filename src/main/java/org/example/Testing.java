@@ -246,6 +246,13 @@ public class Testing {
         }
     }
 
+    private static void IndexTest2() throws DBAppException, CsvValidationException, IOException {
+        DBApp dbApp1 = new DBApp();
+        dbApp1.init();
+        createTestTable();
+        dbApp1.createIndex("CityShop", "Number", "testIndex");
+    }
+
     private static void BinarySearchTest() throws DBAppException, IOException, CsvValidationException {
         DBApp dbApp1 = new DBApp();
         dbApp1.init();
@@ -461,6 +468,6 @@ public class Testing {
         System.out.println(FileManager.deserializePage(t.getPageNames().get(2)).toString());
     }
     public static void main(String[] args) throws Exception {
-        deleteFromTableTest2();
+        IndexTest2();
     }
 }
