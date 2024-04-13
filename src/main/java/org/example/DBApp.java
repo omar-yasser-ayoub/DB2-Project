@@ -197,11 +197,19 @@ public class DBApp {
 					colNames.add(line[1]);
 				}
 			}
+			if (colNames.isEmpty()) {
+				throw new DBAppException("Table does not exist");
+			}
+
 			Vector<SQLTerm> SQLTerms = new Vector<>();
 			for (String colName: colNames) {
 				if (htblColNameValue.get(colName) != null) {
 					SQLTerms.add(new SQLTerm(strTableName, colName, "=", htblColNameValue.get(colName)));
+					htblColNameValue.remove(colName);
 				}
+			}
+			if (!htblColNameValue.isEmpty()) {
+				throw new DBAppException("The Tuple contains come columns that aren't in the table");
 			}
 			String[] strOperators = new String[SQLTerms.size() - 1];
 			Arrays.fill(strOperators, "AND");
