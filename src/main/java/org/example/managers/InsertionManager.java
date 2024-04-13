@@ -168,13 +168,12 @@ public class InsertionManager{
 
         Comparable<Object> clusteringKeyValue = (Comparable<Object>) tuple.getValues().get(table.getClusteringKey());
 
-        try {
-            int pageIndex = SelectionManager.getIndexOfPageFromClusteringValue(clusteringKeyValue, table);
-            Page page = FileManager.deserializePage(table.getPageNames().get(pageIndex));
-            SelectionManager.getIndexOfTupleFromClusteringValue(clusteringKeyValue, page);
-        } catch (DBAppException e) {
-            return;
-        }
+        int pageIndex = SelectionManager.getIndexOfPageFromClusteringValue(clusteringKeyValue, table);
+        if (pageIndex < 0) return;
+
+        Page page = FileManager.deserializePage(table.getPageNames().get(pageIndex));
+        int tupleIndex = SelectionManager.getIndexOfTupleFromClusteringValue(clusteringKeyValue, page);
+        if (tupleIndex < 0) return;
 
         throw new DBAppException("Primary key already exists in table");
     }

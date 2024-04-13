@@ -19,9 +19,17 @@ public class DeletionManager{
         Comparable<Object> clusteringKeyValue = (Comparable<Object>) tuple.getValues().get(table.getClusteringKey());
 
         int pageIndex = SelectionManager.getIndexOfPageFromClusteringValue(clusteringKeyValue, table);
+        if (pageIndex < 0) {
+            System.out.println("Tuple not found in table");
+            return;
+        }
         Page page = FileManager.deserializePage(table.getPageNames().get(pageIndex));
 
         int tupleIndex = SelectionManager.getIndexOfTupleFromClusteringValue(clusteringKeyValue, page);
+        if (tupleIndex < 0) {
+            System.out.println("Tuple not found in table");
+            return;
+        }
         tuple = page.getTuples().get(tupleIndex);
 
         page.getTuples().remove(tupleIndex);
