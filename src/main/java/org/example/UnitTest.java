@@ -261,7 +261,7 @@ public class UnitTest {
         });
 
         // Then
-        String expectedMessage = "Incomplete tuple";
+        String expectedMessage = "Tuple must contain primary key";
         String outputMessage = exception.getMessage();
         assertEquals(expectedMessage,outputMessage);
     }

@@ -335,6 +335,7 @@ public class SelectionManager implements Serializable {
         for (Tuple tuple : tuples1) {
             if (htv.contains(tuple.getValues())) {
                 result.add(tuple);
+
             }
         }
         return result;

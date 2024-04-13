@@ -71,22 +71,24 @@ public class BTree<TKey extends Comparable<TKey>, TValue> implements Serializabl
 		BTreeLeafNode<TKey, TValue> leaf = this.findLeafNodeShouldContainKey(key);
 		Vector<String> result = new Vector<>();
 
-		while(true) {
+		while(leaf != null) {
 			for (int i = 0; i < leaf.getKeyCount(); i++) {
 				if (leaf.getKey(i).compareTo(key) == 0) {
 					result.add(leaf.getValue(i).toString());
-				} else {
+				}
+				else {
 					return result;
 				}
 			}
 			leaf = (BTreeLeafNode<TKey, TValue>) leaf.getRightCousin();
 		}
+		return result;
 	}
 	public Vector<String> greaterThanSearch(TKey key) {
 		BTreeLeafNode<TKey, TValue> leaf = this.findLeafNodeShouldContainKey(key);
 		Vector<String> result = new Vector<>();
 
-		while(leaf.getRightCousin() != null) {
+		while(leaf != null) {
 			for (int i = 0; i < leaf.getKeyCount(); i++) {
 				if (leaf.getKey(i).compareTo(key) > 0) {
 					result.add(leaf.getValue(i).toString());
@@ -100,7 +102,7 @@ public class BTree<TKey extends Comparable<TKey>, TValue> implements Serializabl
 	public Vector<String> greaterThanOrEqualSearch(TKey key) {
 		BTreeLeafNode<TKey, TValue> leaf = this.findLeafNodeShouldContainKey(key);
 		Vector<String> result = new Vector<>();
-		while(leaf.getRightCousin() != null) {
+		while(leaf != null) {
 			for (int i = 0; i < leaf.getKeyCount(); i++) {
 				result.add(leaf.getValue(i).toString());
 			}
@@ -113,7 +115,7 @@ public class BTree<TKey extends Comparable<TKey>, TValue> implements Serializabl
 		BTreeLeafNode<TKey, TValue> leaf = this.findLeafNodeShouldContainKey(key);
 		Vector<String> result = new Vector<>();
 
-		while(leaf.getLeftCousin() != null) {
+		while(leaf != null) {
 			for (int i = 0; i < leaf.getKeyCount(); i++) {
 				if (leaf.getKey(i).compareTo(key) < 0) {
 					result.add(leaf.getValue(i).toString());
@@ -128,7 +130,7 @@ public class BTree<TKey extends Comparable<TKey>, TValue> implements Serializabl
 		BTreeLeafNode<TKey, TValue> leaf = this.findLeafNodeShouldContainKey(key);
 		Vector<String> result = new Vector<>();
 
-		while(leaf.getLeftCousin() != null) {
+		while(leaf != null) {
 			for (int i = 0; i < leaf.getKeyCount(); i++) {
 				if (leaf.getKey(i).compareTo(key) <= 0) {
 					result.add(leaf.getValue(i).toString());

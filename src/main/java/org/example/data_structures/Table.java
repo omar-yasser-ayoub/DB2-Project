@@ -1,6 +1,7 @@
 package org.example.data_structures;
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvValidationException;
+import org.example.DBApp;
 import org.example.data_structures.index.DoubleIndex;
 import org.example.data_structures.index.IntegerIndex;
 import org.example.data_structures.index.StringIndex;
@@ -142,10 +143,7 @@ public class Table implements Serializable {
 
             while ((line = reader.readNext()) != null) {
                 if(line[0].equals(tableName)) {
-                    if(!values.containsKey(line[1])){
-                        throw new DBAppException("Incomplete tuple");
-                    }
-                    else {
+                    if (values.containsKey(line[1])) {
                         String type = line[2];
                         if(!((line[2].equals("java.lang.String") && values.get(line[1]) instanceof String)
                             || (line[2].equals("java.lang.Integer") && values.get(line[1]) instanceof Integer)
@@ -153,6 +151,9 @@ public class Table implements Serializable {
                             throw new DBAppException("Value is not of the correct type");
                         }
                         values.remove(line[1]);
+                    }
+                    else if (line[3].equals("True")) {
+                        throw new DBAppException("Tuple must contain primary key");
                     }
                 }
             }

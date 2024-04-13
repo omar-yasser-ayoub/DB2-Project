@@ -114,6 +114,30 @@ public class Testing {
         }
 
         try {
+            // missing column
+            Tuple x1 = new Tuple();
+            x1.insert("ID", 51);
+            x1.insert("Name", "CityShop");
+            x1.insert("Number", 123456);
+            x1.insert("Specialisation", "Grocery");
+            table1.insert(x1);
+        } catch (DBAppException e) {
+            System.out.println(e.getMessage());
+        }
+
+        try {
+            // missing primary key
+            Tuple x1 = new Tuple();
+            x1.insert("Name", "CityShop");
+            x1.insert("Number", 123456);
+            x1.insert("Specialisation", "Grocery");
+            x1.insert("Address", "Cairo");
+            table1.insert(x1);
+        } catch (DBAppException e) {
+            System.out.println(e.getMessage());
+        }
+
+        try {
             //wrong key
             Tuple x1 = new Tuple();
             x1.insert("ID", 2);
@@ -468,6 +492,6 @@ public class Testing {
         System.out.println(FileManager.deserializePage(t.getPageNames().get(2)).toString());
     }
     public static void main(String[] args) throws Exception {
-        IndexTest2();
+        insertIntoTableTest();
     }
 }
