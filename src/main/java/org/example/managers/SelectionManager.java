@@ -47,8 +47,12 @@ public class SelectionManager implements Serializable {
         }
         for (String pageName : pageNames) {
             Page page = FileManager.deserializePage(pageName);
-            //TODO: Binary Search?
-            linearSearchInPage(term, finalList, page);
+            if (table.getClusteringKey().equals(term.getStrColumnName())) {
+                finalList.addAll(binarySearchWithFoundTuple(term, table, table.getPageNames().indexOf(pageName)));
+            }
+            else {
+                linearSearchInPage(term, finalList, page);
+            }
         }
         return finalList;
     }
@@ -66,7 +70,7 @@ public class SelectionManager implements Serializable {
             if (pageIndex == table.getPageNames().size()) {
                 pageIndex--;
             }
-            if (pageIndex == -1) {
+            else if (pageIndex == -1) {
                 pageIndex++;
             }
             return binarySearchWithNotFoundTuple(term, table, pageIndex);
@@ -141,8 +145,7 @@ public class SelectionManager implements Serializable {
         switch (term.getStrOperator()) {
             case ">=":
             case ">":
-                tupleIndex = 0;
-                for (int i = tupleIndex + 1; i < tuples.size(); i++) {
+                for (int i = 0; i < tuples.size(); i++) {
                     if(((Comparable<Object>)tuples.get(i).getValues().get(clusteringKey)).compareTo(value) > 0)
                         finalList.add(tuples.get(i));
                 }
@@ -153,9 +156,9 @@ public class SelectionManager implements Serializable {
                 break;
             case "<=":
             case "<":
-                tupleIndex = tuples.size() - 1;
-                for (int i = 0; i < tupleIndex; i++) {
-                    finalList.add(tuples.get(i));
+                for (int i = 0; i < tuples.size(); i++) {
+                    if(((Comparable<Object>)tuples.get(i).getValues().get(clusteringKey)).compareTo(value) < 0)
+                        finalList.add(tuples.get(i));
                 }
                 for (int i = 0; i < pageIndex; i++) {
                     Page nextPage = FileManager.deserializePage(table.getPageNames().get(i));
