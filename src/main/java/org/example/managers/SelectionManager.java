@@ -45,7 +45,9 @@ public class SelectionManager implements Serializable {
             default:
                 return null;
         }
-        for (String pageName : pageNames) {
+        HashSet<String> uniquePageNames = new HashSet<>(pageNames);
+
+        for (String pageName : uniquePageNames) {
             Page page = FileManager.deserializePage(pageName);
             //TODO: Binary Search?
             linearSearchInPage(term, finalList, page);
@@ -216,9 +218,7 @@ public class SelectionManager implements Serializable {
         for (SQLTerm arrSQLTerm : arrSQLTerms) {
             totalTuples.add(computeSQLTerm(arrSQLTerm, table));
         }
-
         Vector<Tuple> result = evalQuery(totalTuples, strarrOperators);
-
         return result != null ? result.iterator() : null;
     }
 
