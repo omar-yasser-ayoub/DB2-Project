@@ -1,4 +1,5 @@
 // Generated from D:/University/Semester 6/Databases II/Project/M1/DB2-Project/src/main/ANTLR/MySqlLexer.g4 by ANTLR 4.13.1
+package org.example.ANTLR;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.Token;
