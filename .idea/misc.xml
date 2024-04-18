@@ -13,6 +13,16 @@
           <option name="language" value="" />
           <option name="generateVisitor" value="true" />
         </PerGrammarGenerationSettings>
+        <PerGrammarGenerationSettings>
+          <option name="fileName" value="$PROJECT_DIR$/src/main/ANTLR/MySqlParser.g4" />
+          <option name="autoGen" value="true" />
+          <option name="outputDir" value="D:\University\Semester 6\Databases II\Project\M1\DB2-Project\src\main\java\org\example\ANTLR" />
+          <option name="libDir" value="" />
+          <option name="encoding" value="" />
+          <option name="pkg" value="" />
+          <option name="language" value="" />
+          <option name="generateVisitor" value="true" />
+        </PerGrammarGenerationSettings>
       </list>
     </option>
   </component>

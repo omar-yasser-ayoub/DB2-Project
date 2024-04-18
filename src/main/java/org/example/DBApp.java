@@ -3,7 +3,12 @@ package org.example;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
 import com.opencsv.exceptions.CsvValidationException;
-import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.*;
+import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.ParseTreeWalker;
+import org.example.ANTLR.MySqlParserBaseListener;
+import org.example.ANTLR.MySqlParserListener;
+import org.example.data_structures.Page;
 import org.example.data_structures.SQLTerm;
 import org.example.data_structures.Table;
 import org.example.data_structures.Tuple;
@@ -12,6 +17,7 @@ import org.example.managers.FileManager;
 import org.example.managers.SelectionManager;
 import org.example.managers.UpdateManager;
 import org.example.ANTLR.MySqlLexer;
+import org.example.ANTLR.MySqlParser;
 
 import java.io.*;
 import java.util.*;
@@ -243,7 +249,21 @@ public class DBApp {
 	// below method returns Iterator with result set if passed
 	// strbufSQL is a select, otherwise returns null.
 	public Iterator parseSQL(StringBuffer strbufSQL) throws DBAppException {
-		MySqlLexer lexer = new MySqlLexer(CharStreams.fromString(String.valueOf(strbufSQL)));
+		CharStream cs = CharStreams.fromString(String.valueOf(strbufSQL));
+		MySqlLexer lexer = new MySqlLexer(cs);
+		MySqlParser parser = new MySqlParser(new CommonTokenStream(lexer));
+		MySqlParser.RootContext context = parser.root();
+		if(parser.getNumberOfSyntaxErrors() != 0)
+			throw new DBAppException("Invalid SQL term");
+
+		lexer = new MySqlLexer(cs);
+		CommonTokenStream ts = new CommonTokenStream(lexer);
+		ts.fill();
+		Vector<Token> tokens = new Vector<Token>(ts.getTokens());
+		for(Token t : tokens) {
+			if(!t.getText().equals(" ") && !t.getText().equals("<EOF>"))
+				System.out.println(t.getText());
+		}
 
 		return null;
 	}
@@ -253,7 +273,9 @@ public class DBApp {
 			DBApp dbApp = new DBApp();
 			dbApp.init();
 
-
+			StringBuffer s = new StringBuffer();
+			s.append("SELECT * FROM Employee;");
+			dbApp.parseSQL(s);
 		}
 		catch(Exception exp){
 			exp.printStackTrace();
