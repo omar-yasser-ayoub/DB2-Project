@@ -63,7 +63,7 @@ public class Page implements Serializable {
         StringBuilder returnString = new StringBuilder();
         for (Object tuple : getTuples()) {
             returnString.append(tuple.toString());
-            returnString.append(",");
+            returnString.append("\n");
         }
         returnString.deleteCharAt(returnString.length() - 1);
         return returnString.toString();

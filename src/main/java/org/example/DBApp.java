@@ -28,7 +28,7 @@ public class DBApp {
 
 	public static final String METADATA_DIR = "data/table_metadata";
 	public static int maxRowCount;
-	static CSVWriter metadataWriter;
+	public static CSVWriter metadataWriter;
 
 	static Vector<String> tables = new Vector<>();
 	public DBApp( ){
@@ -266,13 +266,21 @@ public class DBApp {
 			DBApp dbApp = new DBApp();
 			dbApp.init();
 
+//			StringBuffer s = new StringBuffer();
+//			s.append("CREATE TABLE Customer (name varchar(50), address varchar(50), number int, PRIMARY KEY (name));");
+//			dbApp.parseSQL(s);
+//
+//			s = new StringBuffer();
+//			s.append("CREATE INDEX name_idx ON Customer(name) USING BTREE;");
+//			dbApp.parseSQL(s);
+
 			StringBuffer s = new StringBuffer();
-			s.append("CREATE TABLE Customer (name varchar(50), address varchar(50), number int, PRIMARY KEY (name));");
+			s.append("INSERT INTO Customer(name, address) VALUES('Adam', '456 lane')");
 			dbApp.parseSQL(s);
 
-			s = new StringBuffer();
-			s.append("CREATE INDEX name_idx ON Customer(name) USING BTREE;");
-			dbApp.parseSQL(s);
+			Table t = FileManager.deserializeTable("Customer");
+			Page p = FileManager.deserializePage(t.getPageNames().get(0));
+			System.out.println(p.toString());
 
 //			Hashtable<String, String> ht = new Hashtable<>();
 //			ht.put("a", "java.lang.String");

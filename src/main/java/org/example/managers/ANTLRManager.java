@@ -1,5 +1,7 @@
 package org.example.managers;
 
+import com.opencsv.CSVReader;
+import com.opencsv.exceptions.CsvValidationException;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Token;
@@ -9,8 +11,12 @@ import org.example.DBApp;
 import org.example.data_structures.Page;
 import org.example.exceptions.DBAppException;
 
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.Hashtable;
 import java.util.Vector;
+
+import static org.example.DBApp.METADATA_DIR;
 
 public class ANTLRManager {
     private ANTLRManager() {
@@ -50,6 +56,20 @@ public class ANTLRManager {
             else {
                 throw new DBAppException("Unsupported SQL statement");
             }
+        }
+        else if(tokens.get(0).equalsIgnoreCase("INSERT")) {
+            if(tokens.get(1).equalsIgnoreCase("INTO")) {
+                if(tokens.get(3).equalsIgnoreCase("VALUES"))
+                    antlrInsert(tokens);
+                else
+                    antlrInsertSpecific(tokens);
+            }
+            else {
+                throw new DBAppException("Unsupported SQL statement");
+            }
+        }
+        else {
+            throw new DBAppException("Unsupported SQL statement");
         }
     }
 
@@ -125,5 +145,72 @@ public class ANTLRManager {
 
         DBApp dbApp = new DBApp();
         dbApp.createIndex(tableName, colName, indexName);
+    }
+
+    public static void antlrInsert(Vector<String> tokens) throws DBAppException {
+
+    }
+
+    public static void antlrInsertSpecific(Vector<String> tokens) throws DBAppException {
+        String tableName = tokens.get(2);
+        Hashtable<String, String> colNameType = new Hashtable<>();
+        Vector<String> colNames = new Vector<>();
+        int i;
+        for(i = 4; i < tokens.size(); i++) {
+            colNameType.put(tokens.get(i), "");
+            colNames.add(tokens.get(i));
+            i++;
+            if(tokens.get(i).equals(")")) {
+                i += 3;
+                break;
+            }
+        }
+
+        try {
+            CSVReader reader = new CSVReader(new FileReader(METADATA_DIR + "/metadata.csv"));
+            String[] line = reader.readNext();
+
+            while ((line = reader.readNext()) != null) {
+                if(line[0].equals(tableName)) {
+                    if (colNameType.containsKey(line[1])) {
+                        colNameType.put(line[1], line[2]);
+                    }
+                }
+            }
+        } catch (CsvValidationException | IOException e) {
+            throw new DBAppException(e.getMessage());
+        }
+
+        Hashtable<String, Object> colNameValue = new Hashtable<>();
+        int j = 0;
+        while(j < colNames.size()) {
+            String val = tokens.get(i);
+            String type = colNameType.get(colNames.get(j));
+
+            try {
+                switch (type) {
+                    case "java.lang.Integer":
+                        colNameValue.put(colNames.get(j), Integer.valueOf(Integer.parseInt(val)));
+                        break;
+                    case "java.lang.Double":
+                        colNameValue.put(colNames.get(j), Double.valueOf(Double.parseDouble(val)));
+                        break;
+                    case "java.lang.String":
+                        colNameValue.put(colNames.get(j), val);
+                        break;
+                }
+            } catch (NumberFormatException e) {
+                throw new DBAppException("Mismatching datatypes");
+            }
+            j++;
+            i += 2;
+        }
+
+//        for(int k = 0; k < colNameValue.size(); k++){
+//            System.out.println(colNames.get(i) + " " + colNameValue.get(colNames.get(i)));
+//        }
+
+        DBApp dbApp = new DBApp();
+        dbApp.insertIntoTable(tableName, colNameValue);
     }
 }
