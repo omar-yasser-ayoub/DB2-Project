@@ -196,7 +196,11 @@ public class DBApp {
 			if (colNames.isEmpty()) {
 				throw new DBAppException("Table does not exist");
 			}
-
+			if (htblColNameValue.isEmpty()) {
+				Table table = FileManager.deserializeTable(strTableName);
+				table.wipePages();
+				return;
+			}
 			Vector<SQLTerm> SQLTerms = new Vector<>();
 			for (String colName: colNames) {
 				if (htblColNameValue.get(colName) != null) {

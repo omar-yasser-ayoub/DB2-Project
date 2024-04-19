@@ -73,6 +73,10 @@ public class Page implements Serializable {
         return tuples.size();
     }
 
+    public void clearTuples() throws DBAppException {
+        tuples.clear();
+        this.save();
+    }
     public boolean isFull() {
         return tuples.size() == DBApp.maxRowCount;
     }

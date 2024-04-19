@@ -218,4 +218,25 @@ public class Table implements Serializable {
         }
         return total;
     }
+    public void wipePages() throws DBAppException {
+        for (String pageName : pageNames) {
+            Page page = FileManager.deserializePage(pageName);
+            page.clearTuples();
+        }
+        pageNames.clear();
+        pageCount = 0;
+
+    }
+    public String toString() {
+        StringBuilder returnString = new StringBuilder();
+        for (String pageName : pageNames) {
+            try {
+                Page page = FileManager.deserializePage(pageName);
+                returnString.append(page.toString());
+            } catch (DBAppException e) {
+                e.printStackTrace();
+            }
+        }
+        return returnString.toString();
+    }
 }
