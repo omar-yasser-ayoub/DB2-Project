@@ -68,12 +68,28 @@ public class ANTLRManager {
                 throw new DBAppException("Unsupported SQL statement");
             }
         }
+        else if(tokens.get(0).equalsIgnoreCase("DELETE")) {
+            if(tokens.get(1).equalsIgnoreCase("FROM")) {
+                if(tokens.size() <= 4) {
+                    antlrDeleteAll(tokens);
+                }
+                else if(tokens.get(3).equalsIgnoreCase("WHERE")) {
+                    antlrDelete(tokens);
+                }
+                else {
+                    throw new DBAppException("Unsupported SQL statement");
+                }
+            }
+            else {
+                throw new DBAppException("Unsupported SQL statement");
+            }
+        }
         else {
             throw new DBAppException("Unsupported SQL statement");
         }
     }
 
-    public static void antlrCreateTable(Vector<String> tokens) throws DBAppException {
+    private static void antlrCreateTable(Vector<String> tokens) throws DBAppException {
         String tableName = tokens.get(2);
         Hashtable<String,String> colNameType = new Hashtable<>();
         String primaryKey = null;
@@ -132,7 +148,7 @@ public class ANTLRManager {
         dbApp.createTable(tableName, primaryKey, colNameType);
     }
 
-    public static void antlrCreateIndex(Vector<String> tokens) throws DBAppException {
+    private static void antlrCreateIndex(Vector<String> tokens) throws DBAppException {
         String indexName = tokens.get(2);
         String tableName = tokens.get(4);
         String colName = tokens.get(6);
@@ -147,11 +163,12 @@ public class ANTLRManager {
         dbApp.createIndex(tableName, colName, indexName);
     }
 
-    public static void antlrInsert(Vector<String> tokens) throws DBAppException {
-
+    // TODO implement inserting into all columns
+    private static void antlrInsert(Vector<String> tokens) throws DBAppException {
+        throw new DBAppException("Unsupported SQL statement");
     }
 
-    public static void antlrInsertSpecific(Vector<String> tokens) throws DBAppException {
+    private static void antlrInsertSpecific(Vector<String> tokens) throws DBAppException {
         String tableName = tokens.get(2);
         Hashtable<String, String> colNameType = new Hashtable<>();
         Vector<String> colNames = new Vector<>();
@@ -183,7 +200,7 @@ public class ANTLRManager {
 
         Hashtable<String, Object> colNameValue = new Hashtable<>();
         int j = 0;
-        while(j < colNames.size()) {
+        while(j < colNames.size() && i < tokens.size()) {
             String val = tokens.get(i);
             String type = colNameType.get(colNames.get(j));
 
@@ -204,13 +221,22 @@ public class ANTLRManager {
             }
             j++;
             i += 2;
+            if (tokens.get(i).equals(";"))
+                break;
         }
-
-//        for(int k = 0; k < colNameValue.size(); k++){
-//            System.out.println(colNames.get(i) + " " + colNameValue.get(colNames.get(i)));
-//        }
 
         DBApp dbApp = new DBApp();
         dbApp.insertIntoTable(tableName, colNameValue);
+    }
+
+    private static void antlrDeleteAll(Vector<String> tokens) throws DBAppException {
+        DBApp dbApp = new DBApp();
+        dbApp.deleteFromTable(tokens.get(2), new Hashtable<String, Object>());
+    }
+
+    private static void antlrDelete(Vector<String> tokens) throws DBAppException {
+        String tableName = tokens.get(2);
+
+
     }
 }
