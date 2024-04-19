@@ -1,5 +1,6 @@
 package org.example.data_structures;
 import com.opencsv.CSVReader;
+import com.opencsv.CSVWriter;
 import com.opencsv.exceptions.CsvValidationException;
 import org.example.DBApp;
 import org.example.data_structures.index.DoubleIndex;
@@ -11,13 +12,12 @@ import org.example.managers.FileManager;
 import org.example.managers.InsertionManager;
 import org.example.data_structures.index.Index;
 
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.Serializable;
+import java.io.*;
+import java.sql.SQLOutput;
 import java.util.*;
 
 import static org.example.DBApp.METADATA_DIR;
+import static org.example.DBApp.metadataWriter;
 
 public class Table implements Serializable {
     private final String tableName;
@@ -80,8 +80,45 @@ public class Table implements Serializable {
         };
         index.populateIndex();
         this.indexNames.add(indexName);
+        editMetadata(columnName, indexName);
         FileManager.serializeIndex(index);
         this.isIndexCreatedOnColumn.put(columnName, indexName);
+    }
+
+    private void editMetadata(String columnName, String indexName) throws DBAppException {
+        try {
+            CSVReader reader = new CSVReader(new FileReader(METADATA_DIR + "/metadata.csv"));
+            String[] line = reader.readNext();
+            Vector<String[]> csv = new Vector<>();
+            csv.add(line);
+
+            while((line = reader.readNext()) != null) {
+                if(line[0].equals(tableName)) {
+                    if(line[1].equals(columnName)) {
+                        line[4] = indexName;
+                        line[5] = "B+tree";
+                    }
+                }
+                csv.add(line);
+            }
+
+            metadataWriter.close();
+
+            metadataWriter = new CSVWriter(new FileWriter(METADATA_DIR + "/metadata.csv", false),
+                    CSVWriter.DEFAULT_SEPARATOR, CSVWriter.NO_QUOTE_CHARACTER,
+                    CSVWriter.DEFAULT_ESCAPE_CHARACTER, CSVWriter.RFC4180_LINE_END);
+
+            CSVWriter writer = metadataWriter;
+            writer.writeAll(csv);
+            writer.flush();
+
+            metadataWriter = new CSVWriter(new FileWriter(METADATA_DIR + "/metadata.csv", true),
+                    CSVWriter.DEFAULT_SEPARATOR, CSVWriter.NO_QUOTE_CHARACTER,
+                    CSVWriter.DEFAULT_ESCAPE_CHARACTER, CSVWriter.RFC4180_LINE_END);
+
+        } catch (Exception e) {
+            throw new DBAppException("Error while editing metadata");
+        }
     }
 
     public void insert(Tuple tuple) throws DBAppException {
@@ -163,7 +200,7 @@ public class Table implements Serializable {
             }
 
         } catch (CsvValidationException | IOException e) {
-            throw new RuntimeException(e);
+            throw new DBAppException(e.getMessage());
         }
 
         return true;

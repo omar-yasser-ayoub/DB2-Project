@@ -20,7 +20,7 @@ public class DBApp {
 
 	public static final String METADATA_DIR = "data/table_metadata";
 	public static int maxRowCount;
-	static CSVWriter metadataWriter;
+	public static CSVWriter metadataWriter;
 
 	static Vector<String> tables = new Vector<>();
 	public DBApp( ){
@@ -30,12 +30,12 @@ public class DBApp {
 	// this does whatever initialization you would like 
 	// or leave it empty if there is no code you want to 
 	// execute at application startup 
-	public void init( ){
+	public void init( ) throws DBAppException {
 		initMaxRowCount();
 		initMetadataWriter();
 	}
 
-	private static void initMetadataWriter() {
+	private static void initMetadataWriter() throws DBAppException {
 		try {
 			FileManager.createDirectory(METADATA_DIR);
 			metadataWriter = new CSVWriter(new FileWriter(METADATA_DIR + "/metadata.csv", true),
@@ -54,11 +54,11 @@ public class DBApp {
 			// closing connection with writer
 			metadataWriter.flush();
 		} catch (Exception e) {
-			e.printStackTrace();
+			throw new DBAppException("Error while initialising metadata");
 		}
 	}
 
-	private static void initMaxRowCount(){
+	private static void initMaxRowCount() throws DBAppException {
 		Properties prop = new Properties();
 		String fileName = "src/main/java/org/example/resources/DBApp.config";
 		try (InputStream input = new FileInputStream(fileName)) {
@@ -66,7 +66,7 @@ public class DBApp {
 			maxRowCount = Integer.parseInt(prop.getProperty("MaximumRowsCountinPage"));
 		}
 		catch (IOException e) {
-			e.printStackTrace();
+			throw new DBAppException("Error while initialising max row count");
 		}
 	}
 
@@ -244,13 +244,25 @@ public class DBApp {
 			DBApp dbApp = new DBApp();
 			dbApp.init();
 
-			String[] colNames = {"ID", "Name", "Number", "Specialisation", "Address"};
-			String[] colTypes = {"java.lang.Integer", "java.lang.String", "java.lang.Integer", "java.lang.String", "java.lang.String"};
 			Hashtable<String, String> ht = new Hashtable<>();
-			for(int i = 0; i < colNames.length; i++){
-				ht.put(colNames[i], colTypes[i]);
-			}
-			String clusteringKey = "ID";
+			ht.put("a", "java.lang.String");
+			ht.put("prim", "java.lang.String");
+			dbApp.createTable("test", "prim", ht);
+			dbApp.createIndex("test", "prim", "testIndex");
+
+			Hashtable<String, String> ht2 = new Hashtable<>();
+			ht2.put("b", "java.lang.String");
+			ht2.put("prim2", "java.lang.String");
+			dbApp.createTable("test2", "prim2", ht2);
+			dbApp.createIndex("test2", "b", "testIndex2");
+
+//			String[] colNames = {"ID", "Name", "Number", "Specialisation", "Address"};
+//			String[] colTypes = {"java.lang.Integer", "java.lang.String", "java.lang.Integer", "java.lang.String", "java.lang.String"};
+//			Hashtable<String, String> ht = new Hashtable<>();
+//			for(int i = 0; i < colNames.length; i++){
+//				ht.put(colNames[i], colTypes[i]);
+//			}
+//			String clusteringKey = "ID";
 
 			//dbApp.createTable("CityShop", clusteringKey, ht);
 			//dbApp.createTable("CityShop2", clusteringKey, ht);
@@ -259,62 +271,6 @@ public class DBApp {
 			//arrSQLTerms[0] = new SQLTerm("CityShop", "Name", "=", "John Noor");
 
 			//Testing.sqlTermTest();
-
-//			String strTableName = "Student";
-//			Hashtable htblColNameType = new Hashtable( );
-//			htblColNameType.put("id", "java.lang.Integer");
-//			htblColNameType.put("name", "java.lang.String");
-//			htblColNameType.put("gpa", "java.lang.double");
-//			dbApp.createTable( strTableName, "id", htblColNameType );
-//			dbApp.createIndex( strTableName, "gpa", "gpaIndex" );
-//
-//			Hashtable htblColNameValue = new Hashtable( );
-//			htblColNameValue.put("id", Integer.valueOf(2343432));
-//			htblColNameValue.put("name", new String("Ahmed Noor" ) );
-//			htblColNameValue.put("gpa", Double.valueOf( 0.95 ) );
-//			dbApp.insertIntoTable( strTableName , htblColNameValue );
-//
-//			htblColNameValue.clear( );
-//			htblColNameValue.put("id", Integer.valueOf( 453455 ));
-//			htblColNameValue.put("name", new String("Ahmed Noor" ) );
-//			htblColNameValue.put("gpa", Double.valueOf( 0.95 ) );
-//			dbApp.insertIntoTable( strTableName , htblColNameValue );
-//
-//			htblColNameValue.clear( );
-//			htblColNameValue.put("id", Integer.valueOf( 5674567 ));
-//			htblColNameValue.put("name", new String("Dalia Noor" ) );
-//			htblColNameValue.put("gpa", Double.valueOf( 1.25 ) );
-//			dbApp.insertIntoTable( strTableName , htblColNameValue );
-//
-//			htblColNameValue.clear( );
-//			htblColNameValue.put("id", Integer.valueOf( 23498 ));
-//			htblColNameValue.put("name", new String("John Noor" ) );
-//			htblColNameValue.put("gpa", Double.valueOf( 1.5 ) );
-//			dbApp.insertIntoTable( strTableName , htblColNameValue );
-//
-//			htblColNameValue.clear( );
-//			htblColNameValue.put("id", Integer.valueOf( 78452 ));
-//			htblColNameValue.put("name", new String("Zaky Noor" ) );
-//			htblColNameValue.put("gpa", Double.valueOf( 0.88 ) );
-//			dbApp.insertIntoTable( strTableName , htblColNameValue );
-//
-//
-//			SQLTerm[] arrSQLTerms;
-//			arrSQLTerms = new SQLTerm[2];
-//			arrSQLTerms[0].getStrTableName() =  "Student";
-//			arrSQLTerms[0].getStrColumnName()=  "name";
-//			arrSQLTerms[0].getStrOperator()  =  "=";
-//			arrSQLTerms[0].getObjValue()     =  "John Noor";
-//
-//			arrSQLTerms[1].getStrTableName() =  "Student";
-//			arrSQLTerms[1].getStrColumnName()=  "gpa";
-//			arrSQLTerms[1].getStrOperator()  =  "=";
-//			arrSQLTerms[1].getObjValue()     =  Double.valueOf( 1.5 );
-//
-//			String[] strarrOperators = new String[1];
-//			strarrOperators[0] = "OR";
-//			// select * from Student where name = "John Noor" or gpa = 1.5;
-//			Iterator resultSet = dbApp.selectFromTable(arrSQLTerms , strarrOperators);
 		}
 		catch(Exception exp){
 			exp.printStackTrace();
