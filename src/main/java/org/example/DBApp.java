@@ -41,6 +41,7 @@ public class DBApp {
 	public void init( ) throws DBAppException {
 		initMaxRowCount();
 		initMetadataWriter();
+		ANTLRManager.dbApp = this;
 	}
 
 	private static void initMetadataWriter() throws DBAppException {
@@ -279,7 +280,7 @@ public class DBApp {
 			dbApp.parseSQL(s);
 
 			s = new StringBuffer();
-			s.append("INSERT INTO Customer(name, address, number) VALUES('Farah', '123 street', 21);");
+			s.append("INSERT INTO Customer VALUES('Farah', '123 street', 21);");
 			dbApp.parseSQL(s);
 
 			Table t = FileManager.deserializeTable("Customer");
