@@ -13,6 +13,7 @@ import org.example.data_structures.SQLTerm;
 import org.example.data_structures.Table;
 import org.example.data_structures.Tuple;
 import org.example.exceptions.DBAppException;
+import org.example.managers.ANTLRManager;
 import org.example.managers.FileManager;
 import org.example.managers.SelectionManager;
 import org.example.managers.UpdateManager;
@@ -97,6 +98,10 @@ public class DBApp {
 			if(!htblColNameType.containsKey(strClusteringKeyColumn)) {
 				throw new DBAppException("Clustering key not found in table");
 			}
+
+//			if(strClusteringKeyColumn == null) {
+//				throw new DBAppException("Table must have a primary key");
+//			}
 
 			Enumeration<String> keys = htblColNameType.keys();
 			while (keys.hasMoreElements()) {
@@ -249,21 +254,9 @@ public class DBApp {
 	// below method returns Iterator with result set if passed
 	// strbufSQL is a select, otherwise returns null.
 	public Iterator parseSQL(StringBuffer strbufSQL) throws DBAppException {
-		CharStream cs = CharStreams.fromString(String.valueOf(strbufSQL));
-		MySqlLexer lexer = new MySqlLexer(cs);
-		MySqlParser parser = new MySqlParser(new CommonTokenStream(lexer));
-		MySqlParser.RootContext context = parser.root();
-		if(parser.getNumberOfSyntaxErrors() != 0)
-			throw new DBAppException("Invalid SQL term");
-
-		lexer = new MySqlLexer(cs);
-		CommonTokenStream ts = new CommonTokenStream(lexer);
-		ts.fill();
-		Vector<Token> tokens = new Vector<Token>(ts.getTokens());
-		for(Token t : tokens) {
-			if(!t.getText().equals(" ") && !t.getText().equals("<EOF>"))
-				System.out.println(t.getText());
-		}
+		ANTLRManager.checkValidSQL(strbufSQL);
+		Vector<String> tokens = ANTLRManager.getTokenStrings(strbufSQL);
+		ANTLRManager.callMethod(tokens);
 
 		return null;
 	}
@@ -274,7 +267,7 @@ public class DBApp {
 			dbApp.init();
 
 			StringBuffer s = new StringBuffer();
-			s.append("SELECT * FROM Employee;");
+			s.append("CREATE TABLE Customer (name varchar(50), address varchar(50), number int PRIMARY KEY);");
 			dbApp.parseSQL(s);
 		}
 		catch(Exception exp){
