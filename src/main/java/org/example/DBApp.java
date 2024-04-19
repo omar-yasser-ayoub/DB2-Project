@@ -99,9 +99,9 @@ public class DBApp {
 				throw new DBAppException("Clustering key not found in table");
 			}
 
-//			if(strClusteringKeyColumn == null) {
-//				throw new DBAppException("Table must have a primary key");
-//			}
+			if(strClusteringKeyColumn == null) {
+				throw new DBAppException("Table must have a primary key");
+			}
 
 			Enumeration<String> keys = htblColNameType.keys();
 			while (keys.hasMoreElements()) {
@@ -267,8 +267,18 @@ public class DBApp {
 			dbApp.init();
 
 			StringBuffer s = new StringBuffer();
-			s.append("CREATE TABLE Customer (name varchar(50), address varchar(50), number int PRIMARY KEY);");
+			s.append("CREATE TABLE Customer (name varchar(50), address varchar(50), number int, PRIMARY KEY (name));");
 			dbApp.parseSQL(s);
+
+			s = new StringBuffer();
+			s.append("CREATE INDEX name_idx ON Customer(name) USING BTREE;");
+			dbApp.parseSQL(s);
+
+//			Hashtable<String, String> ht = new Hashtable<>();
+//			ht.put("a", "java.lang.String");
+//			ht.put("prim", "java.lang.String");
+//			dbApp.createTable("test", "prim", ht);
+//			dbApp.createIndex("test", "wah", "testIndex");
 		}
 		catch(Exception exp){
 			exp.printStackTrace();
