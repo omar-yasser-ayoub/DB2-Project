@@ -2,7 +2,6 @@ package org.example.data_structures;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
 import com.opencsv.exceptions.CsvValidationException;
-import org.example.DBApp;
 import org.example.data_structures.index.DoubleIndex;
 import org.example.data_structures.index.IntegerIndex;
 import org.example.data_structures.index.StringIndex;
@@ -199,7 +198,7 @@ public class Table implements Serializable {
             }
 
         } catch (CsvValidationException | IOException e) {
-            throw new RuntimeException(e);
+            throw new DBAppException(e.getMessage());
         }
 
         return true;
@@ -216,5 +215,28 @@ public class Table implements Serializable {
             total += FileManager.deserializePage(pageName).getSize();
         }
         return total;
+    }
+    public void wipePages() throws DBAppException {
+        for (String pageName : pageNames) {
+            Page page = FileManager.deserializePage(pageName);
+            page.clearTuples();
+            FileManager.deletePage(pageName);
+        }
+        pageNames.clear();
+        pageCount = 0;
+        this.save();
+
+    }
+    public String toString() {
+        StringBuilder returnString = new StringBuilder();
+        for (String pageName : pageNames) {
+            try {
+                Page page = FileManager.deserializePage(pageName);
+                returnString.append(page.toString());
+            } catch (DBAppException e) {
+                e.printStackTrace();
+            }
+        }
+        return returnString.toString();
     }
 }

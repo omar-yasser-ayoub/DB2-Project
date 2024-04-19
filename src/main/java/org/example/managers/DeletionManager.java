@@ -36,7 +36,7 @@ public class DeletionManager{
         updateIndexOnDeletion(tuple, table);
 
         if(page.getTuples().isEmpty()) {
-            FileManager.deleteFile(page.getPageName()); //delete from disk
+            FileManager.deletePage(page.getPageName()); //delete from disk
             table.getPageNames().remove(pageIndex);
 
             table.save();
