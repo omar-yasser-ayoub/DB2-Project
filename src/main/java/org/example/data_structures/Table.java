@@ -2,7 +2,6 @@ package org.example.data_structures;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
 import com.opencsv.exceptions.CsvValidationException;
-import org.example.DBApp;
 import org.example.data_structures.index.DoubleIndex;
 import org.example.data_structures.index.IntegerIndex;
 import org.example.data_structures.index.StringIndex;
@@ -13,7 +12,6 @@ import org.example.managers.InsertionManager;
 import org.example.data_structures.index.Index;
 
 import java.io.*;
-import java.sql.SQLOutput;
 import java.util.*;
 
 import static org.example.DBApp.METADATA_DIR;
@@ -222,9 +220,11 @@ public class Table implements Serializable {
         for (String pageName : pageNames) {
             Page page = FileManager.deserializePage(pageName);
             page.clearTuples();
+            FileManager.deletePage(pageName);
         }
         pageNames.clear();
         pageCount = 0;
+        this.save();
 
     }
     public String toString() {

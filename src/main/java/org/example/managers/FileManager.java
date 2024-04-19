@@ -10,10 +10,10 @@ import java.io.*;
 
 public class FileManager implements Serializable {
 
-    private static final String SERIALIZED_PAGES_PATH = "data/serialized_pages";
-    private static final String SERIALIZED_PAGES_MINMAX_PATH = "data/serialized_pages_minmax";
-    private static final String SERIALIZED_INDICES_PATH = "data/serialized_indices";
-    private static final String SERIALIZED_TABLES_PATH = "data/serialized_tables";
+    public static final String SERIALIZED_PAGES_PATH = "data/serialized_pages";
+    public static final String SERIALIZED_PAGES_MINMAX_PATH = "data/serialized_pages_minmax";
+    public static final String SERIALIZED_INDICES_PATH = "data/serialized_indices";
+    public static final String SERIALIZED_TABLES_PATH = "data/serialized_tables";
 
     private FileManager() {
         throw new IllegalStateException("Utility class");
@@ -98,14 +98,8 @@ public class FileManager implements Serializable {
     }
 
     //takes a pageName or tableName and deletes the file in their corresponding file path
-    public static void deleteFile(String objName)throws DBAppException{
-        String fileName;
-        if(Character.isDigit(objName.charAt((objName.length())-1))){
-            fileName = SERIALIZED_PAGES_PATH + "/" + objName + ".ser";
-        }else{
-            fileName = SERIALIZED_TABLES_PATH + "/" + objName + ".ser";
-        }
-        File file = new File(fileName);
+    public static void deletePage(String pageName)throws DBAppException{
+        File file = new File(SERIALIZED_PAGES_PATH + "/" + pageName + ".ser");
         if (file.exists()){
             file.delete();
         }

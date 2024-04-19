@@ -492,6 +492,6 @@ public class Testing {
         System.out.println(FileManager.deserializePage(t.getPageNames().get(2)).toString());
     }
     public static void main(String[] args) throws Exception {
-        insertIntoTableTest();
+        clearAllData();
     }
 }
