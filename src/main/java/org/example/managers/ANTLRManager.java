@@ -213,6 +213,8 @@ public class ANTLRManager {
                         colNameValue.put(colNames.get(j), Double.valueOf(Double.parseDouble(val)));
                         break;
                     case "java.lang.String":
+                        if(val.charAt(0) == '\'')
+                            val = val.substring(1, val.length() - 1);
                         colNameValue.put(colNames.get(j), val);
                         break;
                 }
@@ -237,6 +239,62 @@ public class ANTLRManager {
     private static void antlrDelete(Vector<String> tokens) throws DBAppException {
         String tableName = tokens.get(2);
 
+        Hashtable<String, String> colNameType = new Hashtable<>();
+        Vector<String> colNames = new Vector<>();
+        Vector<String> vals = new Vector<>();
+        for(int i = 4; i < tokens.size(); i++) {
+            colNames.add(tokens.get(i));
+            colNameType.put(tokens.get(i), "");
+            if(!tokens.get(i + 1).equals("="))
+                throw new DBAppException("Unsupported SQL statement");
+            vals.add(tokens.get(i + 2));
+            i += 3;
+            if(tokens.get(i).equals(";") || i > tokens.size())
+                break;
+            else if(!tokens.get(i).equalsIgnoreCase("AND"))
+                throw new DBAppException("Unsupported SQL statement");
+        }
 
+        try {
+            CSVReader reader = new CSVReader(new FileReader(METADATA_DIR + "/metadata.csv"));
+            String[] line = reader.readNext();
+
+            while ((line = reader.readNext()) != null) {
+                if(line[0].equals(tableName)) {
+                    if (colNameType.containsKey(line[1])) {
+                        colNameType.put(line[1], line[2]);
+                    }
+                }
+            }
+        } catch (CsvValidationException | IOException e) {
+            throw new DBAppException(e.getMessage());
+        }
+
+        Hashtable<String, Object> colNameValue = new Hashtable<>();
+        for(int i = 0; i < colNames.size(); i++) {
+            String val = vals.get(i);
+            String type = colNameType.get(colNames.get(i));
+
+            try {
+                switch (type) {
+                    case "java.lang.Integer":
+                        colNameValue.put(colNames.get(i), Integer.valueOf(Integer.parseInt(val)));
+                        break;
+                    case "java.lang.Double":
+                        colNameValue.put(colNames.get(i), Double.valueOf(Double.parseDouble(val)));
+                        break;
+                    case "java.lang.String":
+                        if(val.charAt(0) == '\'')
+                            val = val.substring(1, val.length() - 1);
+                        colNameValue.put(colNames.get(i), val);
+                        break;
+                }
+            } catch (NumberFormatException e) {
+                throw new DBAppException("Mismatching datatypes");
+            }
+        }
+
+        DBApp dbApp = new DBApp();
+        dbApp.deleteFromTable(tableName, colNameValue);
     }
 }

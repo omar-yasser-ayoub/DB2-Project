@@ -267,15 +267,27 @@ public class DBApp {
 			dbApp.init();
 
 			StringBuffer s = new StringBuffer();
-			s.append("CREATE TABLE Customer (name varchar(50), address varchar(50), number int, PRIMARY KEY (name));");
-			dbApp.parseSQL(s);
+//			s.append("CREATE TABLE Customer (name varchar(50), address varchar(50), number int, PRIMARY KEY (name));");
+//			dbApp.parseSQL(s);
+//
+//			s = new StringBuffer();
+//			s.append("CREATE INDEX name_idx ON Customer(name) USING BTREE;");
+//			dbApp.parseSQL(s);
+//
+//			s = new StringBuffer();
+//			s.append("INSERT INTO Customer(name, address, number) VALUES('Farah', '123 street', 21);");
+//			dbApp.parseSQL(s);
+//			s = new StringBuffer();
+//			s.append("INSERT INTO Customer(name, address, number) VALUES('Omar', '456 street', 25);");
+//			dbApp.parseSQL(s);
+//			s = new StringBuffer();
+//			s.append("INSERT INTO Customer(name, address, number) VALUES(Ziad, '789 street', 12);");
+//			dbApp.parseSQL(s);
+//			s = new StringBuffer();
+//			s.append("INSERT INTO Customer(name, address, number) VALUES('Yara', '123 lane', 52);");
+//			dbApp.parseSQL(s);
 
-			s = new StringBuffer();
-			s.append("CREATE INDEX name_idx ON Customer(name) USING BTREE;");
-			dbApp.parseSQL(s);
-
-			s = new StringBuffer();
-			s.append("INSERT INTO Customer(name, address, number) VALUES('Farah', '123 street', 21);");
+			s.append("DELETE FROM Customer");
 			dbApp.parseSQL(s);
 
 			Table t = FileManager.deserializeTable("Customer");
