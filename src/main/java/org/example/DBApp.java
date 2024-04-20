@@ -303,14 +303,14 @@ public class DBApp {
 //			s.append("DELETE FROM Customer;");
 //			dbApp.parseSQL(s);
 
-			s = new StringBuffer();
-			s.append("SELECT * FROM Customer WHERE name != 'Omar' AND number >= 21");
-			t = dbApp.parseSQL(s);
-			while(t.hasNext())
-			{
-				Tuple tuple = t.next();
-				System.out.println(tuple.toString());
-			}
+//			s = new StringBuffer();
+//			s.append("SELECT * FROM Customer WHERE name = 'Farah' OR name = 'Omar'");
+//			t = dbApp.parseSQL(s);
+//			while(t.hasNext())
+//			{
+//				Tuple tuple = t.next();
+//				System.out.println(tuple.toString());
+//			}
 
 //			Table table = FileManager.deserializeTable("Customer");
 //			Page page = FileManager.deserializePage(table.getPageNames().get(0));

@@ -102,9 +102,25 @@ public class ANTLRManager {
                 throw new DBAppException("Unsupported SQL statement");
             }
         }
+        else if(tokens.get(0).equalsIgnoreCase("UPDATE")) {
+            if(tokens.get(2).equalsIgnoreCase("SET") && containsIgnoreCase(tokens, "WHERE")) {
+                return antlrUpdate(tokens);
+            }
+            else {
+                throw new DBAppException("Unsupported SQL statement");
+            }
+        }
         else {
             throw new DBAppException("Unsupported SQL statement");
         }
+    }
+
+    private static boolean containsIgnoreCase(Vector<String> tokens, String s) {
+        Vector<String> uppercase = new Vector<>();
+        for(String token : tokens) {
+            uppercase.add(token.toUpperCase());
+        }
+        return uppercase.contains(s.toUpperCase());
     }
 
     private static Iterator<Tuple> antlrCreateTable(Vector<String> tokens) throws DBAppException {
@@ -453,5 +469,14 @@ public class ANTLRManager {
         }
 
         return dbApp.selectFromTable(SQLTerms, operators);
+    }
+
+    private static Iterator<Tuple> antlrUpdate(Vector<String> tokens) throws DBAppException {
+        String tableName = tokens.get(1);
+
+        for(int i = 3; i < tokens.size(); i++) {
+
+        }
+        return null;
     }
 }
