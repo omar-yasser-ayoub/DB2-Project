@@ -222,7 +222,7 @@ public class DBApp {
 				}
 			}
 			if (!htblColNameValue.isEmpty()) {
-				throw new DBAppException("The Tuple contains come columns that aren't in the table");
+				throw new DBAppException("The tuple contains some columns that aren't in the table");
 			}
 			String[] strOperators = new String[SQLTerms.size() - 1];
 			Arrays.fill(strOperators, "AND");
@@ -271,34 +271,29 @@ public class DBApp {
 
 			StringBuffer s = new StringBuffer();
 			Iterator<Tuple> t;
-//			s.append("CREATE TABLE Customer (name varchar(50), address varchar(50), number int, PRIMARY KEY (name));");
-//			t = dbApp.parseSQL(s);
-//			System.out.println(t);
-//
-//			s = new StringBuffer();
-//			s.append("CREATE INDEX name_idx ON Customer(name) USING BTREE;");
-//			t = dbApp.parseSQL(s);
-//			System.out.println(t);
-//
-//			s = new StringBuffer();
-//			s.append("INSERT INTO Customer(name, address, number) VALUES('Farah', '123 street', 21);");
-//			t = dbApp.parseSQL(s);
-//			System.out.println(t);
-//
-//			s = new StringBuffer();
-//			s.append("INSERT INTO Customer(name, address, number) VALUES('Omar', '456 street', 25);");
-//			t = dbApp.parseSQL(s);
-//			System.out.println(t);
-//
-//			s = new StringBuffer();
-//			s.append("INSERT INTO Customer(name, address, number) VALUES(Ziad, '789 street', 12);");
-//			t = dbApp.parseSQL(s);
-//			System.out.println(t);
-//
-//			s = new StringBuffer();
-//			s.append("INSERT INTO Customer(name, address, number) VALUES('Yara', '123 lane', 52);");
-//			t = dbApp.parseSQL(s);
-//			System.out.println(t);
+
+			s.append("CREATE TABLE Customer (id int PRIMARY KEY, name varchar(50), address varchar(50), number int);");
+			t = dbApp.parseSQL(s);
+
+			s = new StringBuffer();
+			s.append("CREATE INDEX name_idx ON Customer(id) USING BTREE;");
+			t = dbApp.parseSQL(s);
+
+			s = new StringBuffer();
+			s.append("INSERT INTO Customer(id, name, address, number) VALUES(1, 'Farah', '123 street', 21);");
+			t = dbApp.parseSQL(s);
+
+			s = new StringBuffer();
+			s.append("INSERT INTO Customer(id, name, address, number) VALUES(2, 'Omar', '456 street', 25);");
+			t = dbApp.parseSQL(s);
+
+			s = new StringBuffer();
+			s.append("INSERT INTO Customer(id, name, address, number) VALUES(3, Ziad, '789 street', 12);");
+			t = dbApp.parseSQL(s);
+
+			s = new StringBuffer();
+			s.append("INSERT INTO Customer(id, name, address, number) VALUES(4, 'Yara', '123 lane', 52);");
+			t = dbApp.parseSQL(s);
 
 //			s.append("DELETE FROM Customer;");
 //			dbApp.parseSQL(s);
@@ -312,9 +307,13 @@ public class DBApp {
 //				System.out.println(tuple.toString());
 //			}
 
-//			Table table = FileManager.deserializeTable("Customer");
-//			Page page = FileManager.deserializePage(table.getPageNames().get(0));
-//			System.out.println(page.toString());
+			s = new StringBuffer();
+			s.append("UPDATE Customer SET number = 100 WHERE id = 3;");
+			t = dbApp.parseSQL(s);
+
+			Table table = FileManager.deserializeTable("Customer");
+			Page page = FileManager.deserializePage(table.getPageNames().get(0));
+			System.out.println(page.toString());
 
 //			Hashtable<String, String> ht = new Hashtable<>();
 //			ht.put("a", "java.lang.String");

@@ -435,7 +435,7 @@ public class ANTLRManager {
             throw new DBAppException(e.getMessage());
         }
 
-        Vector<Object> colNameValue = new Vector<>();
+        Vector<Object> colValues = new Vector<>();
         for(int i = 0; i < colNames.size(); i++) {
             String val = vals.get(i);
             String type = colNameType.get(colNames.get(i));
@@ -443,15 +443,15 @@ public class ANTLRManager {
             try {
                 switch (type) {
                     case "java.lang.Integer":
-                        colNameValue.add(Integer.valueOf(Integer.parseInt(val)));
+                        colValues.add(Integer.valueOf(Integer.parseInt(val)));
                         break;
                     case "java.lang.Double":
-                        colNameValue.add(Double.valueOf(Double.parseDouble(val)));
+                        colValues.add(Double.valueOf(Double.parseDouble(val)));
                         break;
                     case "java.lang.String":
                         if(val.charAt(0) == '\'')
                             val = val.substring(1, val.length() - 1);
-                        colNameValue.add(val);
+                        colValues.add(val);
                         break;
                 }
             } catch (NumberFormatException e) {
@@ -462,7 +462,7 @@ public class ANTLRManager {
         SQLTerm[] SQLTerms = new SQLTerm[colNames.size()];
         String[] operators = new String[colNames.size() - 1];
         for(int i = 0; i < SQLTerms.length; i++) {
-            SQLTerms[i] = new SQLTerm(tableName, colNames.get(i), compOps.get(i), colNameValue.get(i));
+            SQLTerms[i] = new SQLTerm(tableName, colNames.get(i), compOps.get(i), colValues.get(i));
         }
         for(int i = 0; i < operators.length; i++) {
             operators[i] = logOps.get(i);
@@ -473,10 +473,85 @@ public class ANTLRManager {
 
     private static Iterator<Tuple> antlrUpdate(Vector<String> tokens) throws DBAppException {
         String tableName = tokens.get(1);
+        Vector<String> colNames = new Vector<>();
+        Vector<String> vals = new Vector<>();
+        Hashtable<String, String> colNameType = new Hashtable<>();
 
-        for(int i = 3; i < tokens.size(); i++) {
-
+        int i;
+        for(i = 3; i < tokens.size(); i++) {
+            colNames.add(tokens.get(i));
+            colNameType.put(tokens.get(i), "");
+            i += 2;
+            vals.add(tokens.get(i));
+            i++;
+            if(tokens.get(i).equalsIgnoreCase("WHERE"))
+                break;
         }
+
+        String clusteringKey = "";
+        String clusteringKeyType = "";
+        try {
+            CSVReader reader = new CSVReader(new FileReader(METADATA_DIR + "/metadata.csv"));
+            String[] line = reader.readNext();
+
+            while ((line = reader.readNext()) != null) {
+                if(line[0].equals(tableName)) {
+                    if (colNameType.containsKey(line[1])) {
+                        colNameType.put(line[1], line[2]);
+                    }
+                    if(line[3].equals("True")) {
+                        clusteringKey = line[1];
+                        clusteringKeyType = line[2];
+                    }
+                }
+            }
+        } catch (CsvValidationException | IOException e) {
+            throw new DBAppException(e.getMessage());
+        }
+
+        i++;
+        if(!tokens.get(i).equals(clusteringKey)) {
+            throw new DBAppException("Unsupported SQL statement");
+        }
+        i++;
+        if(!tokens.get(i).equals("=")) {
+            throw new DBAppException("Unsupported SQL statement");
+        }
+        i++;
+        String clusteringKeyValue = tokens.get(i);;
+        if(tokens.get(i).charAt(0) == '\'' && clusteringKeyType.equals("java.lang.String")) {
+            clusteringKeyValue = clusteringKeyValue.substring(1, clusteringKeyValue.length() - 1);
+        }
+        i++;
+        if(i < tokens.size() && !tokens.get(i).equals(";")) {
+            throw new DBAppException("Unsupported SQL statement");
+        }
+
+        Hashtable<String, Object> colNameValue = new Hashtable<>();
+        for(int j = 0; j < colNames.size(); j++) {
+            String val = vals.get(j);
+            String type = colNameType.get(colNames.get(j));
+
+            try {
+                switch (type) {
+                    case "java.lang.Integer":
+                        colNameValue.put(colNames.get(j), Integer.valueOf(Integer.parseInt(val)));
+                        break;
+                    case "java.lang.Double":
+                        colNameValue.put(colNames.get(j), Double.valueOf(Double.parseDouble(val)));
+                        break;
+                    case "java.lang.String":
+                        if(val.charAt(0) == '\'')
+                            val = val.substring(1, val.length() - 1);
+                        colNameValue.put(colNames.get(j), val);
+                        break;
+                }
+            } catch (NumberFormatException e) {
+                throw new DBAppException("Mismatching datatypes");
+            }
+        }
+
+        dbApp.updateTable(tableName, clusteringKeyValue, colNameValue);
         return null;
     }
 }
