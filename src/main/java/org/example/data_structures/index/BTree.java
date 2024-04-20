@@ -75,13 +75,15 @@ public class BTree<TKey extends Comparable<TKey>, TValue> implements Serializabl
 		BTreeLeafNode<TKey, TValue> leaf = this.findLeafNodeShouldContainKey(key);
 		Vector<String> result = new Vector<>();
 
+		boolean found = false;
 		while(leaf != null) {
 			for (int i = 0; i < leaf.getKeyCount(); i++) {
 				if (leaf.getKey(i).compareTo(key) == 0) {
+					found = true;
 					result.add(leaf.getValue(i).toString());
 				}
 				else {
-					return result;
+					if (found) return result;
 				}
 			}
 			leaf = (BTreeLeafNode<TKey, TValue>) leaf.getRightCousin();

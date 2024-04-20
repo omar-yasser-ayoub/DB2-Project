@@ -693,6 +693,65 @@ public class UnitTest {
     }
 
     @Test
+    void testSelectWithIndex_ONEANDTermsEqual_ShouldSelectZeroTuples() throws DBAppException {
+        // Given
+        for (int i = 1; i <= 10; i++)
+            insertRow(i);
+        engine.createIndex(newTableName, id, id+"Index");
+        // When
+        SQLTerm[] sqlTerms = new SQLTerm[2];
+        sqlTerms[0] = new SQLTerm(newTableName, id, "=", 5);
+        sqlTerms[1] = new SQLTerm(newTableName, id, "=", 4);
+        String[] strArrOperator = new String[] { "AND"};
+
+        // Then
+        Iterator it = engine.selectFromTable(sqlTerms, strArrOperator);
+        assertEquals(0, getIteratorSize(it));
+    }
+
+    @Test
+    void testSelectWithIndex_ONEORTermsEqual_ShouldSelectTwoTuples() throws DBAppException {
+        // Given
+        for (int i = 1; i <= 10; i++)
+            insertRow(i);
+        engine.createIndex(newTableName, id, id+"Index");
+        // When
+        SQLTerm[] sqlTerms = new SQLTerm[2];
+        sqlTerms[0] = new SQLTerm(newTableName, id, "=", 5);
+        sqlTerms[1] = new SQLTerm(newTableName, id, "=", 4);
+        String[] strArrOperator = new String[] { "OR"};
+
+        // Then
+        Iterator it = engine.selectFromTable(sqlTerms, strArrOperator);
+        assertEquals(2, getIteratorSize(it));
+    }
+
+    @Test
+    void testSelectWithIndex_Duplicates_ShouldSelectTwoTuples() throws DBAppException {
+        // Given
+        for (int i = 1; i <= 7; i++) {
+            Hashtable<String, Object> htblColNameValue = createRow(i, TEST_NAME, TEST_GPA);
+            engine.insertIntoTable(newTableName, htblColNameValue);
+        }
+
+        Hashtable<String, Object> htblColNameValue = createRow(11, "Farah", TEST_GPA);
+        engine.insertIntoTable(newTableName, htblColNameValue);
+
+        htblColNameValue = createRow(12, "Yara", TEST_GPA);
+        engine.insertIntoTable(newTableName, htblColNameValue);
+
+        engine.createIndex(newTableName, name, name+"Index");
+        // When
+        SQLTerm[] sqlTerms = new SQLTerm[1];
+        sqlTerms[0] = new SQLTerm(newTableName, name, "=", TEST_NAME);
+        String[] strArrOperator = new String[] {};
+
+        // Then
+        Iterator it = engine.selectFromTable(sqlTerms, strArrOperator);
+        assertEquals(7, getIteratorSize(it));
+    }
+
+    @Test
     void testSelectWithIndex_ThreeANDTermsNotEqual_ShouldSelectNineTuples() throws DBAppException {
         // Given
         for (int i = 1; i <= 10; i++)
