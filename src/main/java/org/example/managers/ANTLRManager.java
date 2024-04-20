@@ -288,7 +288,7 @@ public class ANTLRManager {
                 throw new DBAppException("Unsupported SQL statement");
             vals.add(tokens.get(i + 2));
             i += 3;
-            if(tokens.get(i).equals(";") || i > tokens.size())
+            if(i >= tokens.size() || tokens.get(i).equals(";"))
                 break;
             else if(!tokens.get(i).equalsIgnoreCase("AND"))
                 throw new DBAppException("Unsupported SQL statement");
