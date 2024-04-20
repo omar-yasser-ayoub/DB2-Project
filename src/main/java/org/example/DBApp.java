@@ -23,8 +23,8 @@ public class DBApp {
 	public static CSVWriter metadataWriter;
 
 	static Vector<String> tables = new Vector<>();
-	public DBApp( ){
-		
+	public DBApp( ) throws DBAppException {
+		init();
 	}
 
 	// this does whatever initialization you would like 
@@ -244,40 +244,72 @@ public class DBApp {
 	}
 
 	public static void main(String[] args ){
-	try{
-			DBApp dbApp = new DBApp();
-			dbApp.init();
+		try{
+			Testing.clearAllData();
+			String strTableName = "Student";
+			DBApp	dbApp = new DBApp( );
 
-			Hashtable<String, String> ht = new Hashtable<>();
-			ht.put("a", "java.lang.String");
-			ht.put("prim", "java.lang.String");
-			dbApp.createTable("test", "prim", ht);
-			dbApp.createIndex("test", "prim", "testIndex");
+			Hashtable htblColNameType = new Hashtable( );
+			htblColNameType.put("id", "java.lang.Integer");
+			htblColNameType.put("name", "java.lang.String");
+			htblColNameType.put("gpa", "java.lang.Double");
+			dbApp.createTable( strTableName, "id", htblColNameType );
+			dbApp.createIndex( strTableName, "gpa", "gpaIndex" );
 
-			Hashtable<String, String> ht2 = new Hashtable<>();
-			ht2.put("b", "java.lang.String");
-			ht2.put("prim2", "java.lang.String");
-			dbApp.createTable("test2", "prim2", ht2);
-			dbApp.createIndex("test2", "b", "testIndex2");
+			Hashtable htblColNameValue = new Hashtable( );
+			htblColNameValue.put("id", new Integer( 2343432 ));
+			htblColNameValue.put("name", new String("Ahmed Noor" ) );
+			htblColNameValue.put("gpa", new Double( 0.95 ) );
+			dbApp.insertIntoTable( strTableName , htblColNameValue );
 
-//			String[] colNames = {"ID", "Name", "Number", "Specialisation", "Address"};
-//			String[] colTypes = {"java.lang.Integer", "java.lang.String", "java.lang.Integer", "java.lang.String", "java.lang.String"};
-//			Hashtable<String, String> ht = new Hashtable<>();
-//			for(int i = 0; i < colNames.length; i++){
-//				ht.put(colNames[i], colTypes[i]);
-//			}
-//			String clusteringKey = "ID";
+			htblColNameValue.clear( );
+			htblColNameValue.put("id", new Integer( 453455 ));
+			htblColNameValue.put("name", new String("Ahmed Noor" ) );
+			htblColNameValue.put("gpa", new Double( 0.95 ) );
+			dbApp.insertIntoTable( strTableName , htblColNameValue );
 
-			//dbApp.createTable("CityShop", clusteringKey, ht);
-			//dbApp.createTable("CityShop2", clusteringKey, ht);
+			htblColNameValue.clear( );
+			htblColNameValue.put("id", new Integer( 5674567 ));
+			htblColNameValue.put("name", new String("Dalia Noor" ) );
+			htblColNameValue.put("gpa", new Double( 1.25 ) );
+			dbApp.insertIntoTable( strTableName , htblColNameValue );
 
-			//SQLTerm[] arrSQLTerms = new SQLTerm[5];
-			//arrSQLTerms[0] = new SQLTerm("CityShop", "Name", "=", "John Noor");
+			htblColNameValue.clear( );
+			htblColNameValue.put("id", new Integer( 23498 ));
+			htblColNameValue.put("name", new String("John Noor" ) );
+			htblColNameValue.put("gpa", new Double( 1.5 ) );
+			dbApp.insertIntoTable( strTableName , htblColNameValue );
 
-			//Testing.sqlTermTest();
+			htblColNameValue.clear( );
+			htblColNameValue.put("id", new Integer( 78452 ));
+			htblColNameValue.put("name", new String("Zaky Noor" ) );
+			htblColNameValue.put("gpa", new Double( 0.88 ) );
+			dbApp.insertIntoTable( strTableName , htblColNameValue );
+
+
+			SQLTerm[] arrSQLTerms;
+			arrSQLTerms = new SQLTerm[2];
+			arrSQLTerms[0]=new SQLTerm();
+			arrSQLTerms[0]._strTableName =  "Student";
+			arrSQLTerms[0]._strColumnName=  "name";
+			arrSQLTerms[0]._strOperator  =  "=";
+			arrSQLTerms[0]._objValue     =  "Ahmed Noor";
+
+			arrSQLTerms[1]=new SQLTerm();
+			arrSQLTerms[1]._strTableName =  "Student";
+			arrSQLTerms[1]._strColumnName=  "gpa";
+			arrSQLTerms[1]._strOperator  =  "=";
+			arrSQLTerms[1]._objValue     =  new Double( 1.5 );
+
+			String[]strarrOperators = new String[1];
+			strarrOperators[0] = "OR";
+			// select * from Student where name = "Ahmed Noor" or gpa = 1.5;
+			Iterator resultSet = dbApp.selectFromTable(arrSQLTerms , strarrOperators);
+			System.out.println(FileManager.deserializeTable("Student"));
+			System.out.println(resultSet);
 		}
 		catch(Exception exp){
-			exp.printStackTrace();
+			exp.printStackTrace( );
 		}
 	}
 

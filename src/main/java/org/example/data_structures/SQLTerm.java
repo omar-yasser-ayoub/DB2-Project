@@ -6,43 +6,43 @@ package org.example.data_structures;
 
 public class SQLTerm {
 
-	private String strTableName;
-	private String strColumnName;
-	private String strOperator;
-	private Object objValue;
+	public String _strTableName;
+	public String _strColumnName;
+	public String _strOperator;
+	public Object _objValue;
 
 	public SQLTerm(String strTableName, String strColumnName, String strOperator, Object objValue) {
-		this.strTableName = strTableName;
-		this.strColumnName = strColumnName;
-		this.objValue = objValue;
-		this.strOperator = strOperator;
+		this._strTableName = strTableName;
+		this._strColumnName = strColumnName;
+		this._objValue = objValue;
+		this._strOperator = strOperator;
 	}
 	public SQLTerm() {
 
 	}
 
 	public String getStrTableName() {
-		return strTableName;
+		return _strTableName;
 	}
 
 	public String getStrColumnName() {
-		return strColumnName;
+		return _strColumnName;
 	}
 
 	public String getStrOperator() {
-		return strOperator;
+		return _strOperator;
 	}
 
 	public Object getObjValue() {
-		return objValue;
+		return _objValue;
 	}
 	@Override
 	public String toString() {
 		return "SQLTerm{" +
-				"strTableName='" + strTableName + '\'' +
-				", strColumnName='" + strColumnName + '\'' +
-				", strOperator='" + strOperator + '\'' +
-				", objValue=" + objValue +
+				"strTableName='" + _strTableName + '\'' +
+				", strColumnName='" + _strColumnName + '\'' +
+				", strOperator='" + _strOperator + '\'' +
+				", objValue=" + _objValue +
 				'}';
 	}
 }
