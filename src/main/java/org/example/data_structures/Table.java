@@ -66,17 +66,22 @@ public class Table implements Serializable {
     }
 
     public void createIndex(String columnName, String indexName) throws DBAppException {
+        if (indexName == "" || indexName == null) throw new DBAppException("Index name cannot be empty");
         if (this.isIndexCreatedOnColumn.get(columnName) != null || indexNames.contains(indexName)) {
             throw new DBAppException("The index was already created on one of the columns");
         }
         String columnType = colNameType.get(columnName);
+        if (columnType == null) throw new DBAppException("Invalid column name");
+
         Index index = switch (columnType) {
             case "java.lang.Integer" -> new IntegerIndex(this, columnName, indexName);
             case "java.lang.String" -> new StringIndex(this, columnName, indexName);
             case "java.lang.Double" -> new DoubleIndex(this, columnName, indexName);
             default -> throw new IllegalArgumentException("Invalid column type");
         };
+
         index.populateIndex();
+
         this.indexNames.add(indexName);
         editMetadata(columnName, indexName);
         FileManager.serializeIndex(index);

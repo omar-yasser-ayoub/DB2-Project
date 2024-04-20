@@ -66,7 +66,7 @@ public class UpdateManager implements Serializable {
         Vector<String> indexNames = parentTable.getIndices();
         if (indexNames != null) {
             for (String indexName : indexNames) {
-                Index index = FileManager.deserializeIndex(indexName);
+                Index index = FileManager.deserializeIndex(indexName,parentTable);
                 String oldValue = (String) index.getbTree().search((Comparable) oldTuple.getValues().get(index.getColumnName()));
                 if (oldTuple.getValues().get(index.getColumnName()) != null) {
                     index.delete(oldTuple.getValues().get(index.getColumnName()));

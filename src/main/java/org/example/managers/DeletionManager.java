@@ -50,7 +50,7 @@ public class DeletionManager{
         Vector<String> indexNames = parentTable.getIndices();
         if (indexNames != null) {
             for (String indexName : indexNames) {
-                Index index = FileManager.deserializeIndex(indexName);
+                Index index = FileManager.deserializeIndex(indexName,parentTable );
                 index.delete(tuple.getValues().get(index.getColumnName()));
                 index.save();
             }

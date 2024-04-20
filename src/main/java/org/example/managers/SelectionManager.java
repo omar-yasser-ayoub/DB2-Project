@@ -284,7 +284,7 @@ public class SelectionManager implements Serializable {
     private static Vector<Tuple> computeSQLTerm(SQLTerm sqlTerm, Table table) throws DBAppException {
         if (!table.getIndices().isEmpty()) {
             for (String indexName : table.getIndices()) {
-                Index index = FileManager.deserializeIndex(indexName);
+                Index index = FileManager.deserializeIndex(indexName, table );
                 if (index.getColumnName().equals(sqlTerm.getStrColumnName())) {
                     return indexSearchInTable(sqlTerm, index, table);
                 }

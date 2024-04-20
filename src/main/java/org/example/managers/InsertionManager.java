@@ -157,7 +157,7 @@ public class InsertionManager{
         Vector<String> indexNames = parentTable.getIndices();
         if (indexNames != null) {
             for (String indexName : indexNames) {
-                Index index = FileManager.deserializeIndex(indexName);
+                Index index = FileManager.deserializeIndex(indexName, parentTable );
                 index.insert(tuple.getValues().get(index.getColumnName()), page.getPageName());
                 index.save();
             }
