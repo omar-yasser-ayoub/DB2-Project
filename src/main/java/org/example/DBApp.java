@@ -350,8 +350,6 @@ public class DBApp {
 			htblColNameValue.put("id", new Integer( 2343432 ));
 			//dbApp.deleteFromTable("Student", null);
 
-			dbApp.selectFromTable(null, null);
-
 			System.out.println(FileManager.deserializeTable("Student"));
 		}
 		catch(Exception exp) {
