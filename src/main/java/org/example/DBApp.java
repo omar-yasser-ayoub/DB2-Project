@@ -94,9 +94,9 @@ public class DBApp {
 			Enumeration<String> keys = htblColNameType.keys();
 			while (keys.hasMoreElements()) {
 				String key = keys.nextElement();
-				if(!(htblColNameType.get(key).toLowerCase().equals("java.lang.string")
-						|| htblColNameType.get(key).toLowerCase().equals("java.lang.integer")
-						|| htblColNameType.get(key).toLowerCase().equals("java.lang.double"))) {
+				if(!(htblColNameType.get(key).equals("java.lang.String")
+						|| htblColNameType.get(key).equals("java.lang.Integer")
+						|| htblColNameType.get(key).equals("java.lang.Double"))) {
 					throw new DBAppException("Invalid column datatype");
 				}
 			}
@@ -149,6 +149,9 @@ public class DBApp {
 	// htblColNameValue must include a value for the primary key
 	public void insertIntoTable(String strTableName, 
 								Hashtable<String,Object>  htblColNameValue) throws DBAppException{
+		if(htblColNameValue == null) {
+			throw new DBAppException("htblColNameValue is null");
+		}
 		try{
 			Table table = FileManager.deserializeTable(strTableName);
 			Tuple tuple = new Tuple(htblColNameValue, table.getClusteringKey());
@@ -183,7 +186,6 @@ public class DBApp {
 	// htblColNameValue enteries are ANDED together
 	public void deleteFromTable(String strTableName, 
 								Hashtable<String,Object> htblColNameValue) throws DBAppException{
-
 		try{
 			CSVReader reader = new CSVReader(new FileReader(METADATA_DIR + "/metadata.csv"));
 			String[] line = reader.readNext();
@@ -196,7 +198,7 @@ public class DBApp {
 			if (colNames.isEmpty()) {
 				throw new DBAppException("Table does not exist");
 			}
-			if (htblColNameValue.isEmpty()) {
+			if (htblColNameValue == null || htblColNameValue.isEmpty()) {
 				Table table = FileManager.deserializeTable(strTableName);
 				table.wipePages();
 				return;
@@ -231,6 +233,7 @@ public class DBApp {
 	public Iterator<Tuple> selectFromTable(SQLTerm[] arrSQLTerms,
 									String[]  strarrOperators) throws DBAppException{
 		try {
+			strarrOperators = strarrOperators == null ? new String[0] : strarrOperators;
 			Iterator resultSet = SelectionManager.selectFromTable(arrSQLTerms, strarrOperators);
 			return resultSet;
 		}
@@ -251,13 +254,33 @@ public class DBApp {
 			Hashtable htblColNameType = new Hashtable( );
 			htblColNameType.put("id", "java.lang.Integer");
 			htblColNameType.put("name", "java.lang.String");
-			htblColNameType.put("gpa", "java.lang.double");
+			htblColNameType.put("gpa", "java.lang.Double");
 
 			dbApp.createTable("Student", "id", htblColNameType);
 			dbApp.createTable("Admin", "id", htblColNameType);
+
 			dbApp.createIndex("Student","id","id");
 			dbApp.createIndex("Student","name","name");
 			dbApp.createIndex("Admin","name","name");
+
+			Hashtable htblColNameValue = new Hashtable( );
+			htblColNameValue.put("id", new Integer( 2343432 ));
+			htblColNameValue.put("name", new String("Ahmed Noor" ) );
+			htblColNameValue.put("gpa", new Double( 0.95 ) );
+			dbApp.insertIntoTable( "Student" , htblColNameValue );
+
+			htblColNameValue.clear( );
+			htblColNameValue.put("name", new String("Mr. Noor" ) );
+			htblColNameValue.put("gpa", new Double( 1.00 ) );
+			dbApp.updateTable("Student", "2343432", htblColNameValue);
+
+			htblColNameValue.clear( );
+			htblColNameValue.put("id", new Integer( 2343432 ));
+			//dbApp.deleteFromTable("Student", null);
+
+			dbApp.selectFromTable(null, null);
+
+			System.out.println(FileManager.deserializeTable("Student"));
 		}
 		catch(Exception exp){
 			exp.printStackTrace( );
