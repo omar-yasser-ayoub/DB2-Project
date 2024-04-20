@@ -240,7 +240,6 @@ public class DBApp {
 		}
 	}
 
-
 	public Iterator<Tuple> selectFromTable(SQLTerm[] arrSQLTerms,
 									String[]  strarrOperators) throws DBAppException{
 		try {
@@ -258,45 +257,64 @@ public class DBApp {
 
 	// below method returns Iterator with result set if passed
 	// strbufSQL is a select, otherwise returns null.
-	public Iterator parseSQL(StringBuffer strbufSQL) throws DBAppException {
+	public Iterator<Tuple> parseSQL(StringBuffer strbufSQL) throws DBAppException {
 		ANTLRManager.checkValidSQL(strbufSQL);
 		Vector<String> tokens = ANTLRManager.getTokenStrings(strbufSQL);
-		ANTLRManager.callMethod(tokens);
 
-		return null;
+		return ANTLRManager.callMethod(tokens);
 	}
 
 	public static void main(String[] args ){
-	try{
+		try{
 			DBApp dbApp = new DBApp();
 			dbApp.init();
 
 			StringBuffer s = new StringBuffer();
-			s.append("CREATE TABLE Customer (name varchar(50), address varchar(50), number int, PRIMARY KEY (name));");
-			dbApp.parseSQL(s);
+			Iterator<Tuple> t;
+//			s.append("CREATE TABLE Customer (name varchar(50), address varchar(50), number int, PRIMARY KEY (name));");
+//			t = dbApp.parseSQL(s);
+//			System.out.println(t);
+//
+//			s = new StringBuffer();
+//			s.append("CREATE INDEX name_idx ON Customer(name) USING BTREE;");
+//			t = dbApp.parseSQL(s);
+//			System.out.println(t);
+//
+//			s = new StringBuffer();
+//			s.append("INSERT INTO Customer(name, address, number) VALUES('Farah', '123 street', 21);");
+//			t = dbApp.parseSQL(s);
+//			System.out.println(t);
+//
+//			s = new StringBuffer();
+//			s.append("INSERT INTO Customer(name, address, number) VALUES('Omar', '456 street', 25);");
+//			t = dbApp.parseSQL(s);
+//			System.out.println(t);
+//
+//			s = new StringBuffer();
+//			s.append("INSERT INTO Customer(name, address, number) VALUES(Ziad, '789 street', 12);");
+//			t = dbApp.parseSQL(s);
+//			System.out.println(t);
+//
+//			s = new StringBuffer();
+//			s.append("INSERT INTO Customer(name, address, number) VALUES('Yara', '123 lane', 52);");
+//			t = dbApp.parseSQL(s);
+//			System.out.println(t);
 
-			s = new StringBuffer();
-			s.append("CREATE INDEX name_idx ON Customer(name) USING BTREE;");
-			dbApp.parseSQL(s);
-
-			s = new StringBuffer();
-			s.append("INSERT INTO Customer(name, address, number) VALUES('Farah', '123 street', 21);");
-			dbApp.parseSQL(s);
-			s = new StringBuffer();
-			s.append("INSERT INTO Customer(name, address, number) VALUES('Omar', '456 street', 25);");
-			dbApp.parseSQL(s);
-			s = new StringBuffer();
-			s.append("INSERT INTO Customer(name, address, number) VALUES(Ziad, '789 street', 12);");
-			dbApp.parseSQL(s);
-			s = new StringBuffer();
-			s.append("INSERT INTO Customer(name, address, number) VALUES('Yara', '123 lane', 52);");
-			dbApp.parseSQL(s);
 //			s.append("DELETE FROM Customer;");
 //			dbApp.parseSQL(s);
 
-			Table t = FileManager.deserializeTable("Customer");
-			Page p = FileManager.deserializePage(t.getPageNames().get(0));
-			System.out.println(p.toString());
+			s = new StringBuffer();
+			s.append("SELECT * FROM Customer WHERE name != 'Omar' AND number >= 21");
+			t = dbApp.parseSQL(s);
+			while(t.hasNext())
+			{
+				Tuple tuple = t.next();
+				System.out.println(tuple.toString());
+			}
+
+//			Table table = FileManager.deserializeTable("Customer");
+//			Page page = FileManager.deserializePage(table.getPageNames().get(0));
+//			System.out.println(page.toString());
 
 //			Hashtable<String, String> ht = new Hashtable<>();
 //			ht.put("a", "java.lang.String");
@@ -305,7 +323,7 @@ public class DBApp {
 //			dbApp.createIndex("test", "wah", "testIndex");
 			//Testing.sqlTermTest();
 		}
-		catch(Exception exp){
+		catch(Exception exp) {
 			exp.printStackTrace();
 		}
 	}

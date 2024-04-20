@@ -9,11 +9,14 @@ import org.example.ANTLR.MySqlLexer;
 import org.example.ANTLR.MySqlParser;
 import org.example.DBApp;
 import org.example.data_structures.Page;
+import org.example.data_structures.SQLTerm;
+import org.example.data_structures.Tuple;
 import org.example.exceptions.DBAppException;
 
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.Vector;
 
 import static org.example.DBApp.METADATA_DIR;
@@ -47,13 +50,13 @@ public class ANTLRManager {
         return tokenStrings;
     }
 
-    public static void callMethod(Vector<String> tokens) throws DBAppException {
+    public static Iterator<Tuple> callMethod(Vector<String> tokens) throws DBAppException {
         if(tokens.get(0).equalsIgnoreCase("CREATE")) {
             if(tokens.get(1).equalsIgnoreCase("TABLE")) {
-                antlrCreateTable(tokens);
+                return antlrCreateTable(tokens);
             }
             else if (tokens.get(1).equalsIgnoreCase("INDEX")) {
-                antlrCreateIndex(tokens);
+                return antlrCreateIndex(tokens);
             }
             else {
                 throw new DBAppException("Unsupported SQL statement");
@@ -62,9 +65,9 @@ public class ANTLRManager {
         else if(tokens.get(0).equalsIgnoreCase("INSERT")) {
             if(tokens.get(1).equalsIgnoreCase("INTO")) {
                 if(tokens.get(3).equalsIgnoreCase("VALUES"))
-                    antlrInsert(tokens);
+                    return antlrInsert(tokens);
                 else
-                    antlrInsertSpecific(tokens);
+                    return antlrInsertSpecific(tokens);
             }
             else {
                 throw new DBAppException("Unsupported SQL statement");
@@ -73,10 +76,23 @@ public class ANTLRManager {
         else if(tokens.get(0).equalsIgnoreCase("DELETE")) {
             if(tokens.get(1).equalsIgnoreCase("FROM")) {
                 if(tokens.size() <= 4) {
-                    antlrDeleteAll(tokens);
+                    return antlrDeleteAll(tokens);
                 }
                 else if(tokens.get(3).equalsIgnoreCase("WHERE")) {
-                    antlrDelete(tokens);
+                    return antlrDelete(tokens);
+                }
+                else {
+                    throw new DBAppException("Unsupported SQL statement");
+                }
+            }
+            else {
+                throw new DBAppException("Unsupported SQL statement");
+            }
+        }
+        else if(tokens.get(0).equalsIgnoreCase("SELECT")) {
+            if(tokens.get(1).equals("*") && tokens.size() > 5) {
+                if(tokens.get(4).equalsIgnoreCase("WHERE")) {
+                    return antlrSelect(tokens);
                 }
                 else {
                     throw new DBAppException("Unsupported SQL statement");
@@ -91,7 +107,7 @@ public class ANTLRManager {
         }
     }
 
-    private static void antlrCreateTable(Vector<String> tokens) throws DBAppException {
+    private static Iterator<Tuple> antlrCreateTable(Vector<String> tokens) throws DBAppException {
         String tableName = tokens.get(2);
         Hashtable<String,String> colNameType = new Hashtable<>();
         String primaryKey = null;
@@ -146,9 +162,10 @@ public class ANTLRManager {
             throw new DBAppException("Table must have a primary key");
         }
         dbApp.createTable(tableName, primaryKey, colNameType);
+        return null;
     }
 
-    private static void antlrCreateIndex(Vector<String> tokens) throws DBAppException {
+    private static Iterator<Tuple> antlrCreateIndex(Vector<String> tokens) throws DBAppException {
         String indexName = tokens.get(2);
         String tableName = tokens.get(4);
         String colName = tokens.get(6);
@@ -159,10 +176,10 @@ public class ANTLRManager {
                 throw new DBAppException("Unsupported SQL statement (index of type '" + tokens.get(9) + "')");
         }
         dbApp.createIndex(tableName, colName, indexName);
+        return null;
     }
 
-    // TODO implement inserting into all columns
-    private static void antlrInsert(Vector<String> tokens) throws DBAppException {
+    private static Iterator<Tuple> antlrInsert(Vector<String> tokens) throws DBAppException {
         String tableName = tokens.get(2);
         Vector<String> colNames = new Vector<>();
         Vector<String> colTypes = new Vector<>();
@@ -196,6 +213,8 @@ public class ANTLRManager {
                         colNameValue.put(colNames.get(j), Double.valueOf(Double.parseDouble(val)));
                         break;
                     case "java.lang.String":
+                        if(val.charAt(0) == '\'')
+                            val = val.substring(1, val.length() - 1);
                         colNameValue.put(colNames.get(j), val);
                         break;
                 }
@@ -208,9 +227,10 @@ public class ANTLRManager {
                 break;
         }
         dbApp.insertIntoTable(tableName, colNameValue);
+        return null;
     }
 
-    private static void antlrInsertSpecific(Vector<String> tokens) throws DBAppException {
+    private static Iterator<Tuple> antlrInsertSpecific(Vector<String> tokens) throws DBAppException {
         String tableName = tokens.get(2);
         Hashtable<String, String> colNameType = new Hashtable<>();
         Vector<String> colNames = new Vector<>();
@@ -269,13 +289,15 @@ public class ANTLRManager {
                 break;
         }
         dbApp.insertIntoTable(tableName, colNameValue);
+        return null;
     }
 
-    private static void antlrDeleteAll(Vector<String> tokens) throws DBAppException {
+    private static Iterator<Tuple> antlrDeleteAll(Vector<String> tokens) throws DBAppException {
         dbApp.deleteFromTable(tokens.get(2), new Hashtable<String, Object>());
+        return null;
     }
 
-    private static void antlrDelete(Vector<String> tokens) throws DBAppException {
+    private static Iterator<Tuple> antlrDelete(Vector<String> tokens) throws DBAppException {
         String tableName = tokens.get(2);
 
         Hashtable<String, String> colNameType = new Hashtable<>();
@@ -333,7 +355,103 @@ public class ANTLRManager {
             }
         }
 
-        DBApp dbApp = new DBApp();
         dbApp.deleteFromTable(tableName, colNameValue);
+        return null;
+    }
+
+    private static Iterator<Tuple> antlrSelect(Vector<String> tokens) throws DBAppException {
+        String tableName = tokens.get(3);
+        Vector<String> colNames = new Vector<>();
+        Vector<String> compOps = new Vector<>();
+        Vector<String> logOps = new Vector<>();
+        Vector<String> vals = new Vector<>();
+        Hashtable<String, String> colNameType = new Hashtable<>();
+
+        for(int i = 5; i < tokens.size(); i++) {
+            if(tokens.get(i).equals(";"))
+                break;
+
+            colNames.add(tokens.get(i));
+            colNameType.put(tokens.get(i), "");
+            i++;
+
+            if(tokens.get(i).equals(">") || tokens.get(i).equals("<") || tokens.get(i).equals("!")) {
+                if(tokens.get(i + 1).equals("=")) {
+                    compOps.add(tokens.get(i) + "=");
+                    i += 2;
+                }
+                else {
+                    compOps.add(tokens.get(i));
+                    i++;
+                }
+            }
+            else {
+                compOps.add(tokens.get(i));
+                i++;
+            }
+
+            vals.add(tokens.get(i));
+            i++;
+
+            if(i >= tokens.size() || tokens.get(i).equals(";"))
+                break;
+
+            if(tokens.get(i).equals("AND") || tokens.get(i).equals("OR") || tokens.get(i).equals("XOR")) {
+                logOps.add(tokens.get(i));
+            }
+            else {
+                throw new DBAppException("Unsupported SQL statement");
+            }
+        }
+
+        try {
+            CSVReader reader = new CSVReader(new FileReader(METADATA_DIR + "/metadata.csv"));
+            String[] line = reader.readNext();
+
+            while ((line = reader.readNext()) != null) {
+                if(line[0].equals(tableName)) {
+                    if (colNameType.containsKey(line[1])) {
+                        colNameType.put(line[1], line[2]);
+                    }
+                }
+            }
+        } catch (CsvValidationException | IOException e) {
+            throw new DBAppException(e.getMessage());
+        }
+
+        Vector<Object> colNameValue = new Vector<>();
+        for(int i = 0; i < colNames.size(); i++) {
+            String val = vals.get(i);
+            String type = colNameType.get(colNames.get(i));
+
+            try {
+                switch (type) {
+                    case "java.lang.Integer":
+                        colNameValue.add(Integer.valueOf(Integer.parseInt(val)));
+                        break;
+                    case "java.lang.Double":
+                        colNameValue.add(Double.valueOf(Double.parseDouble(val)));
+                        break;
+                    case "java.lang.String":
+                        if(val.charAt(0) == '\'')
+                            val = val.substring(1, val.length() - 1);
+                        colNameValue.add(val);
+                        break;
+                }
+            } catch (NumberFormatException e) {
+                throw new DBAppException("Mismatching datatypes");
+            }
+        }
+
+        SQLTerm[] SQLTerms = new SQLTerm[colNames.size()];
+        String[] operators = new String[colNames.size() - 1];
+        for(int i = 0; i < SQLTerms.length; i++) {
+            SQLTerms[i] = new SQLTerm(tableName, colNames.get(i), compOps.get(i), colNameValue.get(i));
+        }
+        for(int i = 0; i < operators.length; i++) {
+            operators[i] = logOps.get(i);
+        }
+
+        return dbApp.selectFromTable(SQLTerms, operators);
     }
 }
