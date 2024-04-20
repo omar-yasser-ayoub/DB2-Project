@@ -517,7 +517,7 @@ public class UnitTest {
 
 		// Then
 		Table table = FileManager.deserializeTable(newTableName);
-		assertEquals(1,FileManager.deserializeIndex(table.getIndices().get(0)).getRootKeyCount());
+		assertEquals(1,FileManager.deserializeIndex(table.getIndices().get(0),table ).getRootKeyCount());
 		assertEquals(1, table.getIndices().size());
 	}
 
@@ -559,14 +559,14 @@ public class UnitTest {
 		// Given
 		engine.createIndex(newTableName, gpa, gpa+"Index.ser");
 		Table table = FileManager.deserializeTable(newTableName);
-		int oldSize = FileManager.deserializeIndex(table.getIndices().get(0)).getRootKeyCount();
+		int oldSize = FileManager.deserializeIndex(table.getIndices().get(0),table ).getRootKeyCount();
 
 		// When
 		insertRow(1);
 
 		// Then
 		table = FileManager.deserializeTable(newTableName);
-		int newSize = FileManager.deserializeIndex(table.getIndices().get(0)).getRootKeyCount();
+		int newSize = FileManager.deserializeIndex(table.getIndices().get(0),table ).getRootKeyCount();
 		assertEquals(oldSize+1, newSize);
 	}
 
@@ -577,7 +577,7 @@ public class UnitTest {
 		engine.createIndex(newTableName, gpa, gpa+"Index.ser");
 		insertRow(3);
 		Table table = FileManager.deserializeTable(newTableName);
-		boolean oldValue = (FileManager.deserializeIndex(table.getIndices().get(0))).checkKeyExists(TEST_GPA);
+		boolean oldValue = (FileManager.deserializeIndex(table.getIndices().get(0), table)).checkKeyExists(TEST_GPA);
 
 		// When
 		Hashtable<String, Object> updateTable = new Hashtable<>();
@@ -586,8 +586,8 @@ public class UnitTest {
 
 		// Then
 		table = FileManager.deserializeTable(newTableName);
-		boolean oldValueCheck = (FileManager.deserializeIndex(table.getIndices().get(0))).checkKeyExists(TEST_GPA);
-		boolean newValueCheck = (FileManager.deserializeIndex(table.getIndices().get(0))).checkKeyExists(0.7);
+		boolean oldValueCheck = (FileManager.deserializeIndex(table.getIndices().get(0), table)).checkKeyExists(TEST_GPA);
+		boolean newValueCheck = (FileManager.deserializeIndex(table.getIndices().get(0),table )).checkKeyExists(0.7);
 		assertTrue(oldValue);
 		assertFalse(oldValueCheck);
 		assertTrue(newValueCheck);

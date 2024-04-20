@@ -31,8 +31,8 @@ public class DBApp {
 	public static CSVWriter metadataWriter;
 
 	static Vector<String> tables = new Vector<>();
-	public DBApp( ){
-		
+	public DBApp( ) throws DBAppException {
+		init();
 	}
 
 	// this does whatever initialization you would like 
@@ -107,9 +107,9 @@ public class DBApp {
 			Enumeration<String> keys = htblColNameType.keys();
 			while (keys.hasMoreElements()) {
 				String key = keys.nextElement();
-				if(!(htblColNameType.get(key).equals("java.lang.String")
-						|| htblColNameType.get(key).equals("java.lang.Integer")
-						|| htblColNameType.get(key).equals("java.lang.Double"))) {
+				if(!(htblColNameType.get(key).toLowerCase().equals("java.lang.string")
+						|| htblColNameType.get(key).toLowerCase().equals("java.lang.integer")
+						|| htblColNameType.get(key).toLowerCase().equals("java.lang.double"))) {
 					throw new DBAppException("Invalid column datatype");
 				}
 			}
@@ -267,7 +267,6 @@ public class DBApp {
 	public static void main(String[] args ){
 		try{
 			DBApp dbApp = new DBApp();
-			dbApp.init();
 
 			StringBuffer s = new StringBuffer();
 			Iterator<Tuple> t;
