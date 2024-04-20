@@ -38,12 +38,13 @@ public class DBApp {
 	// this does whatever initialization you would like 
 	// or leave it empty if there is no code you want to 
 	// execute at application startup 
-	public void init( ){
+	public void init( ) throws DBAppException {
 		initMaxRowCount();
 		initMetadataWriter();
+		ANTLRManager.dbApp = this;
 	}
 
-	private static void initMetadataWriter() {
+	private static void initMetadataWriter() throws DBAppException {
 		try {
 			FileManager.createDirectory(METADATA_DIR);
 			metadataWriter = new CSVWriter(new FileWriter(METADATA_DIR + "/metadata.csv", true),
@@ -62,11 +63,11 @@ public class DBApp {
 			// closing connection with writer
 			metadataWriter.flush();
 		} catch (Exception e) {
-			e.printStackTrace();
+			throw new DBAppException("Error while initialising metadata");
 		}
 	}
 
-	private static void initMaxRowCount(){
+	private static void initMaxRowCount() throws DBAppException {
 		Properties prop = new Properties();
 		String fileName = "src/main/java/org/example/resources/DBApp.config";
 		try (InputStream input = new FileInputStream(fileName)) {
@@ -74,7 +75,7 @@ public class DBApp {
 			maxRowCount = Integer.parseInt(prop.getProperty("MaximumRowsCountinPage"));
 		}
 		catch (IOException e) {
-			e.printStackTrace();
+			throw new DBAppException("Error while initialising max row count");
 		}
 	}
 
@@ -208,7 +209,11 @@ public class DBApp {
 			if (colNames.isEmpty()) {
 				throw new DBAppException("Table does not exist");
 			}
-
+			if (htblColNameValue.isEmpty()) {
+				Table table = FileManager.deserializeTable(strTableName);
+				table.wipePages();
+				return;
+			}
 			Vector<SQLTerm> SQLTerms = new Vector<>();
 			for (String colName: colNames) {
 				if (htblColNameValue.get(colName) != null) {
@@ -299,6 +304,7 @@ public class DBApp {
 //			ht.put("prim", "java.lang.String");
 //			dbApp.createTable("test", "prim", ht);
 //			dbApp.createIndex("test", "wah", "testIndex");
+			//Testing.sqlTermTest();
 		}
 		catch(Exception exp){
 			exp.printStackTrace();

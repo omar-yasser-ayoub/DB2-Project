@@ -19,6 +19,8 @@ import java.util.Vector;
 import static org.example.DBApp.METADATA_DIR;
 
 public class ANTLRManager {
+
+    public static DBApp dbApp;
     private ANTLRManager() {
         throw new IllegalStateException("Utility class");
     }
@@ -143,8 +145,6 @@ public class ANTLRManager {
         if(primaryKey == null) {
             throw new DBAppException("Table must have a primary key");
         }
-
-        DBApp dbApp = new DBApp();
         dbApp.createTable(tableName, primaryKey, colNameType);
     }
 
@@ -158,14 +158,56 @@ public class ANTLRManager {
             if(!tokens.get(9).equalsIgnoreCase("BTREE"))
                 throw new DBAppException("Unsupported SQL statement (index of type '" + tokens.get(9) + "')");
         }
-
-        DBApp dbApp = new DBApp();
         dbApp.createIndex(tableName, colName, indexName);
     }
 
     // TODO implement inserting into all columns
     private static void antlrInsert(Vector<String> tokens) throws DBAppException {
-        throw new DBAppException("Unsupported SQL statement");
+        String tableName = tokens.get(2);
+        Vector<String> colNames = new Vector<>();
+        Vector<String> colTypes = new Vector<>();
+        try {
+            CSVReader reader = new CSVReader(new FileReader(METADATA_DIR + "/metadata.csv"));
+            String[] line = reader.readNext();
+
+            while ((line = reader.readNext()) != null) {
+                if(line[0].equals(tableName)) {
+                    colNames.add(line[1]);
+                    colTypes.add(line[2]);
+                }
+            }
+        } catch (CsvValidationException | IOException e) {
+            throw new DBAppException(e.getMessage());
+        }
+
+        Hashtable<String, Object> colNameValue = new Hashtable<>();
+        int i = 5;
+        int j = 0;
+        while(j < colNames.size() && i < tokens.size()) {
+            String val = tokens.get(i);
+            String type = colTypes.get(j);
+
+            try {
+                switch (type) {
+                    case "java.lang.Integer":
+                        colNameValue.put(colNames.get(j), Integer.valueOf(Integer.parseInt(val)));
+                        break;
+                    case "java.lang.Double":
+                        colNameValue.put(colNames.get(j), Double.valueOf(Double.parseDouble(val)));
+                        break;
+                    case "java.lang.String":
+                        colNameValue.put(colNames.get(j), val);
+                        break;
+                }
+            } catch (NumberFormatException e) {
+                throw new DBAppException("Mismatching datatypes");
+            }
+            j++;
+            i += 2;
+            if (tokens.get(i).equals(";"))
+                break;
+        }
+        dbApp.insertIntoTable(tableName, colNameValue);
     }
 
     private static void antlrInsertSpecific(Vector<String> tokens) throws DBAppException {
@@ -226,13 +268,10 @@ public class ANTLRManager {
             if (tokens.get(i).equals(";"))
                 break;
         }
-
-        DBApp dbApp = new DBApp();
         dbApp.insertIntoTable(tableName, colNameValue);
     }
 
     private static void antlrDeleteAll(Vector<String> tokens) throws DBAppException {
-        DBApp dbApp = new DBApp();
         dbApp.deleteFromTable(tokens.get(2), new Hashtable<String, Object>());
     }
 

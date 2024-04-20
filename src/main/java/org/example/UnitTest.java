@@ -855,6 +855,15 @@ public class UnitTest {
         String outputMessage = exception.getMessage();
         assertEquals(expectedMessage,outputMessage);
     }
+    @Test
+    void testDeleteFromTable_emptyHashTableShouldDeleteTableRows() throws DBAppException {
+        for (int i = 1; i <= 10; i++)
+            insertRow(i);
+        Hashtable<String, Object> htblColNameValue = new Hashtable<>();
+        engine.deleteFromTable(newTableName, htblColNameValue);
+        Table table = FileManager.deserializeTable(newTableName);
+        assertTrue(table.isEmpty());
+    }
     private int getIteratorSize(Iterator it) {
         int ret = 0;
         while (it.hasNext()) {
