@@ -464,7 +464,7 @@ public class UnitTest {
         });
 
         // Then
-        String expectedMessage = "The Tuple contains come columns that aren't in the table";
+        String expectedMessage = "The tuple contains some columns that aren't in the table";
         String outputMessage = exception.getMessage();
         assertEquals(expectedMessage, outputMessage);
     }

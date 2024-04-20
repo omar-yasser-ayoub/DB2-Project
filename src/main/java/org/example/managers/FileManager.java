@@ -103,5 +103,13 @@ public class FileManager implements Serializable {
         if (file.exists()){
             file.delete();
         }
+        file = new File(SERIALIZED_PAGES_MINMAX_PATH + "/" + pageName + "MAX.ser");
+        if (file.exists()){
+            file.delete();
+        }
+        file = new File(SERIALIZED_PAGES_MINMAX_PATH + "/" + pageName + "MIN.ser");
+        if (file.exists()){
+            file.delete();
+        }
     }
 }

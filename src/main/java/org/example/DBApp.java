@@ -1,16 +1,24 @@
-
 /** * @author Wael Abouelsaadat */
 package org.example;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
 import com.opencsv.exceptions.CsvValidationException;
+import org.antlr.v4.runtime.*;
+import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.ParseTreeWalker;
+import org.example.ANTLR.MySqlParserBaseListener;
+import org.example.ANTLR.MySqlParserListener;
+import org.example.data_structures.Page;
 import org.example.data_structures.SQLTerm;
 import org.example.data_structures.Table;
 import org.example.data_structures.Tuple;
 import org.example.exceptions.DBAppException;
+import org.example.managers.ANTLRManager;
 import org.example.managers.FileManager;
 import org.example.managers.SelectionManager;
 import org.example.managers.UpdateManager;
+import org.example.ANTLR.MySqlLexer;
+import org.example.ANTLR.MySqlParser;
 
 import java.io.*;
 import java.util.*;
@@ -33,6 +41,7 @@ public class DBApp {
 	public void init( ) throws DBAppException {
 		initMaxRowCount();
 		initMetadataWriter();
+		ANTLRManager.dbApp = this;
 	}
 
 	private static void initMetadataWriter() throws DBAppException {
@@ -89,6 +98,10 @@ public class DBApp {
 
 			if(!htblColNameType.containsKey(strClusteringKeyColumn)) {
 				throw new DBAppException("Clustering key not found in table");
+			}
+
+			if(strClusteringKeyColumn == null) {
+				throw new DBAppException("Table must have a primary key");
 			}
 
 			Enumeration<String> keys = htblColNameType.keys();
@@ -211,7 +224,7 @@ public class DBApp {
 				}
 			}
 			if (!htblColNameValue.isEmpty()) {
-				throw new DBAppException("The Tuple contains come columns that aren't in the table");
+				throw new DBAppException("The tuple contains some columns that aren't in the table");
 			}
 			String[] strOperators = new String[SQLTerms.size() - 1];
 			Arrays.fill(strOperators, "AND");
@@ -229,7 +242,6 @@ public class DBApp {
 		}
 	}
 
-
 	public Iterator<Tuple> selectFromTable(SQLTerm[] arrSQLTerms,
 									String[]  strarrOperators) throws DBAppException{
 		try {
@@ -246,11 +258,71 @@ public class DBApp {
 		return tables;
 	}
 
+	// below method returns Iterator with result set if passed
+	// strbufSQL is a select, otherwise returns null.
+	public Iterator<Tuple> parseSQL(StringBuffer strbufSQL) throws DBAppException {
+		ANTLRManager.checkValidSQL(strbufSQL);
+		Vector<String> tokens = ANTLRManager.getTokenStrings(strbufSQL);
+
+		return ANTLRManager.callMethod(tokens);
+	}
+
 	public static void main(String[] args ){
 		try{
-			Testing.clearAllData();
 			DBApp dbApp = new DBApp();
+			StringBuffer s = new StringBuffer();
+			Iterator<Tuple> t;
 
+			s.append("CREATE TABLE Customer (id int PRIMARY KEY, name varchar(50), address varchar(50), number int);");
+			t = dbApp.parseSQL(s);
+
+			s = new StringBuffer();
+			s.append("CREATE INDEX name_idx ON Customer(id) USING BTREE;");
+			t = dbApp.parseSQL(s);
+
+			s = new StringBuffer();
+			s.append("INSERT INTO Customer(id, name, address, number) VALUES(1, 'Farah', '123 street', 21);");
+			t = dbApp.parseSQL(s);
+
+			s = new StringBuffer();
+			s.append("INSERT INTO Customer(id, name, address, number) VALUES(2, 'Omar', '456 street', 25);");
+			t = dbApp.parseSQL(s);
+
+			s = new StringBuffer();
+			s.append("INSERT INTO Customer(id, name, address, number) VALUES(3, Ziad, '789 street', 12);");
+			t = dbApp.parseSQL(s);
+
+			s = new StringBuffer();
+			s.append("INSERT INTO Customer(id, name, address, number) VALUES(4, 'Yara', '123 lane', 52);");
+			t = dbApp.parseSQL(s);
+
+//			s.append("DELETE FROM Customer;");
+//			dbApp.parseSQL(s);
+
+//			s = new StringBuffer();
+//			s.append("SELECT * FROM Customer WHERE name = 'Farah' OR name = 'Omar'");
+//			t = dbApp.parseSQL(s);
+//			while(t.hasNext())
+//			{
+//				Tuple tuple = t.next();
+//				System.out.println(tuple.toString());
+//			}
+
+			s = new StringBuffer();
+			s.append("UPDATE Customer SET number = 100 WHERE id = 3;");
+			t = dbApp.parseSQL(s);
+
+			Table table = FileManager.deserializeTable("Customer");
+			Page page = FileManager.deserializePage(table.getPageNames().get(0));
+			System.out.println(page.toString());
+
+//			Hashtable<String, String> ht = new Hashtable<>();
+//			ht.put("a", "java.lang.String");
+//			ht.put("prim", "java.lang.String");
+//			dbApp.createTable("test", "prim", ht);
+//			dbApp.createIndex("test", "wah", "testIndex");
+			//Testing.sqlTermTest();
+      
 			Hashtable htblColNameType = new Hashtable( );
 			htblColNameType.put("id", "java.lang.Integer");
 			htblColNameType.put("name", "java.lang.String");
@@ -282,8 +354,8 @@ public class DBApp {
 
 			System.out.println(FileManager.deserializeTable("Student"));
 		}
-		catch(Exception exp){
-			exp.printStackTrace( );
+		catch(Exception exp) {
+			exp.printStackTrace();
 		}
 	}
 
